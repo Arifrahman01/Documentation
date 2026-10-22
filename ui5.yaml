@@ -1,0 +1,13 @@
+specVersion: "4.0"
+metadata:
+  name: sap-knowledge-portal
+type: application
+resources:
+  configuration:
+    paths:
+      webapp: webapp
+builder:
+  componentPreload:
+    excludes:
+      - "doc/portal/lib/**"
+      - "doc/portal/docs/**"

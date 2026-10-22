@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PT Jhonlin Group — Documentation &amp; App Portal</title>
+  <link rel="icon" type="image/png" href="img/jhonlin_emblem.png">
+  <link rel="shortcut icon" href="favicon.ico">
+  
+  <!-- Prism CSS (Default Light) -->
+  <link rel="stylesheet" href="lib/prism/prism.css" id="prismThemeLink">
+  <!-- Custom Style -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Markdown & Prism Libraries -->
+  <script src="lib/markdown-it/markdown-it.min.js"></script>
+  <script src="lib/prism/prism.js"></script>
+  <script src="lib/prism/components/prism-abap.min.js"></script>
+  <script src="lib/prism/components/prism-sql.min.js"></script>
+  <script src="lib/prism/components/prism-bash.min.js"></script>
+  <script src="lib/prism/components/prism-powershell.min.js"></script>
+  <script src="lib/prism/components/prism-nginx.min.js"></script>
+  <script src="lib/prism/components/prism-json.min.js"></script>
+  <script src="lib/prism/components/prism-php.min.js"></script>
+
+  <!-- OpenUI5 Bootstrap -->
+  <script
+    id="sap-ui-bootstrap"
+    src="https://sdk.openui5.org/resources/sap-ui-core.js"
+    data-sap-ui-theme="sap_horizon"
+    data-sap-ui-resourceroots='{
+      "doc.portal": "./"
+    }'
+    data-sap-ui-oninit="module:sap/ui/core/ComponentSupport"
+    data-sap-ui-compatVersion="edge"
+    data-sap-ui-async="true"
+    data-sap-ui-preload=""
+    data-sap-ui-libs="sap.m,sap.tnt,sap.ui.core,sap.f,sap.ui.layout">
+  </script>
+</head>
+<body class="sapUiBody sapUiSizeCompact" id="content">
+  <div
+    data-sap-ui-component
+    data-name="doc.portal"
+    data-id="container"
+    data-settings='{"id" : "docPortal"}'
+    style="height: 100%;">
+  </div>
+</body>
+</html>

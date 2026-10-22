@@ -1,0 +1,131 @@
+{
+  "stats": {
+    "all": 8,
+    "essentials": 4,
+    "get-started": 1
+  },
+  "treeData": [
+    {
+      "title": "Essentials",
+      "icon": "sap-icon://course-book",
+      "nodes": [
+        {
+          "title": "Data Binding Overview",
+          "path": "essentials/data-binding",
+          "icon": "sap-icon://document-text"
+        },
+        {
+          "title": "Initialization Process",
+          "path": "essentials/initialization-process",
+          "icon": "sap-icon://document-text"
+        },
+        {
+          "title": "Model View Controller (MVC)",
+          "path": "essentials/model-view-controller",
+          "icon": "sap-icon://document-text"
+        },
+        {
+          "title": "Routing & Navigation",
+          "path": "essentials/routing-and-navigation",
+          "icon": "sap-icon://document-text"
+        }
+      ]
+    },
+    {
+      "title": "Get Started",
+      "icon": "sap-icon://begin",
+      "nodes": [
+        {
+          "title": "Quick Start",
+          "path": "get-started/quick-start",
+          "icon": "sap-icon://document-text"
+        }
+      ]
+    },
+    {
+      "title": "Developing Apps",
+      "icon": "sap-icon://developer-settings",
+      "nodes": [
+        {
+          "title": "Component Configuration",
+          "path": "developing-apps/component-configuration",
+          "icon": "sap-icon://document-text"
+        },
+        {
+          "title": "Security Concepts",
+          "path": "developing-apps/security-concepts",
+          "icon": "sap-icon://document-text"
+        }
+      ]
+    },
+    {
+      "title": "Testing",
+      "icon": "sap-icon://lab",
+      "nodes": [
+        {
+          "title": "Unit Testing with QUnit",
+          "path": "testing/unit-testing",
+          "icon": "sap-icon://document-text"
+        }
+      ]
+    }
+  ],
+  "articles": [
+    {
+      "id": "essentials/data-binding",
+      "title": "Data Binding Overview",
+      "path": "essentials/data-binding",
+      "category": "Essentials",
+      "snippet": "Data Binding Overview Data binding connects UI elements to data models, keeping the user interface automatically synchronized when model data updates. --- Binding Modes | Mode | Sy"
+    },
+    {
+      "id": "essentials/initialization-process",
+      "title": "Initialization Process",
+      "path": "essentials/initialization-process",
+      "category": "Essentials",
+      "snippet": "Initialization Process The initialization process covers the entire lifecycle from loading the SAPUI5 bootstrap script to rendering the root UI components in the browser DOM. > [!N"
+    },
+    {
+      "id": "essentials/model-view-controller",
+      "title": "Model View Controller (MVC)",
+      "path": "essentials/model-view-controller",
+      "category": "Essentials",
+      "snippet": "Model View Controller (MVC) SAPUI5 provides a flexible MVC architecture that enforces separation between business data (Model), user interface (View), and behavioral logic (Control"
+    },
+    {
+      "id": "essentials/routing-and-navigation",
+      "title": "Routing & Navigation",
+      "path": "essentials/routing-and-navigation",
+      "category": "Essentials",
+      "snippet": "Routing & Navigation Routing in SAPUI5 enables hash-based navigation between views, bookmarkable deep links, and smooth transitions within single-page applications. --- Configurati"
+    },
+    {
+      "id": "get-started/quick-start",
+      "title": "Quick Start",
+      "path": "get-started/quick-start",
+      "category": "Get Started",
+      "snippet": "Quick Start Get started building modern, enterprise-ready web applications using the SAPUI5 framework. --- What is SAPUI5? SAPUI5 is a JavaScript UI framework built to create cross"
+    },
+    {
+      "id": "developing-apps/component-configuration",
+      "title": "Component Configuration",
+      "path": "developing-apps/component-configuration",
+      "category": "Developing Apps",
+      "snippet": "Guide on manifest.json configuration, routing targets, models, and dependencies in SAPUI5."
+    },
+    {
+      "id": "developing-apps/security-concepts",
+      "title": "Security Concepts",
+      "path": "developing-apps/security-concepts",
+      "category": "Developing Apps",
+      "snippet": "Enterprise security guidelines: XSS protection, CSRF token handling, and secure data binding."
+    },
+    {
+      "id": "testing/unit-testing",
+      "title": "Unit Testing with QUnit",
+      "path": "testing/unit-testing",
+      "category": "Testing",
+      "snippet": "Setting up automated unit tests and integration tests using QUnit and OPA5 in SAPUI5."
+    }
+  ]
+}

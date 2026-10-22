@@ -1,0 +1,151 @@
+<mvc:View
+  controllerName="doc.portal.controller.Home"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:l="sap.ui.layout"
+  displayBlock="true"
+  height="100%">
+
+  <Page
+    id="homePage"
+    showHeader="false"
+    class="sdkHomePage">
+
+    <content>
+
+      <!-- SDK Welcome Landing -->
+      <VBox class="sdkLandingWrapper">
+
+        <!-- Hero Section -->
+        <VBox class="sdkLandingHero" alignItems="Center">
+          <Image src="img/jhonlin_emblem.png" width="72px" height="72px" class="sapUiSmallMarginBottom" densityAware="false" />
+          <Title text="PT JHONLIN GROUP — Documentation Portal" level="H1" titleStyle="H1" class="sdkLandingTitle" />
+          <Text text="Pusat Dokumentasi Resmi Arsitektur Sistem, Integrasi SAP/SAC, Standar IT, dan Program Navigator Seluruh Aplikasi Bisnis PT Jhonlin Group." class="sdkLandingSubtitle" />
+          
+          <SearchField
+            placeholder="Search the Documentation &amp; Apps... (Ctrl+K)"
+            width="520px"
+            class="sapUiMediumMarginTop sdkLandingSearch"
+            search=".onHeroSearch" />
+
+          <!-- Quick Navigation Actions -->
+          <HBox class="sapUiMediumMarginTop sdkHeroActions" wrap="Wrap" justifyContent="Center">
+            <Button
+              text="Explore Documentation"
+              icon="sap-icon://learning-assistant"
+              type="Emphasized"
+              class="sapUiTinyMarginEnd sapUiTinyMarginBottom sdkHeroActionBtn"
+              press=".onNavDocumentation" />
+            <Button
+              text="Program Navigator (Apps)"
+              icon="sap-icon://grid"
+              type="Transparent"
+              class="sapUiTinyMarginEnd sapUiTinyMarginBottom sdkHeroActionBtnGhost"
+              press=".onNavApps" />
+            <Button
+              text="Developer Resources"
+              icon="sap-icon://wrench"
+              type="Transparent"
+              class="sapUiTinyMarginEnd sapUiTinyMarginBottom sdkHeroActionBtnGhost"
+              press=".onNavResources" />
+            <Button
+              text="Tanya AI Copilot"
+              icon="sap-icon://learning-assistant"
+              type="Transparent"
+              class="sapUiTinyMarginEnd sapUiTinyMarginBottom sdkHeroActionBtnAi"
+              press=".onOpenAiCopilot" />
+          </HBox>
+        </VBox>
+
+        <!-- Topic Category Cards -->
+        <VBox class="sdkLandingSections">
+          <Title text="Browse by Topic Area" level="H2" class="sdkSectionHeading" />
+
+          <l:Grid defaultSpan="XL4 L4 M6 S12" class="sdkCardGrid">
+
+            <!-- Card 1: Essentials -->
+            <VBox class="sdkCategoryCard">
+              <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                <core:Icon src="sap-icon://course-book" class="sdkCategoryIcon sdkCategoryIconSap" />
+                <Title text="Essentials &amp; Runtime" level="H3" class="sdkCategoryTitle" />
+              </HBox>
+              <Text text="Proses inisialisasi framework, asynchronous bootstrapping, evaluasi script tag, dan ComponentSupport startup lifecycle." class="sdkCategoryDesc" />
+              <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" alignItems="Center">
+                <ObjectStatus text="4 Topics" state="Information" />
+                <Button text="Buka Dokumentasi →" type="Transparent" class="sdkCardLinkBtn" press=".onOpenTopic('essentials/initialization-process')" />
+              </HBox>
+            </VBox>
+
+            <!-- Card 2: MVC Architecture -->
+            <VBox class="sdkCategoryCard">
+              <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                <core:Icon src="sap-icon://org-chart" class="sdkCategoryIcon sdkCategoryIconSac" />
+                <Title text="Model View Controller" level="H3" class="sdkCategoryTitle" />
+              </HBox>
+              <Text text="Pemisahan logika bisnis dan antarmuka pengguna: XML Views, Controller life-cycle hooks, event handling, dan formatting." class="sdkCategoryDesc" />
+              <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" alignItems="Center">
+                <ObjectStatus text="Core Concept" state="Success" />
+                <Button text="Buka Dokumentasi →" type="Transparent" class="sdkCardLinkBtn" press=".onOpenTopic('essentials/model-view-controller')" />
+              </HBox>
+            </VBox>
+
+            <!-- Card 3: Data Binding & Routing -->
+            <VBox class="sdkCategoryCard">
+              <HBox alignItems="Center" class="sapUiTinyMarginBottom">
+                <core:Icon src="sap-icon://chain-link" class="sdkCategoryIcon sdkCategoryIconWeb" />
+                <Title text="Data Binding &amp; Routing" level="H3" class="sdkCategoryTitle" />
+              </HBox>
+              <Text text="Two-way data binding, property &amp; aggregation binding, expression binding, hash-based client routing, dan target navigation." class="sdkCategoryDesc" />
+              <HBox class="sapUiSmallMarginTop" justifyContent="SpaceBetween" alignItems="Center">
+                <ObjectStatus text="Core Feature" state="Warning" />
+                <Button text="Buka Dokumentasi →" type="Transparent" class="sdkCardLinkBtn" press=".onOpenTopic('essentials/data-binding')" />
+              </HBox>
+            </VBox>
+
+          </l:Grid>
+        </VBox>
+
+        <!-- Featured Guides -->
+        <VBox class="sdkLandingSections sapUiMediumMarginBottom">
+          <Title text="Featured Documentation Topics" level="H2" class="sdkSectionHeading" />
+          <List mode="None" class="sdkGettingStartedList">
+            <StandardListItem
+              title="Initialization Process"
+              description="Siklus bootstrap framework, konfigurasi data-sap-ui-*, async loading, dan ComponentSupport"
+              icon="sap-icon://begin"
+              type="Navigation"
+              press=".onOpenTopic('essentials/initialization-process')" />
+            <StandardListItem
+              title="Quick Start Guide"
+              description="Panduan memulai pembuatan aplikasi SAPUI5 berbasis desain SAP Horizon dari awal"
+              icon="sap-icon://begin"
+              type="Navigation"
+              press=".onOpenTopic('get-started/quick-start')" />
+            <StandardListItem
+              title="Model View Controller (MVC)"
+              description="Konsep pemisahan Model data, XML View, dan Controller logika aplikasi"
+              icon="sap-icon://begin"
+              type="Navigation"
+              press=".onOpenTopic('essentials/model-view-controller')" />
+            <StandardListItem
+              title="Data Binding Overview"
+              description="Property binding, aggregation binding, expression binding, dan sinkronisasi dua arah"
+              icon="sap-icon://begin"
+              type="Navigation"
+              press=".onOpenTopic('essentials/data-binding')" />
+            <StandardListItem
+              title="Routing &amp; Navigation"
+              description="Hash-based routing, manifest.json router configuration, navigasi targets, dan deep links"
+              icon="sap-icon://begin"
+              type="Navigation"
+              press=".onOpenTopic('essentials/routing-and-navigation')" />
+          </List>
+        </VBox>
+
+      </VBox>
+
+    </content>
+  </Page>
+
+</mvc:View>

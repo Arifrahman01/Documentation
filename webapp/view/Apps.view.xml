@@ -1,0 +1,105 @@
+<mvc:View
+  controllerName="doc.portal.controller.Apps"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:l="sap.ui.layout"
+  displayBlock="true"
+  height="100%">
+
+  <Page
+    id="appsPage"
+    showHeader="false"
+    class="sdkAppsPage">
+
+    <content>
+      <VBox class="sdkAppsWrapper" width="100%">
+
+        <!-- ====== HEADER HERO (JHONLIN GROUP PROGRAM NAVIGATOR) ====== -->
+        <VBox class="sdkAppsHero">
+          <HBox alignItems="Center" class="sdkAppsHeroBreadcrumbs sapUiTinyMarginBottom">
+            <Link text="Home" press=".onNavHome" class="sdkHeroBreadcrumbLink" />
+            <Text text=" / " class="sdkHeroBreadcrumbSlash" />
+            <Text text="Apps" class="sdkHeroBreadcrumbActive" />
+          </HBox>
+
+          <HBox justifyContent="SpaceBetween" alignItems="Start" wrap="Wrap" class="sdkAppsHeroHeaderRow">
+            <VBox class="sdkAppsHeroTitleGroup">
+              <HBox alignItems="Center">
+                <Title text="Program Navigator" level="H1" titleStyle="H1" class="sdkAppsHeroTitle" />
+                <ObjectStatus text="PT Jhonlin Group" state="Information" inverted="true" class="sdkHeroCompanyPill sapUiSmallMarginBegin" />
+              </HBox>
+              <Text
+                text="Akses sentral seluruh aplikasi &amp; sistem operasional PT Jhonlin Group. Pantau operasional tambang &amp; logistik, dashboard analitik SAC, keselamatan kerja K3, serta transaksi komersial secara real-time."
+                class="sdkAppsHeroSubtitle sapUiSmallMarginTop" />
+            </VBox>
+
+            <!-- Quick Stats Badges -->
+            <HBox class="sdkHeroStatsRow sapUiSmallMarginTop">
+              <VBox class="sdkHeroStatBox">
+                <Text text="7" class="sdkHeroStatNumber" />
+                <Text text="Enterprise Apps" class="sdkHeroStatLabel" />
+              </VBox>
+              <VBox class="sdkHeroStatBox">
+                <Text text="5" class="sdkHeroStatNumber sdkTextGreen" />
+                <Text text="Production Live" class="sdkHeroStatLabel" />
+              </VBox>
+              <VBox class="sdkHeroStatBox">
+                <Text text="ICT" class="sdkHeroStatNumber sdkTextBlue" />
+                <Text text="Jhonlin Group" class="sdkHeroStatLabel" />
+              </VBox>
+            </HBox>
+          </HBox>
+
+          <!-- Interactive Search & Category Toolbar -->
+          <VBox class="sdkAppsFilterSection sapUiMediumMarginTop">
+            <HBox alignItems="Center" justifyContent="SpaceBetween" wrap="Wrap" class="sdkAppsFilterBar">
+              <!-- Search Input -->
+              <SearchField
+                id="appsSearchField"
+                placeholder="Cari program (FMS, SAC, Marketing, SHE, File, PPPN...)"
+                width="380px"
+                liveChange=".onSearchApps"
+                class="sdkAppsSearchField" />
+
+              <!-- Category Filter Buttons -->
+              <SegmentedButton id="categorySegmentedBtn" selectedKey="all" selectionChange=".onFilterCategory" class="sdkAppsCategoryFilter">
+                <items>
+                  <SegmentedButtonItem text="Semua (7)" key="all" />
+                  <SegmentedButtonItem text="Operations" key="operations" />
+                  <SegmentedButtonItem text="Analytics" key="analytics" />
+                  <SegmentedButtonItem text="Marketing" key="commercial" />
+                  <SegmentedButtonItem text="Safety (SHE)" key="safety" />
+                  <SegmentedButtonItem text="Finance &amp; Storage" key="finance" />
+                </items>
+              </SegmentedButton>
+            </HBox>
+          </VBox>
+        </VBox>
+
+        <!-- ====== MAIN APPS GRID ====== -->
+        <VBox class="sdkAppsContentArea">
+          <l:Grid
+            id="appsGrid"
+            defaultSpan="XL4 L4 M6 S12"
+            class="sdkAppsGrid"
+            content="{
+              path: 'apps>/programs',
+              factory: '._createAppCard'
+            }">
+          </l:Grid>
+        </VBox>
+
+        <!-- ====== FOOTER ====== -->
+        <HBox justifyContent="Center" alignItems="Center" class="sdkAppsFooter">
+          <Text text="© 2025 Program Navigator — " class="sdkAppsFooterText" />
+          <Text text="ICT Jhonlin Group" class="sdkAppsFooterAccent" />
+          <Text text=" • PT Jhonlin Group Enterprise Portal" class="sdkAppsFooterText" />
+        </HBox>
+
+      </VBox>
+    </content>
+
+  </Page>
+
+</mvc:View>

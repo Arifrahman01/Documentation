@@ -1,0 +1,166 @@
+<mvc:View
+  controllerName="doc.portal.controller.Topic"
+  xmlns:mvc="sap.ui.core.mvc"
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core"
+  xmlns:custom="doc.portal.control"
+  displayBlock="true"
+  height="100%">
+
+  <Page id="topicPage" showHeader="false" class="sdkTopicPage">
+    <content>
+      <HBox class="sdkDocSplitLayout" width="100%" height="100%">
+
+        <!-- ====== LEFT MASTER SIDEBAR (CAPTURED UI5 DEMO KIT STYLE) ====== -->
+        <VBox id="docSidebar" class="sdkMasterSidebar" visible="{appView>/isSideExpanded}">
+          
+          <!-- Top Filter & Action Bar -->
+          <HBox class="sdkSidebarFilterBar" alignItems="Center">
+            <SearchField
+              id="treeSearchField"
+              placeholder="Filter"
+              width="100%"
+              liveChange=".onFilterTree"
+              class="sdkSidebarSearchField" />
+            <Button
+              icon="sap-icon://sort"
+              type="Transparent"
+              tooltip="Sort / Expand"
+              press=".onExpandAll"
+              class="sdkSidebarToolBtn" />
+            <Button
+              icon="sap-icon://collapse-all"
+              type="Transparent"
+              tooltip="Collapse all"
+              press=".onCollapseAll"
+              class="sdkSidebarToolBtn" />
+          </HBox>
+
+          <!-- Hierarchical Tree Control (Dark Evening Horizon Theme) -->
+          <ScrollContainer vertical="true" horizontal="false" height="calc(100% - 180px)" class="sdkTreeScrollContainer">
+            <Tree
+              id="topicNavTree"
+              mode="SingleSelectMaster"
+              selectionChange=".onSelectTreeNode"
+              items="{path: 'docs>/treeData'}">
+              <StandardTreeItem
+                title="{docs>title}"
+                icon="{docs>icon}" />
+            </Tree>
+          </ScrollContainer>
+
+          <!-- Sticky Bottom Footer Links (As in ui5.sap.com) -->
+          <VBox class="sdkSidebarBottomFooter">
+            <Button text="Legal" icon="sap-icon://official-service" type="Transparent" class="sdkSidebarFooterBtn" press=".onFooterAction" />
+            <Button text="Privacy" icon="sap-icon://private" type="Transparent" class="sdkSidebarFooterBtn" press=".onFooterAction" />
+            <Button text="Terms of Use" icon="sap-icon://document-text" type="Transparent" class="sdkSidebarFooterBtn" press=".onFooterAction" />
+            <Button text="Cookie Preferences" icon="sap-icon://action-settings" type="Transparent" class="sdkSidebarFooterBtn" press=".onFooterAction" />
+          </VBox>
+
+        </VBox>
+
+        <!-- ====== RIGHT DETAIL CONTENT CONTAINER ====== -->
+        <ScrollContainer vertical="true" horizontal="false" height="100%" class="sdkContentScrollContainer">
+          <HBox class="sdkTopicContentWrapper" width="100%">
+
+            <!-- Main Topic Article -->
+            <VBox class="sdkTopicMain">
+              <!-- Breadcrumbs & Actions -->
+              <HBox class="sdkBreadcrumbBar" justifyContent="SpaceBetween" alignItems="Center">
+                <Breadcrumbs id="topicBreadcrumbs" separatorStyle="Slash">
+                  <Link text="Documentation" press=".onNavDocumentationRoot" />
+                </Breadcrumbs>
+                <HBox alignItems="Center">
+                  <Button
+                    id="btnSummarizeTopic"
+                    icon="sap-icon://learning-assistant"
+                    text="Ringkas AI"
+                    type="Transparent"
+                    tooltip="Buat ringkasan eksekutif dokumen ini menggunakan AI Copilot"
+                    press=".onSummarizeTopic"
+                    class="sdkAiSummarizeBtn sapUiTinyMarginEnd" />
+                  <Button
+                    id="btnAskAiTopic"
+                    icon="sap-icon://comment"
+                    text="Tanya AI"
+                    type="Transparent"
+                    tooltip="Tanyakan dokumen ini ke Jhonlin AI Copilot"
+                    press=".onAskAiAboutTopic"
+                    class="sdkAiSummarizeBtn sapUiTinyMarginEnd" />
+                  <Button
+                    icon="sap-icon://copy"
+                    type="Transparent"
+                    tooltip="Copy link"
+                    press=".onCopyTopicLink" />
+                </HBox>
+              </HBox>
+
+              <!-- Topic Title -->
+              <VBox class="sdkTopicTitleArea">
+                <Title id="topicTitle" text="{topicView>/title}" level="H1" class="sdkTopicTitle" />
+              </VBox>
+
+              <!-- AI Executive Summary Banner (Collapsible/Dismissible) -->
+              <VBox id="aiSummaryBox" visible="{topicView>/hasAiSummary}" class="sdkAiSummaryBanner sapUiMediumMarginBottom">
+                <HBox justifyContent="SpaceBetween" alignItems="Center" class="sdkAiSummaryHeader">
+                  <HBox alignItems="Center">
+                    <core:Icon src="sap-icon://learning-assistant" class="sdkAiSummaryIcon" />
+                    <Title text="Ringkasan Eksekutif AI (Jhonlin Copilot)" level="H4" class="sdkAiSummaryTitle sapUiTinyMarginBegin" />
+                  </HBox>
+                  <Button icon="sap-icon://decline" type="Transparent" press=".onCloseAiSummary" tooltip="Tutup Ringkasan" />
+                </HBox>
+                <core:HTML content="{topicView>/aiSummaryHtml}" preferDOM="true" />
+              </VBox>
+
+              <!-- Markdown Content -->
+              <VBox class="sdkReaderWrapper" width="100%">
+                <custom:MarkdownViewer
+                  id="markdownViewer"
+                  contentLoaded=".onContentLoaded"
+                  loadFailed=".onLoadFailed" />
+              </VBox>
+
+              <!-- Footer Navigation (Prev & Next) -->
+              <HBox class="sdkTopicFooterNav" justifyContent="SpaceBetween" alignItems="Center" width="100%">
+                <Button
+                  id="btnPrevTopic"
+                  icon="sap-icon://navigation-left-arrow"
+                  text="{topicView>/prevTitle}"
+                  enabled="{topicView>/hasPrev}"
+                  type="Transparent"
+                  press=".onNavPrev"
+                  class="sdkNavBtn" />
+
+                <Button
+                  id="btnNextTopic"
+                  icon="sap-icon://navigation-right-arrow"
+                  iconFirst="false"
+                  text="{topicView>/nextTitle}"
+                  enabled="{topicView>/hasNext}"
+                  type="Emphasized"
+                  press=".onNavNext"
+                  class="sdkNavBtn" />
+              </HBox>
+            </VBox>
+
+            <!-- Right In-Page "On this page" TOC Rail -->
+            <VBox id="onThisPageContainer" class="sdkOnThisPageRail" visible="{topicView>/hasHeadings}">
+              <Title text="On this page" level="H4" class="sdkOnThisPageTitle" />
+              <VBox id="onThisPageList" class="sdkOnThisPageList" items="{topicView>/headings}">
+                <items>
+                  <Link
+                    text="{topicView>text}"
+                    press=".onScrollToHeading"
+                    class="{= ${topicView>level} === 3 ? 'sdkTocSubItem' : 'sdkTocItem'}" />
+                </items>
+              </VBox>
+            </VBox>
+
+          </HBox>
+        </ScrollContainer>
+
+      </HBox>
+    </content>
+  </Page>
+
+</mvc:View>

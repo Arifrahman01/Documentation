@@ -1,0 +1,22 @@
+{
+  "name": "jhonlin-docs-portal",
+  "version": "1.0.0",
+  "description": "Portal Dokumentasi Teknis, Arsitektur Sistem, dan Program Navigator PT Jhonlin Group berbasis SAPUI5 dengan integrasi AI Copilot",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "ui5:serve": "ui5 serve --port 8088 --open index.html",
+    "build": "ui5 build --clean-dest --dest dist",
+    "index": "node generate-index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "fuse.js": "^7.1.0",
+    "markdown-it": "^14.1.0",
+    "markdown-it-anchor": "^9.2.0",
+    "prismjs": "^1.30.0"
+  },
+  "devDependencies": {
+    "@ui5/cli": "^4.0.0"
+  }
+}

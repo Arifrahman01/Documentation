@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 48" width="56" height="27">
+  <defs>
+    <linearGradient id="sapGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#008FD3"/>
+      <stop offset="100%" stop-color="#00579B"/>
+    </linearGradient>
+  </defs>
+  <!-- SAP Trapezoid Badge -->
+  <path d="M0,0 L75,0 L100,48 L0,48 Z" fill="url(#sapGrad)"/>
+  <!-- Letters S A P -->
+  <text x="10" y="34" font-family="'72', Arial, sans-serif" font-size="28" font-weight="900" fill="#FFFFFF" letter-spacing="-1">SAP</text>
+</svg>
