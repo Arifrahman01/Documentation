@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 390" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sacHeaderGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="blueBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="tealBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="amberBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="areaBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="390" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- SAC Top Shell Bar -->
+  <path d="M0 12 Q0 0 12 0 L1188 0 Q1200 0 1200 12 L1200 48 L0 48 Z" fill="url(#sacHeaderGrad)"/>
+  <rect x="18" y="12" width="28" height="24" rx="5" fill="#0070f2"/>
+  <text x="32" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="800" fill="#ffffff">SAC</text>
+  <text x="56" y="23" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">Financial Position — Detail Widget 1: Asset Stacked Column Chart</text>
+  <text x="56" y="38" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8">Active Sheet: Current Asset vs Non-Current Asset (FSV J000)</text>
+
+  <!-- Live CDS Badge -->
+  <rect x="930" y="12" width="252" height="24" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <circle cx="946" cy="24" r="4" fill="#10b981"/>
+  <text x="958" y="28" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600" fill="#e2e8f0">LIVE CDS: S4HANA_PROD (J000)</text>
+
+  <!-- Global Input Filter Bar -->
+  <rect x="0" y="48" width="1200" height="52" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+      <g transform="translate(24, 60)">
+        <rect width="258.4" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Company Code:</text>
+        <text x="89.6" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">All (Jhonlin Group)</text>
+        <path d="M240.39999999999998 13 L244.39999999999998 18 L248.39999999999998 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(292.4, 60)">
+        <rect width="150" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Fiscal Year:</text>
+        <text x="83.3" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">2026</text>
+        <path d="M132 13 L136 18 L140 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(452.4, 60)">
+        <rect width="150" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Month:</text>
+        <text x="45.5" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">Jan - Oct</text>
+        <path d="M132 13 L136 18 L140 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+
+  <!-- Active Sheet Tab Indicator on Right -->
+  <rect x="1005" y="60" width="175" height="30" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="1093" y="79" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1d4ed8">Current Asset vs Non-Cur</text>
+
+  <!-- Story Content Area -->
+  
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="114" width="1152" height="254" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="24" y1="156" x2="1176" y2="156" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="38" y="125" width="68" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="72" y="139" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">WIDGET 1</text>
+    <text x="114" y="135" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Asset — Stacked Bar/Column Chart (Current Asset vs Non-Current Asset)</text>
+    <text x="114" y="149" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Komposisi likuiditas aset lancar terhadap aset tetap jangka panjang per bulan (IDR Bn)</text>
+    <rect x="1088" y="126" width="76" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="1126" y="139" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">IDR Bn</text>
+    
+    <g transform="translate(866, 161)">
+      <rect x="0" y="2" width="10" height="10" rx="2" fill="#2563eb"/>
+      <text x="14" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">Current Asset (Lancar)</text>
+      <rect x="105" y="2" width="10" height="10" rx="2" fill="#94a3b8"/>
+             <text x="119" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">Non-Current Asset (Tetap)</text>
+      
+    </g><line x1="72" y1="334" x2="1132" y2="334" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="337" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">0</text><line x1="72" y1="296" x2="1132" y2="296" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="299" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">3766</text><line x1="72" y1="258" x2="1132" y2="258" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="261" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">7532</text><line x1="72" y1="220" x2="1132" y2="220" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="223" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">11299</text><line x1="72" y1="182" x2="1132" y2="182" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="185" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">15065</text><rect x="106" y="251.2651842017922" width="18" height="82.73481579820779" rx="3" fill="url(#blueBar)"/><rect x="126" y="208.8888151344175" width="18" height="125.11118486558249" rx="3" fill="#94a3b8"/><text x="125" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jan</text><rect x="212" y="249.75174244938597" width="18" height="84.24825755061401" rx="3" fill="url(#blueBar)"/><rect x="232" y="208.3843345502821" width="18" height="125.61566544971791" rx="3" fill="#94a3b8"/><text x="231" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Feb</text><rect x="318" y="248.33919681380684" width="18" height="85.66080318619318" rx="3" fill="url(#blueBar)"/><rect x="338" y="207.6780617324925" width="18" height="126.32193826750749" rx="3" fill="#94a3b8"/><text x="337" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Mar</text><rect x="424" y="247.22933952870892" width="18" height="86.77066047129108" rx="3" fill="url(#blueBar)"/><rect x="444" y="206.87089279787585" width="18" height="127.12910720212415" rx="3" fill="#94a3b8"/><text x="443" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Apr</text><rect x="530" y="246.01858612678393" width="18" height="87.98141387321607" rx="3" fill="url(#blueBar)"/><rect x="550" y="206.06372386325918" width="18" height="127.93627613674082" rx="3" fill="#94a3b8"/><text x="549" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">May</text><rect x="636" y="244.30335214072352" width="18" height="89.69664785927648" rx="3" fill="url(#blueBar)"/><rect x="656" y="205.35745104546962" width="18" height="128.64254895453038" rx="3" fill="#94a3b8"/><text x="655" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jun</text><rect x="742" y="243.09259873879853" width="18" height="90.90740126120147" rx="3" fill="url(#blueBar)"/><rect x="762" y="204.75207434450712" width="18" height="129.24792565549288" rx="3" fill="#94a3b8"/><text x="761" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jul</text><rect x="848" y="241.68005310321936" width="18" height="92.31994689678064" rx="3" fill="url(#blueBar)"/><rect x="868" y="203.84400929306338" width="18" height="130.15599070693662" rx="3" fill="#94a3b8"/><text x="867" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Aug</text><rect x="954" y="239.96481911715898" width="18" height="94.03518088284103" rx="3" fill="url(#blueBar)"/><rect x="974" y="203.0368403584467" width="18" height="130.9631596415533" rx="3" fill="#94a3b8"/><text x="973" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Sep</text><rect x="1060" y="238.35048124792564" width="18" height="95.64951875207436" rx="3" fill="url(#blueBar)"/><rect x="1080" y="201.82608695652172" width="18" height="132.17391304347828" rx="3" fill="#94a3b8"/><text x="1079" y="350" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Oct</text>
+  </g>
+</svg>

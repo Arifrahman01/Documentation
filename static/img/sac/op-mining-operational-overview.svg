@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 700" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sacHeaderGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="blueBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="tealBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="amberBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="areaBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="700" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- SAC Top Shell Bar -->
+  <path d="M0 12 Q0 0 12 0 L1188 0 Q1200 0 1200 12 L1200 48 L0 48 Z" fill="url(#sacHeaderGrad)"/>
+  <rect x="18" y="12" width="28" height="24" rx="5" fill="#0070f2"/>
+  <text x="32" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="800" fill="#ffffff">SAC</text>
+  <text x="56" y="23" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">OPERATION MINING — Sheet 1: Operational Overview (Jhonlin Baratama)</text>
+  <text x="56" y="38" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8">Active Sheet: OB Removal, Coal Getting, Strip Ratio &amp; Pit Distribution</text>
+
+  <!-- Live CDS Badge -->
+  <rect x="930" y="12" width="252" height="24" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <circle cx="946" cy="24" r="4" fill="#10b981"/>
+  <text x="958" y="28" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600" fill="#e2e8f0">LIVE CDS: S4HANA_PROD (J000)</text>
+
+  <!-- Global Input Filter Bar -->
+  <rect x="0" y="48" width="1200" height="52" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+      <g transform="translate(24, 60)">
+        <rect width="156.39999999999998" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Company Code:</text>
+        <text x="89.6" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">JB01</text>
+        <path d="M138.39999999999998 13 L142.39999999999998 18 L146.39999999999998 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(190.39999999999998, 60)">
+        <rect width="238" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Pit:</text>
+        <text x="32.9" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">Pit Utara, Selatan, Timur</text>
+        <path d="M220 13 L224 18 L228 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(438.4, 60)">
+        <rect width="170" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Period:</text>
+        <text x="51.8" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">YTD Oct 2026</text>
+        <path d="M152 13 L156 18 L160 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+
+  <!-- Active Sheet Tab Indicator on Right -->
+  <rect x="1005" y="60" width="175" height="30" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="1093" y="79" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1d4ed8">OB Removal, Coal Getting</text>
+
+  <!-- Story Content Area -->
+  
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="114" width="280" height="98" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="24" y="114" width="4" height="98" rx="2" fill="#0070f2"/>
+    <rect x="36" y="124" width="40.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="56.25" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">KPI-A</text>
+    <text x="70" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">OB Removal Actual vs Target</text>
+    <text x="38" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">91.22M <tspan font-size="11" font-weight="600" fill="#64748b">BCM</tspan></text>
+    <rect x="38" y="184" width="216" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="44" y="196" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ 101.4% Achievement (Plan: 90.0M)</text>
+    
+    <polyline points="212.0,190.4 225.3,187.5 238.7,188.5 252.0,184.4 265.3,185.6 278.7,181.3 292.0,179.6" fill="none" stroke="#0070f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="318" y="114" width="280" height="98" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="318" y="114" width="4" height="98" rx="2" fill="#059669"/>
+    <rect x="330" y="124" width="40.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="350.25" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">KPI-B</text>
+    <text x="364" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Coal Getting Production</text>
+    <text x="332" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">14.22M <tspan font-size="11" font-weight="600" fill="#64748b">MT</tspan></text>
+    <rect x="332" y="184" width="192" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="338" y="196" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ +11.2% YoY (Plan: 13.85M MT)</text>
+    
+    <polyline points="506.0,190.4 519.3,187.5 532.7,188.5 546.0,184.4 559.3,185.6 572.7,181.3 586.0,179.6" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="612" y="114" width="275" height="98" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="612" y="114" width="4" height="98" rx="2" fill="#0d9488"/>
+    <rect x="624" y="124" width="47" height="16" rx="3" fill="#eff6ff"/>
+           <text x="647.5" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">KPI-C1</text>
+    <text x="658" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Actual Strip Ratio (SR)</text>
+    <text x="626" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">6.42 <tspan font-size="11" font-weight="600" fill="#64748b">BCM / MT</tspan></text>
+    <rect x="626" y="184" width="192" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="632" y="196" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ Dibawah Batas SR Plan (6.50)</text>
+    
+    <polyline points="795.0,190.4 808.3,187.5 821.7,188.5 835.0,184.4 848.3,185.6 861.7,181.3 875.0,179.6" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="901" y="114" width="275" height="98" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="901" y="114" width="4" height="98" rx="2" fill="#f59e0b"/>
+    <rect x="913" y="124" width="47" height="16" rx="3" fill="#eff6ff"/>
+           <text x="936.5" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">KPI-C2</text>
+    <text x="947" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Fuel Ratio OB &amp; Coal</text>
+    <text x="915" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">1.18 <tspan font-size="11" font-weight="600" fill="#64748b">L / BCM</tspan></text>
+    <rect x="915" y="184" width="228" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="921" y="196" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">Coal Fuel Ratio: 3.42 L/MT (Optimal)</text>
+    
+    <polyline points="1084.0,190.4 1097.3,187.5 1110.7,188.5 1124.0,184.4 1137.3,185.6 1150.7,181.3 1164.0,179.6" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="226" width="630" height="235" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="24" y1="268" x2="654" y2="268" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="38" y="237" width="47" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="61.5" y="251" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">TREND</text>
+    <text x="93" y="247" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Monthly OB Removal (BCM) &amp; Coal Getting (MT) vs Strip Ratio</text>
+    <text x="93" y="261" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Tren pengupasan tanah penutup (OB) dan penambangan batubara bulanan</text>
+    <rect x="566" y="238" width="76" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="604" y="251" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">M Vol</text>
+    
+    <g transform="translate(344, 273)">
+      <rect x="0" y="2" width="10" height="10" rx="2" fill="#2563eb"/>
+      <text x="14" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">OB Removal (M BCM)</text>
+      <rect x="105" y="2" width="10" height="10" rx="2" fill="#94a3b8"/>
+             <text x="119" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">Coal Getting (M MT)</text>
+      <line x1="200" y1="7" x2="214" y2="7" stroke="#f59e0b" stroke-width="2.5"/>
+             <circle cx="207" cy="7" r="3" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+             <text x="218" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">Strip Ratio (x)</text>
+    </g><line x1="72" y1="427" x2="610" y2="427" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="430" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">0</text><text x="616" y="430" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">0x</text><line x1="72" y1="393.75" x2="610" y2="393.75" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="396.75" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">3</text><text x="616" y="396.75" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">2x</text><line x1="72" y1="360.5" x2="610" y2="360.5" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="363.5" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">5</text><text x="616" y="363.5" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">4x</text><line x1="72" y1="327.25" x2="610" y2="327.25" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="330.25" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">8</text><text x="616" y="330.25" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">6x</text><line x1="72" y1="294" x2="610" y2="294" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="297" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">11</text><text x="616" y="297" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">8x</text><rect x="80.684" y="317.80052248553835" width="17.216" height="109.19947751446166" rx="3" fill="url(#blueBar)"/><rect x="99.9" y="410.1237171114014" width="17.216" height="16.87628288859862" rx="3" fill="#94a3b8"/><text x="98.9" y="443" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jan</text><rect x="134.48399999999998" y="316.55961933196494" width="17.216" height="110.44038066803508" rx="3" fill="url(#blueBar)"/><rect x="153.7" y="409.8755364806867" width="17.216" height="17.124463519313302" rx="3" fill="#94a3b8"/><text x="152.7" y="443" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Feb</text><rect x="188.284" y="314.07781302481806" width="17.216" height="112.92218697518194" rx="3" fill="url(#blueBar)"/><rect x="207.5" y="409.3791752192573" width="17.216" height="17.620824780742677" rx="3" fill="#94a3b8"/><text x="206.5" y="443" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Mar</text><rect x="242.08399999999995" y="315.31871617839147" width="17.216" height="111.6812838216085" rx="3" fill="url(#blueBar)"/><rect x="261.29999999999995" y="409.627355849972" width="17.216" height="17.372644150027988" rx="3" fill="#94a3b8"/><text x="260.29999999999995" y="443" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Apr</text><rect x="295.88399999999996" y="312.83690987124464" width="17.216" height="114.16309012875536" rx="3" fill="url(#blueBar)"/><rect x="315.09999999999997" y="409.13099458854265" width="17.216" height="17.869005411457362" rx="3" fill="#94a3b8"/><text x="314.09999999999997" y="443" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">May</text><rect x="349.68399999999997" y="311.59600671767123" width="17.216" height="115.4039932823288" rx="3" fill="url(#blueBar)"/><rect x="368.9" y="409.0069042731853" width="17.216" height="17.993095726814705" rx="3" fill="#94a3b8"/><text x="367.9" y="443" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jun</text><rect x="403.4839999999999" y="314.07781302481806" width="17.216" height="112.92218697518194" rx="3" fill="url(#blueBar)"/><rect x="422.69999999999993" y="409.3791752192573" width="17.216" height="17.620824780742677" rx="3" fill="#94a3b8"/><text x="421.69999999999993" y="443" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jul</text><rect x="457.28399999999993" y="311.59600671767123" width="17.216" height="115.4039932823288" rx="3" fill="url(#blueBar)"/><rect x="476.49999999999994" y="408.882813957828" width="17.216" height="18.117186042172044" rx="3" fill="#94a3b8"/><text x="475.49999999999994" y="443" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Aug</text><rect x="511.08399999999995" y="312.83690987124464" width="17.216" height="114.16309012875536" rx="3" fill="url(#blueBar)"/><rect x="530.3" y="409.13099458854265" width="17.216" height="17.869005411457362" rx="3" fill="#94a3b8"/><text x="529.3" y="443" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Sep</text><rect x="564.884" y="311.3478260869565" width="17.216" height="115.65217391304347" rx="3" fill="url(#blueBar)"/><rect x="584.1" y="409.0069042731853" width="17.216" height="17.993095726814705" rx="3" fill="#94a3b8"/><text x="583.1" y="443" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Oct</text><polyline points="98.9,316.2 152.7,316.5 206.5,317.2 260.3,316.9 314.1,317.5 367.9,317.2 421.7,317.2 475.5,317.9 529.3,317.5 583.1,317.0" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="98.9" cy="316.16666666666663" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="98.9" y="309.16666666666663" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">6.47x</text><circle cx="152.7" cy="316.5092735703246" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="152.7" y="309.5092735703246" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">6.45x</text><circle cx="206.5" cy="317.19448737764037" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="206.5" y="310.19448737764037" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">6.41x</text><circle cx="260.29999999999995" cy="316.8518804739825" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="260.29999999999995" y="309.8518804739825" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">6.43x</text><circle cx="314.09999999999997" cy="317.5370942812983" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="314.09999999999997" y="310.5370942812983" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">6.39x</text><circle cx="367.9" cy="317.19448737764037" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="367.9" y="310.19448737764037" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">6.41x</text><circle cx="421.69999999999993" cy="317.19448737764037" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="421.69999999999993" y="310.19448737764037" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">6.41x</text><circle cx="475.49999999999994" cy="317.87970118495616" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="475.49999999999994" y="310.87970118495616" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">6.37x</text><circle cx="529.3" cy="317.5370942812983" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="529.3" y="310.5370942812983" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">6.39x</text><circle cx="583.1" cy="317.02318392581145" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="583.1" y="310.02318392581145" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">6.42x</text>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="668" y="226" width="508" height="235" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="668" y1="268" x2="1176" y2="268" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="682" y="237" width="54" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="709" y="251" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">BY-PIT</text>
+    <text x="744" y="247" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">OB Removal &amp; Coal Production by Pit Location</text>
+    <text x="744" y="261" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Realisasi produksi kumulatif per lokasi tambang (Pit)</text>
+    <rect x="1086" y="238" width="78" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="1125" y="251" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">M MT / BCM</text>
+    
+      <text x="682" y="295" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Pit Utara (Block A)</text>
+      <rect x="803" y="284" width="293" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="803" y="284" width="261.60714285714283" height="14" rx="3" fill="#0070f2"/>
+      <text x="1070.607142857143" y="295" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">5.42M MT Coal | 30.89M BCM OB</text>
+    
+      <text x="682" y="329" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Pit Selatan (Block B)</text>
+      <rect x="803" y="318" width="293" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="803" y="318" width="236.02563257775435" height="14" rx="3" fill="#0d9488"/>
+      <text x="1045.0256325777543" y="329" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">4.89M MT Coal | 31.78M BCM OB</text>
+    
+      <text x="682" y="363" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Pit Timur (Block C)</text>
+      <rect x="803" y="352" width="293" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="803" y="352" width="188.72397206114917" height="14" rx="3" fill="#7c3aed"/>
+      <text x="997.7239720611492" y="363" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">3.91M MT Coal | 28.54M BCM OB</text>
+    
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="475" width="1152" height="202" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="24" y1="517" x2="1176" y2="517" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="38" y="486" width="61" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="68.5" y="500" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">YTD-TBL</text>
+    <text x="107" y="496" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">YTD Operational Performance Summary Table (with In-Cell Sparkline &amp; Variance)</text>
+    <text x="107" y="510" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Rekapitulasi target vs aktual produksi tambang PT Jhonlin Baratama</text>
+    <rect x="1067.4" y="487" width="96.60000000000001" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="1115.7" y="500" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">JB Mining KPI</text>
+    <rect x="36" y="519" width="1128" height="22" rx="4" fill="#f1f5f9"/><text x="42" y="534" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Operational Metric</text><text x="230" y="534" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">UoM</text><text x="418" y="534" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">YTD Target</text><text x="606" y="534" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">YTD Actual</text><text x="794" y="534" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Achievement %</text><text x="982" y="534" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Monthly Sparkline Trend</text><rect x="36" y="541" width="1128" height="26" fill="#eff6ff"/><line x1="36" y1="567" x2="1164" y2="567" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="558.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#0f172a">Overburden (OB) Removal</text><text x="230" y="558.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">BCM</text><text x="418" y="558.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">90,000,000</text><text x="606" y="558.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">91,222,000</text><text x="794" y="558.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">▲ 101.4%</text><text x="982" y="558.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">▃▄▅▄▆▇▆▇▇█ Consistent Growth</text><rect x="36" y="567" width="1128" height="26" fill="#eff6ff"/><line x1="36" y1="593" x2="1164" y2="593" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="584.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#0f172a">Coal Getting (ROM Production)</text><text x="230" y="584.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">MT</text><text x="418" y="584.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">13,850,000</text><text x="606" y="584.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">14,220,000</text><text x="794" y="584.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">▲ 102.7%</text><text x="982" y="584.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">▃▄▅▅▆▆▅▇▇█ Above Plan</text><line x1="36" y1="619" x2="1164" y2="619" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="610.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Strip Ratio (SR = OB / Coal)</text><text x="230" y="610.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">BCM/MT</text><text x="418" y="610.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">6.50x</text><text x="606" y="610.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">6.42x</text><text x="794" y="610.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#059669">▲ +1.2% Favorable</text><text x="982" y="610.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">▇▆▅▆▄▅▅▃▄▅ Controlled SR</text><rect x="36" y="619" width="1128" height="26" fill="#f8fafc"/><line x1="36" y1="645" x2="1164" y2="645" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="636.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Fuel Ratio Overburden</text><text x="230" y="636.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Liter/BCM</text><text x="418" y="636.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">1.22 L/BCM</text><text x="606" y="636.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">1.18 L/BCM</text><text x="794" y="636.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#059669">▲ +3.3% Fuel Saving</text><text x="982" y="636.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">▇▆▆▅▅▄▅▄▄▃ High Efficiency</text>
+  </g>
+    
+</svg>

@@ -1,0 +1,2461 @@
+{
+  "1. Finance/Story Builder Spec - Finance.xlsx": {
+    "Financial Performance": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row2_image1.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row3_image1.png",
+        "name": "Picture 21"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row4_image2.png",
+        "name": "Picture 22"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row5_image2.png",
+        "name": "Picture 23"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row6_image3.png",
+        "name": "Picture 24"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row7_image3.png",
+        "name": "Picture 25"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row8_image4.png",
+        "name": "Picture 26"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row9_image4.png",
+        "name": "Picture 27"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row10_image5.png",
+        "name": "Picture 28"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row11_image5.png",
+        "name": "Picture 29"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row12_image6.png",
+        "name": "Picture 30"
+      },
+      {
+        "row": 13,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_performance_row13_image7.png",
+        "name": "Picture 31"
+      }
+    ],
+    "Financial Position and Cov Rat.": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_position_and_cov_rat__row2_image8.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_position_and_cov_rat__row3_image9.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_position_and_cov_rat__row4_image10.png",
+        "name": "Picture 7"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_position_and_cov_rat__row5_image11.png",
+        "name": "Picture 8"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/1__finance_financial_position_and_cov_rat__row6_image12.png",
+        "name": "Picture 9"
+      }
+    ],
+    "AP & AR Highlight": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/1__finance_ap___ar_highlight_row2_image13.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image14.png",
+        "savedImage": "/img/sac/builder/1__finance_ap___ar_highlight_row3_image14.png",
+        "name": "Picture 2"
+      }
+    ],
+    "Cash Position": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image15.png",
+        "savedImage": "/img/sac/builder/1__finance_cash_position_row2_image15.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image16.png",
+        "savedImage": "/img/sac/builder/1__finance_cash_position_row3_image16.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image17.png",
+        "savedImage": "/img/sac/builder/1__finance_cash_position_row4_image17.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image18.png",
+        "savedImage": "/img/sac/builder/1__finance_cash_position_row5_image18.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image19.png",
+        "savedImage": "/img/sac/builder/1__finance_cash_position_row6_image19.png",
+        "name": "Picture 5"
+      }
+    ],
+    "Coal Price & Actual Benchmark": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image20.png",
+        "savedImage": "/img/sac/builder/1__finance_coal_price___actual_benchmark_row2_image20.png",
+        "name": "Picture 11"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image21.png",
+        "savedImage": "/img/sac/builder/1__finance_coal_price___actual_benchmark_row3_image21.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image22.png",
+        "savedImage": "/img/sac/builder/1__finance_coal_price___actual_benchmark_row4_image22.png",
+        "name": "Picture 13"
+      }
+    ]
+  },
+  "2. Marketing/Story Builder Spec - Marketing.xlsx": {
+    "Price&Quantity Benchmark": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row2_image1.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row3_image2.png",
+        "name": "Picture 21"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row4_image3.png",
+        "name": "Picture 22"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row5_image4.png",
+        "name": "Picture 23"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row6_image5.png",
+        "name": "Picture 24"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row7_image6.png",
+        "name": "Picture 25"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row8_image7.png",
+        "name": "Picture 26"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row9_image8.png",
+        "name": "Picture 27"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row10_image9.png",
+        "name": "Picture 29"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row11_image10.png",
+        "name": "Picture 30"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row12_image11.png",
+        "name": "Picture 31"
+      },
+      {
+        "row": 13,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row13_image12.png",
+        "name": "Picture 32"
+      },
+      {
+        "row": 14,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/2__marketing_price_quantity_benchmark_row14_image13.png",
+        "name": "Picture 33"
+      }
+    ],
+    "Inventory Stock": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image14.png",
+        "savedImage": "/img/sac/builder/2__marketing_inventory_stock_row2_image14.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image15.png",
+        "savedImage": "/img/sac/builder/2__marketing_inventory_stock_row3_image15.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image16.png",
+        "savedImage": "/img/sac/builder/2__marketing_inventory_stock_row4_image16.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image17.png",
+        "savedImage": "/img/sac/builder/2__marketing_inventory_stock_row5_image17.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image18.png",
+        "savedImage": "/img/sac/builder/2__marketing_inventory_stock_row6_image18.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image19.png",
+        "savedImage": "/img/sac/builder/2__marketing_inventory_stock_row7_image19.png",
+        "name": "Picture 7"
+      }
+    ]
+  },
+  "3. Operation Mining/Story Builder Spec - Operation Mining.xlsx": {
+    "OP_Overview_JB": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row2_image1.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row3_image1.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row4_image1.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row5_image1.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row6_image2.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row7_image2.png",
+        "name": "Picture 7"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row8_image2.png",
+        "name": "Picture 8"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row9_image2.png",
+        "name": "Picture 9"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row10_image3.png",
+        "name": "Picture 10"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row11_image3.png",
+        "name": "Picture 11"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row12_image4.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 13,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row13_image5.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 14,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row14_image6.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 15,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row15_image7.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 16,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row16_image8.png",
+        "name": "Picture 16"
+      },
+      {
+        "row": 17,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row17_image9.png",
+        "name": "Picture 17"
+      },
+      {
+        "row": 18,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row18_image10.png",
+        "name": "Picture 18"
+      },
+      {
+        "row": 19,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row19_image11.png",
+        "name": "Picture 19"
+      },
+      {
+        "row": 20,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_op_overview_jb_row20_image12.png",
+        "name": "Picture 20"
+      }
+    ],
+    "Equipment_Stat_JB": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_equipment_stat_jb_row2_image13.png",
+        "name": "Picture 22"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image14.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_equipment_stat_jb_row3_image14.png",
+        "name": "Picture 24"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image15.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_equipment_stat_jb_row4_image15.png",
+        "name": "Picture 25"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image16.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_equipment_stat_jb_row5_image16.png",
+        "name": "Picture 26"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image17.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_equipment_stat_jb_row6_image17.png",
+        "name": "Picture 27"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image18.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_equipment_stat_jb_row7_image18.png",
+        "name": "Picture 29"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image19.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_equipment_stat_jb_row8_image19.png",
+        "name": "Picture 30"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image20.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_equipment_stat_jb_row10_image20.png",
+        "name": "Picture 34"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image21.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_equipment_stat_jb_row11_image21.png",
+        "name": "Picture 35"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image22.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_equipment_stat_jb_row12_image22.png",
+        "name": "Picture 36"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image23.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_equipment_stat_jb_row9_image23.png",
+        "name": "Picture 1"
+      }
+    ],
+    "Prod&Log_Perf_DSP": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image24.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_prod_log_perf_dsp_row2_image24.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image25.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_prod_log_perf_dsp_row3_image25.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image26.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_prod_log_perf_dsp_row4_image26.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image27.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_prod_log_perf_dsp_row5_image27.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image28.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_prod_log_perf_dsp_row6_image28.png",
+        "name": "Picture 16"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image29.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_prod_log_perf_dsp_row7_image29.png",
+        "name": "Picture 17"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image30.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_prod_log_perf_dsp_row8_image30.png",
+        "name": "Picture 18"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image31.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_prod_log_perf_dsp_row9_image31.png",
+        "name": "Picture 19"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image32.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_prod_log_perf_dsp_row10_image32.png",
+        "name": "Picture 22"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image33.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_prod_log_perf_dsp_row11_image33.png",
+        "name": "Picture 24"
+      }
+    ],
+    "Cost&Asset_Utl_DSP": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image34.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_cost_asset_utl_dsp_row2_image34.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image35.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_cost_asset_utl_dsp_row3_image35.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image36.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_cost_asset_utl_dsp_row4_image36.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image37.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_cost_asset_utl_dsp_row5_image37.png",
+        "name": "Picture 16"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image38.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_cost_asset_utl_dsp_row6_image38.png",
+        "name": "Picture 17"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image39.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_cost_asset_utl_dsp_row7_image39.png",
+        "name": "Picture 18"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image40.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_cost_asset_utl_dsp_row8_image40.png",
+        "name": "Picture 19"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image41.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_cost_asset_utl_dsp_row9_image41.png",
+        "name": "Picture 20"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image42.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_cost_asset_utl_dsp_row10_image42.png",
+        "name": "Picture 21"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image43.png",
+        "savedImage": "/img/sac/builder/3__operation_mining_cost_asset_utl_dsp_row11_image43.png",
+        "name": "Picture 22"
+      }
+    ]
+  },
+  "4. Operation Marine/Story Builder Spec - Operation Marine JML.xlsx": {
+    "Stevedoring Act.": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row2_image1.png",
+        "name": "Picture 9"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row3_image2.png",
+        "name": "Picture 10"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row4_image3.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row5_image3.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row6_image3.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row7_image4.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row8_image4.png",
+        "name": "Picture 16"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row9_image4.png",
+        "name": "Picture 17"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row10_image5.png",
+        "name": "Picture 18"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row11_image5.png",
+        "name": "Picture 19"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row12_image5.png",
+        "name": "Picture 20"
+      },
+      {
+        "row": 13,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row13_image6.png",
+        "name": "Picture 22"
+      },
+      {
+        "row": 14,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row14_image7.png",
+        "name": "Picture 23"
+      },
+      {
+        "row": 15,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row15_image8.png",
+        "name": "Picture 24"
+      },
+      {
+        "row": 16,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_stevedoring_act__row16_image9.png",
+        "name": "Picture 25"
+      }
+    ]
+  },
+  "4. Operation Marine/Story Builder Spec - Operation Marine.xlsx": {
+    "Activity & Avail. Unit": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_activity___avail__unit_row2_image1.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_activity___avail__unit_row3_image2.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_activity___avail__unit_row4_image3.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_activity___avail__unit_row5_image4.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_activity___avail__unit_row6_image5.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_activity___avail__unit_row7_image6.png",
+        "name": "Picture 7"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_activity___avail__unit_row8_image7.png",
+        "name": "Picture 8"
+      }
+    ],
+    "Cost & Sales Period": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_period_row2_image8.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_period_row3_image9.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_period_row5_image10.png",
+        "name": "Picture 11"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_period_row6_image11.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_period_row7_image12.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_period_row4_image13.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image14.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_period_row8_image14.png",
+        "name": "Picture 15"
+      }
+    ],
+    "Cost & Sales Date": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_date_row2_image8.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_date_row3_image9.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_date_row5_image10.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_date_row6_image11.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_date_row7_image12.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_date_row4_image13.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image14.png",
+        "savedImage": "/img/sac/builder/4__operation_marine_cost___sales_date_row8_image14.png",
+        "name": "Picture 7"
+      }
+    ]
+  },
+  "5. Supply Chain/Story Builder Spec - Supply Chain.xlsx": {
+    "Procurement Cycle": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row2_image1.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row3_image2.png",
+        "name": "Picture 21"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row4_image3.png",
+        "name": "Picture 23"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row5_image4.png",
+        "name": "Picture 24"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row6_image5.png",
+        "name": "Picture 25"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row7_image6.png",
+        "name": "Picture 26"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row8_image7.png",
+        "name": "Picture 27"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row9_image8.png",
+        "name": "Picture 28"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row10_image9.png",
+        "name": "Picture 29"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row11_image10.png",
+        "name": "Picture 30"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row12_image11.png",
+        "name": "Picture 31"
+      },
+      {
+        "row": 13,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row13_image12.png",
+        "name": "Picture 32"
+      },
+      {
+        "row": 14,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_procurement_cycle_row14_image13.png",
+        "name": "Picture 33"
+      }
+    ],
+    "Supplier Performance": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image14.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row2_image14.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image15.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row3_image15.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image16.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row4_image16.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image17.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row5_image17.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image18.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row6_image18.png",
+        "name": "Picture 7"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image19.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row7_image19.png",
+        "name": "Picture 8"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image20.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row8_image20.png",
+        "name": "Picture 9"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image21.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row9_image21.png",
+        "name": "Picture 10"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image22.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row10_image22.png",
+        "name": "Picture 11"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image23.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row11_image23.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image24.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row12_image24.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 13,
+        "col": 3,
+        "originalImage": "image25.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row13_image25.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 14,
+        "col": 3,
+        "originalImage": "image26.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row14_image26.png",
+        "name": "Picture 17"
+      },
+      {
+        "row": 15,
+        "col": 3,
+        "originalImage": "image27.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row15_image27.png",
+        "name": "Picture 19"
+      },
+      {
+        "row": 16,
+        "col": 3,
+        "originalImage": "image28.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row16_image28.png",
+        "name": "Picture 21"
+      },
+      {
+        "row": 17,
+        "col": 3,
+        "originalImage": "image29.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row17_image29.png",
+        "name": "Picture 28"
+      },
+      {
+        "row": 18,
+        "col": 3,
+        "originalImage": "image30.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_supplier_performance_row18_image30.png",
+        "name": "Picture 32"
+      }
+    ],
+    "Closing Value All Unit": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image31.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_closing_value_all_unit_row2_image31.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image32.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_closing_value_all_unit_row3_image32.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image33.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_closing_value_all_unit_row4_image33.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image34.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_closing_value_all_unit_row5_image34.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image35.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_closing_value_all_unit_row6_image35.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image36.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_closing_value_all_unit_row7_image36.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image37.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_closing_value_all_unit_row8_image37.png",
+        "name": "Picture 7"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image38.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_closing_value_all_unit_row9_image38.png",
+        "name": "Picture 8"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image39.png",
+        "savedImage": "/img/sac/builder/5__supply_chain_closing_value_all_unit_row10_image39.png",
+        "name": "Picture 9"
+      }
+    ]
+  },
+  "6. PnL Mining/Story Builder Spec - PnL_JG.xlsx": {
+    "Profit And Loss": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_row2_image1.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_row4_image2.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_row6_image3.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_row8_image4.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_row3_image5.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_row5_image6.png",
+        "name": "Picture 7"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_row7_image7.png",
+        "name": "Picture 8"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_row9_image8.png",
+        "name": "Picture 9"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_row10_image9.png",
+        "name": "Picture 10"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_row11_image10.png",
+        "name": "Picture 11"
+      }
+    ],
+    "Profit And Loss Table": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table_row2_image11.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table_row3_image12.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table_row4_image13.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image14.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table_row5_image14.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image15.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table_row6_image15.png",
+        "name": "Picture 10"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image16.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table_row7_image16.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image17.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table_row8_image17.png",
+        "name": "Picture 16"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image18.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table_row9_image18.png",
+        "name": "Picture 17"
+      }
+    ],
+    "Profit And Loss Table (RPMT)": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image19.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table__rpmt__row2_image19.png",
+        "name": "Picture 9"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image20.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table__rpmt__row3_image20.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image21.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table__rpmt__row4_image21.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image22.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table__rpmt__row5_image22.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image23.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table__rpmt__row6_image23.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image24.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table__rpmt__row7_image24.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image25.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table__rpmt__row8_image25.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image26.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_profit_and_loss_table__rpmt__row9_image26.png",
+        "name": "Picture 3"
+      }
+    ]
+  },
+  "6. PnL Mining/Story Builder Spec - PnL_JML.xlsx": {
+    "Cost Structure": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_row2_image1.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_row3_image2.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_row4_image3.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_row5_image4.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_row6_image5.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_row7_image6.png",
+        "name": "Picture 16"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_row8_image7.png",
+        "name": "Picture 17"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_row9_image8.png",
+        "name": "Picture 18"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_row10_image9.png",
+        "name": "Picture 19"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_row11_image10.png",
+        "name": "Picture 20"
+      }
+    ],
+    "Cost Structure Table": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table_row2_image11.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table_row3_image12.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table_row4_image13.png",
+        "name": "Picture 7"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image14.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table_row5_image14.png",
+        "name": "Picture 8"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image15.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table_row6_image15.png",
+        "name": "Picture 11"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image16.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table_row7_image16.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image17.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table_row8_image17.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image18.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table_row9_image18.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image19.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table_row10_image19.png",
+        "name": "Picture 19"
+      }
+    ],
+    "Cost Structure Table (RPMT)": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image20.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table__rpmt__row2_image20.png",
+        "name": "Picture 10"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image21.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table__rpmt__row3_image21.png",
+        "name": "Picture 11"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image22.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table__rpmt__row4_image22.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image23.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table__rpmt__row5_image23.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image24.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table__rpmt__row6_image24.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image25.png",
+        "savedImage": "/img/sac/builder/6__pnl_mining_cost_structure_table__rpmt__row7_image25.png",
+        "name": "Picture 16"
+      }
+    ]
+  },
+  "7. Pnl Marine/Story Builder Spec - PnL_STM_Unfinished.xlsx": {
+    "Cost Structure": [
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_row5_image1.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_row7_image2.png",
+        "name": "Picture 16"
+      },
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_row2_image3.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_row3_image4.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_row4_image5.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_row6_image6.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_row8_image7.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_row9_image8.png",
+        "name": "Picture 8"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_row10_image9.png",
+        "name": "Picture 9"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_row11_image10.png",
+        "name": "Picture 10"
+      }
+    ],
+    "Cost Structure Table": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table_row2_image11.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table_row3_image12.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table_row4_image13.png",
+        "name": "Picture 7"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image14.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table_row5_image14.png",
+        "name": "Picture 8"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image15.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table_row6_image15.png",
+        "name": "Picture 11"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image16.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table_row7_image16.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image17.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table_row8_image17.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image18.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table_row9_image18.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image19.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table_row10_image19.png",
+        "name": "Picture 19"
+      }
+    ],
+    "Cost Structure Table (RPMT)": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image20.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table__rpmt__row2_image20.png",
+        "name": "Picture 10"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image21.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table__rpmt__row3_image21.png",
+        "name": "Picture 11"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image22.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table__rpmt__row4_image22.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image23.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table__rpmt__row5_image23.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image24.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table__rpmt__row6_image24.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image25.png",
+        "savedImage": "/img/sac/builder/7__pnl_marine_cost_structure_table__rpmt__row7_image25.png",
+        "name": "Picture 16"
+      }
+    ]
+  },
+  "8. PM Mining/Story Builder Spec - Plant Maintenance JML.xlsx": {
+    "Equipment Status": [
+      {
+        "row": 17,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row17_image1.png",
+        "name": "Picture 30"
+      },
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row2_image2.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row3_image3.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row4_image3.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row5_image4.png",
+        "name": "Picture 4"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row6_image4.png",
+        "name": "Picture 10"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row7_image5.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row8_image5.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row9_image6.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row10_image6.png",
+        "name": "Picture 16"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row11_image7.png",
+        "name": "Picture 17"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row12_image7.png",
+        "name": "Picture 18"
+      },
+      {
+        "row": 13,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row13_image8.png",
+        "name": "Picture 20"
+      },
+      {
+        "row": 14,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row14_image9.png",
+        "name": "Picture 25"
+      },
+      {
+        "row": 15,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row15_image10.png",
+        "name": "Picture 33"
+      },
+      {
+        "row": 16,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row16_image11.png",
+        "name": "Picture 34"
+      },
+      {
+        "row": 18,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row18_image12.png",
+        "name": "Picture 35"
+      },
+      {
+        "row": 19,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row19_image13.png",
+        "name": "Picture 36"
+      }
+    ]
+  },
+  "8. PM Mining/Story Builder Spec - Plant Maintenance Mining.xlsx": {
+    "Equipment Population": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_population_row2_image1.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_population_row3_image2.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_population_row4_image3.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_population_row5_image4.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_population_row6_image5.png",
+        "name": "Picture 17"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_population_row7_image6.png",
+        "name": "Picture 18"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_population_row8_image7.png",
+        "name": "Picture 21"
+      }
+    ],
+    "Equipment Status": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row2_image8.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row3_image8.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row4_image9.png",
+        "name": "Picture 7"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row5_image9.png",
+        "name": "Picture 8"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row6_image10.png",
+        "name": "Picture 9"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row7_image10.png",
+        "name": "Picture 11"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row8_image11.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row9_image11.png",
+        "name": "Picture 19"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row10_image12.png",
+        "name": "Picture 21"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row11_image12.png",
+        "name": "Picture 22"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row12_image13.png",
+        "name": "Picture 23"
+      },
+      {
+        "row": 13,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row13_image13.png",
+        "name": "Picture 24"
+      },
+      {
+        "row": 14,
+        "col": 3,
+        "originalImage": "image14.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row14_image14.png",
+        "name": "Picture 26"
+      },
+      {
+        "row": 15,
+        "col": 3,
+        "originalImage": "image15.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row15_image15.png",
+        "name": "Picture 27"
+      },
+      {
+        "row": 16,
+        "col": 3,
+        "originalImage": "image16.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row16_image16.png",
+        "name": "Picture 28"
+      },
+      {
+        "row": 17,
+        "col": 3,
+        "originalImage": "image17.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row17_image17.png",
+        "name": "Picture 29"
+      },
+      {
+        "row": 18,
+        "col": 3,
+        "originalImage": "image18.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row18_image18.png",
+        "name": "Picture 30"
+      },
+      {
+        "row": 19,
+        "col": 3,
+        "originalImage": "image19.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row19_image19.png",
+        "name": "Picture 31"
+      },
+      {
+        "row": 20,
+        "col": 3,
+        "originalImage": "image20.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_equipment_status_row20_image20.png",
+        "name": "Picture 32"
+      }
+    ],
+    "Prod.&Log. Performance": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image21.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row2_image21.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image22.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row3_image22.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image23.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row4_image23.png",
+        "name": "Picture 3"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image24.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row5_image24.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image25.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row6_image25.png",
+        "name": "Picture 7"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image26.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row7_image26.png",
+        "name": "Picture 16"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image27.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row8_image27.png",
+        "name": "Picture 17"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image28.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row9_image28.png",
+        "name": "Picture 18"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image29.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row10_image29.png",
+        "name": "Picture 19"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image30.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row11_image30.png",
+        "name": "Picture 20"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image31.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row12_image31.png",
+        "name": "Picture 21"
+      },
+      {
+        "row": 13,
+        "col": 3,
+        "originalImage": "image32.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row13_image32.png",
+        "name": "Picture 22"
+      },
+      {
+        "row": 14,
+        "col": 3,
+        "originalImage": "image33.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row14_image33.png",
+        "name": "Picture 23"
+      },
+      {
+        "row": 15,
+        "col": 3,
+        "originalImage": "image34.png",
+        "savedImage": "/img/sac/builder/8__pm_mining_prod__log__performance_row15_image34.png",
+        "name": "Picture 24"
+      }
+    ],
+    "zpmp3_cost (source_data)": []
+  },
+  "9. PM Marine/Story Builder Spec - Plant Maintenance Marine.xlsx": {
+    "Equipment Population": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image1.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_population_row2_image1.png",
+        "name": "Picture 1"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image2.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_population_row3_image2.png",
+        "name": "Picture 9"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image3.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_population_row4_image3.png",
+        "name": "Picture 10"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image4.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_population_row5_image4.png",
+        "name": "Picture 11"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image5.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_population_row6_image5.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image6.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_population_row7_image6.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image7.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_population_row8_image7.png",
+        "name": "Picture 14"
+      }
+    ],
+    "Equipment Status": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image8.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row2_image8.png",
+        "name": "Picture 2"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image9.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row3_image9.png",
+        "name": "Picture 5"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image10.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row4_image10.png",
+        "name": "Picture 6"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image11.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row5_image11.png",
+        "name": "Picture 7"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image12.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row6_image12.png",
+        "name": "Picture 8"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image13.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row7_image13.png",
+        "name": "Picture 9"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image14.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row8_image14.png",
+        "name": "Picture 10"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image15.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row9_image15.png",
+        "name": "Picture 16"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image16.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row10_image16.png",
+        "name": "Picture 17"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image17.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row11_image17.png",
+        "name": "Picture 18"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image18.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row12_image18.png",
+        "name": "Picture 19"
+      },
+      {
+        "row": 13,
+        "col": 3,
+        "originalImage": "image19.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row13_image19.png",
+        "name": "Picture 20"
+      },
+      {
+        "row": 14,
+        "col": 3,
+        "originalImage": "image20.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_equipment_status_row14_image20.png",
+        "name": "Picture 21"
+      }
+    ],
+    "Cost Control & Assets Util.": [
+      {
+        "row": 2,
+        "col": 3,
+        "originalImage": "image21.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row2_image21.png",
+        "name": "Picture 9"
+      },
+      {
+        "row": 3,
+        "col": 3,
+        "originalImage": "image22.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row3_image22.png",
+        "name": "Picture 10"
+      },
+      {
+        "row": 4,
+        "col": 3,
+        "originalImage": "image23.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row4_image23.png",
+        "name": "Picture 11"
+      },
+      {
+        "row": 5,
+        "col": 3,
+        "originalImage": "image24.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row5_image24.png",
+        "name": "Picture 12"
+      },
+      {
+        "row": 6,
+        "col": 3,
+        "originalImage": "image25.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row6_image25.png",
+        "name": "Picture 13"
+      },
+      {
+        "row": 7,
+        "col": 3,
+        "originalImage": "image26.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row7_image26.png",
+        "name": "Picture 14"
+      },
+      {
+        "row": 8,
+        "col": 3,
+        "originalImage": "image27.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row8_image27.png",
+        "name": "Picture 15"
+      },
+      {
+        "row": 9,
+        "col": 3,
+        "originalImage": "image28.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row9_image28.png",
+        "name": "Picture 16"
+      },
+      {
+        "row": 10,
+        "col": 3,
+        "originalImage": "image29.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row10_image29.png",
+        "name": "Picture 17"
+      },
+      {
+        "row": 11,
+        "col": 3,
+        "originalImage": "image30.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row11_image30.png",
+        "name": "Picture 18"
+      },
+      {
+        "row": 12,
+        "col": 3,
+        "originalImage": "image31.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row12_image31.png",
+        "name": "Picture 19"
+      },
+      {
+        "row": 13,
+        "col": 3,
+        "originalImage": "image32.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row13_image32.png",
+        "name": "Picture 20"
+      },
+      {
+        "row": 14,
+        "col": 3,
+        "originalImage": "image33.png",
+        "savedImage": "/img/sac/builder/9__pm_marine_cost_control___assets_util__row14_image33.png",
+        "name": "Picture 21"
+      }
+    ]
+  }
+}

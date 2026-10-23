@@ -1,5 +1,8 @@
 <script lang="ts">
 	import './layout.css';
+	import { onMount } from 'svelte';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 	import Header from '$lib/components/Header.svelte';
 	import SearchModal from '$lib/components/SearchModal.svelte';
 	import AiCopilot from '$lib/components/AiCopilot.svelte';
@@ -10,6 +13,49 @@
 
 	$effect(() => {
 		ui.applyTheme();
+	});
+
+	onMount(() => {
+		const onGlobalKey = (e: KeyboardEvent) => {
+			if (page.url.pathname.startsWith('/docs')) return;
+			const target = e.target as HTMLElement | null;
+			const isInput =
+				target &&
+				(target.tagName === 'INPUT' ||
+					target.tagName === 'TEXTAREA' ||
+					target.tagName === 'SELECT' ||
+					target.isContentEditable);
+			if (isInput) return;
+
+			const key = e.key.toLowerCase();
+			const code = e.code;
+			const hasCmdOrCtrl = e.ctrlKey || e.metaKey;
+			const hasAlt = e.altKey;
+
+			if ((hasCmdOrCtrl || hasAlt) && (key === 'e' || code === 'KeyE')) {
+				e.preventDefault();
+				e.stopPropagation();
+				goto('/docs/sap/overview?shortcut=edit');
+			} else if ((hasCmdOrCtrl || hasAlt) && (key === 'i' || code === 'KeyI')) {
+				e.preventDefault();
+				e.stopPropagation();
+				goto('/docs/sap/overview?shortcut=ai');
+			} else if (
+				(hasAlt && (key === 'n' || code === 'KeyN')) ||
+				(hasCmdOrCtrl && (key === 'm' || code === 'KeyM'))
+			) {
+				e.preventDefault();
+				e.stopPropagation();
+				goto('/docs/sap/overview?shortcut=new');
+			} else if (hasAlt && (key === 'f' || code === 'KeyF')) {
+				e.preventDefault();
+				e.stopPropagation();
+				goto('/docs/sap/overview?shortcut=folder');
+			}
+		};
+
+		window.addEventListener('keydown', onGlobalKey, { capture: true });
+		return () => window.removeEventListener('keydown', onGlobalKey, { capture: true });
 	});
 </script>
 

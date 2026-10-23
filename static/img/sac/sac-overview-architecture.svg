@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sacHeaderGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="blueBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="tealBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="amberBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="areaBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="520" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- SAC Top Shell Bar -->
+  <path d="M0 12 Q0 0 12 0 L1188 0 Q1200 0 1200 12 L1200 48 L0 48 Z" fill="url(#sacHeaderGrad)"/>
+  <rect x="18" y="12" width="28" height="24" rx="5" fill="#0070f2"/>
+  <text x="32" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="800" fill="#ffffff">SAC</text>
+  <text x="56" y="23" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">SAP Analytics Cloud (SAC) — Enterprise BI &amp; Live CDS Architecture</text>
+  <text x="56" y="38" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8">Active Sheet: 3 Pillars &amp; S/4HANA Live Tunnel</text>
+
+  <!-- Live CDS Badge -->
+  <rect x="930" y="12" width="252" height="24" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <circle cx="946" cy="24" r="4" fill="#10b981"/>
+  <text x="958" y="28" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600" fill="#e2e8f0">LIVE TUNNEL: SAP S/4HANA &lt;-&gt; SAC</text>
+
+  <!-- Global Input Filter Bar -->
+  <rect x="0" y="48" width="1200" height="52" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+      <g transform="translate(24, 60)">
+        <rect width="217.6" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Landscape:</text>
+        <text x="70.69999999999999" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">Production (PRD)</text>
+        <path d="M199.6 13 L203.6 18 L207.6 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(251.6, 60)">
+        <rect width="156.39999999999998" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Auth:</text>
+        <text x="39.2" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">SAML 2.0 SSO</text>
+        <path d="M138.39999999999998 13 L142.39999999999998 18 L146.39999999999998 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(418, 60)">
+        <rect width="163.2" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Hierarchy:</text>
+        <text x="70.69999999999999" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">FSV J000</text>
+        <path d="M145.2 13 L149.2 18 L153.2 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+
+  <!-- Active Sheet Tab Indicator on Right -->
+  <rect x="1005" y="60" width="175" height="30" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="1093" y="79" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1d4ed8">3 Pillars &amp; S/4HANA Live</text>
+
+  <!-- Story Content Area -->
+  
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="116" width="370" height="110" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="24" y="116" width="4" height="110" rx="2" fill="#0070f2"/>
+    <rect x="36" y="126" width="53.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="62.75" y="137" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">PILAR 1</text>
+    <text x="70" y="138" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Business Intelligence (BI)</text>
+    <text x="38" y="168" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">24 Stories <tspan font-size="11" font-weight="600" fill="#64748b">Interactive</tspan></text>
+    <rect x="38" y="198" width="234" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="44" y="210" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ Real-time Drill-down &amp; Cross-filter</text>
+    
+    <polyline points="302.0,204.4 315.3,201.5 328.7,202.5 342.0,198.4 355.3,199.6 368.7,195.3 382.0,193.6" fill="none" stroke="#0070f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="414" y="116" width="370" height="110" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="414" y="116" width="4" height="110" rx="2" fill="#0d9488"/>
+    <rect x="426" y="126" width="53.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="452.75" y="137" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">PILAR 2</text>
+    <text x="460" y="138" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Enterprise Planning</text>
+    <text x="428" y="168" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">AOP &amp; Rolling <tspan font-size="11" font-weight="600" fill="#64748b">Forecast</tspan></text>
+    <rect x="428" y="198" width="186" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="434" y="210" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ Versioning Budget vs Actual</text>
+    
+    <polyline points="692.0,204.4 705.3,201.5 718.7,202.5 732.0,198.4 745.3,199.6 758.7,195.3 772.0,193.6" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="804" y="116" width="372" height="110" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="804" y="116" width="4" height="110" rx="2" fill="#7c3aed"/>
+    <rect x="816" y="126" width="53.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="842.75" y="137" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">PILAR 3</text>
+    <text x="850" y="138" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Augmented Analytics</text>
+    <text x="818" y="168" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">Smart Insights <tspan font-size="11" font-weight="600" fill="#64748b">AI Driven</tspan></text>
+    <rect x="818" y="198" width="198" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="824" y="210" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ Automated Variance Root-Cause</text>
+    
+    <polyline points="1084.0,204.4 1097.3,201.5 1110.7,202.5 1124.0,198.4 1137.3,199.6 1150.7,195.3 1164.0,193.6" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="244" width="1152" height="252" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="24" y1="286" x2="1176" y2="286" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="38" y="255" width="40" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="58" y="269" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">ARCH</text>
+    <text x="86" y="265" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Live Connection Data Pipeline (Zero Data Replication)</text>
+    <text x="86" y="279" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Aliran data langsung dari tabel universal journal S/4HANA ke widget visualisasi SAC</text>
+    <rect x="1055" y="256" width="109" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="1109.5" y="269" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">INA / CORS Live</text>
+    <rect x="36" y="288" width="1128" height="22" rx="4" fill="#f1f5f9"/><text x="42" y="303" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Layer Arsitektur</text><text x="324" y="303" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Komponen Teknis</text><text x="606" y="303" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Objek / T-Code / View</text><text x="888" y="303" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Fungsi &amp; Keunggulan</text><line x1="36" y1="336" x2="1164" y2="336" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="327.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">1. ERP Core Database</text><text x="324" y="327.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">SAP S/4HANA HANA DB</text><text x="606" y="327.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">ACDOCA, MATDOC, MSEG, AUFK</text><text x="888" y="327.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Single Source of Truth transaksi real-time</text><rect x="36" y="336" width="1128" height="26" fill="#f8fafc"/><line x1="36" y1="362" x2="1164" y2="362" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="353.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">2. Semantic Layer</text><text x="324" y="353.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">ABAP CDS Views</text><text x="606" y="353.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Z_CDS_FI_PERF, JG_M_FFIIM_HBA</text><text x="888" y="353.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Kalkulasi on-the-fly &amp; hierarki FSV J000</text><line x1="36" y1="388" x2="1164" y2="388" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="379.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">3. Analytic Engine</text><text x="324" y="379.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">SAP BW / InA Service</text><text x="606" y="379.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">/sap/bw/ina/GetResponse</text><text x="888" y="379.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Query pushdown tanpa duplikasi data ke Cloud</text><rect x="36" y="388" width="1128" height="26" fill="#eff6ff"/><line x1="36" y1="414" x2="1164" y2="414" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="405.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#0f172a">4. Presentation Layer</text><text x="324" y="405.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">SAP Analytics Cloud Story</text><text x="606" y="405.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">Responsive Grid, Input Control</text><text x="888" y="405.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">Numeric Point, Combo Chart, Running Sum Table</text>
+  </g>
+    
+</svg>

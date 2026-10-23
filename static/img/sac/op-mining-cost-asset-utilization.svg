@@ -1,0 +1,182 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 660" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sacHeaderGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="blueBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="tealBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="amberBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="areaBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="660" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- SAC Top Shell Bar -->
+  <path d="M0 12 Q0 0 12 0 L1188 0 Q1200 0 1200 12 L1200 48 L0 48 Z" fill="url(#sacHeaderGrad)"/>
+  <rect x="18" y="12" width="28" height="24" rx="5" fill="#0070f2"/>
+  <text x="32" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="800" fill="#ffffff">SAC</text>
+  <text x="56" y="23" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">OPERATION MINING — Sheet 4: Cost Control &amp; Asset Utilization (DSP)</text>
+  <text x="56" y="38" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8">Active Sheet: Handling Cost IDR/MT, Fuel Index, Conveyor Util % &amp; Berth Occupancy (BOR)</text>
+
+  <!-- Live CDS Badge -->
+  <rect x="930" y="12" width="252" height="24" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <circle cx="946" cy="24" r="4" fill="#10b981"/>
+  <text x="958" y="28" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600" fill="#e2e8f0">LIVE CDS: S4HANA_PROD (J000)</text>
+
+  <!-- Global Input Filter Bar -->
+  <rect x="0" y="48" width="1200" height="52" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+      <g transform="translate(24, 60)">
+        <rect width="156.39999999999998" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Company Code:</text>
+        <text x="89.6" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">DSP1</text>
+        <path d="M138.39999999999998 13 L142.39999999999998 18 L146.39999999999998 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(190.39999999999998, 60)">
+        <rect width="224.4" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Cost Center:</text>
+        <text x="83.3" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">Port &amp; Crushing</text>
+        <path d="M206.4 13 L210.4 18 L214.4 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(424.79999999999995, 60)">
+        <rect width="170" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Period:</text>
+        <text x="51.8" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">YTD Oct 2026</text>
+        <path d="M152 13 L156 18 L160 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+
+  <!-- Active Sheet Tab Indicator on Right -->
+  <rect x="1005" y="60" width="175" height="30" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="1093" y="79" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1d4ed8">Handling Cost IDR/MT, Fu</text>
+
+  <!-- Story Content Area -->
+  
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="114" width="280" height="98" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="24" y="114" width="4" height="98" rx="2" fill="#059669"/>
+    <rect x="36" y="124" width="47" height="16" rx="3" fill="#eff6ff"/>
+           <text x="59.5" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">COST-1</text>
+    <text x="70" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Port Handling Cost / Ton</text>
+    <text x="38" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">88,420 <tspan font-size="11" font-weight="600" fill="#64748b">IDR / MT</tspan></text>
+    <rect x="38" y="184" width="216" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="44" y="196" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ -4.1% Dibawah Budget (Rp 92,200)</text>
+    
+    <polyline points="212.0,190.4 225.3,187.5 238.7,188.5 252.0,184.4 265.3,185.6 278.7,181.3 292.0,179.6" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="318" y="114" width="280" height="98" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="318" y="114" width="4" height="98" rx="2" fill="#0070f2"/>
+    <rect x="330" y="124" width="47" height="16" rx="3" fill="#eff6ff"/>
+           <text x="353.5" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">FUEL-2</text>
+    <text x="364" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Port Equipment Fuel Index</text>
+    <text x="332" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">0.64 <tspan font-size="11" font-weight="600" fill="#64748b">Liter / MT</tspan></text>
+    <rect x="332" y="184" width="210" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="338" y="196" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ Efisiensi Wheel Loader &amp; Genset</text>
+    
+    <polyline points="506.0,190.4 519.3,187.5 532.7,188.5 546.0,184.4 559.3,185.6 572.7,181.3 586.0,179.6" fill="none" stroke="#0070f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="612" y="114" width="275" height="98" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="612" y="114" width="4" height="98" rx="2" fill="#0d9488"/>
+    <rect x="624" y="124" width="47" height="16" rx="3" fill="#eff6ff"/>
+           <text x="647.5" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">CONV-3</text>
+    <text x="658" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Overland Conveyor Util.</text>
+    <text x="626" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">86.4% <tspan font-size="11" font-weight="600" fill="#64748b">Effective Hrs</tspan></text>
+    <rect x="626" y="184" width="180" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="632" y="196" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ Throughput 1,625 Ton / Jam</text>
+    
+    <polyline points="795.0,190.4 808.3,187.5 821.7,188.5 835.0,184.4 848.3,185.6 861.7,181.3 875.0,179.6" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="901" y="114" width="275" height="98" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="901" y="114" width="4" height="98" rx="2" fill="#7c3aed"/>
+    <rect x="913" y="124" width="40.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="933.25" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">BOR-4</text>
+    <text x="947" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Berth Occupancy Rate (BOR)</text>
+    <text x="915" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">68.5% <tspan font-size="11" font-weight="600" fill="#64748b">(Standard &lt;=70%)</tspan></text>
+    <rect x="915" y="184" width="186" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="921" y="196" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ Zero Barge Queue Bottleneck</text>
+    
+    <polyline points="1084.0,190.4 1097.3,187.5 1110.7,188.5 1124.0,184.4 1137.3,185.6 1150.7,181.3 1164.0,179.6" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="226" width="580" height="410" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="24" y1="268" x2="604" y2="268" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="38" y="237" width="82" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="79" y="251" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">COST-TREND</text>
+    <text x="128" y="247" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Monthly Handling Cost per Ton (IDR/MT) vs Fuel Index (L/MT)</text>
+    <text x="128" y="261" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Pengendalian biaya operasional pelabuhan per ton throughput batubara</text>
+    <rect x="516" y="238" width="76" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="554" y="251" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">kIDR</text>
+    
+    <g transform="translate(294, 273)">
+      <rect x="0" y="2" width="10" height="10" rx="2" fill="#2563eb"/>
+      <text x="14" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">Handling Cost (kIDR/MT)</text>
+      
+      <line x1="200" y1="7" x2="214" y2="7" stroke="#f59e0b" stroke-width="2.5"/>
+             <circle cx="207" cy="7" r="3" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+             <text x="218" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">Fuel Index (L/MT)</text>
+    </g><line x1="72" y1="602" x2="560" y2="602" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="605" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">0</text><text x="566" y="605" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">0 L</text><line x1="72" y1="525" x2="560" y2="525" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="528" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">26</text><text x="566" y="528" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">0 L</text><line x1="72" y1="448" x2="560" y2="448" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="451" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">53</text><text x="566" y="451" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">1 L</text><line x1="72" y1="371" x2="560" y2="371" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="374" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">79</text><text x="566" y="374" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">1 L</text><line x1="72" y1="294" x2="560" y2="294" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="297" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">106</text><text x="566" y="297" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">1 L</text><rect x="84.688" y="334.17391304347825" width="23.424" height="267.82608695652175" rx="3" fill="url(#blueBar)"/><text x="96.4" y="618" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jan</text><rect x="133.488" y="336.2095076240381" width="23.424" height="265.7904923759619" rx="3" fill="url(#blueBar)"/><text x="145.2" y="618" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Feb</text><rect x="182.288" y="340.86229523674643" width="23.424" height="261.13770476325357" rx="3" fill="url(#blueBar)"/><text x="194" y="618" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Mar</text><rect x="231.088" y="339.69909833356934" width="23.424" height="262.30090166643066" rx="3" fill="url(#blueBar)"/><text x="242.79999999999998" y="618" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Apr</text><rect x="279.888" y="343.47948826889484" width="23.424" height="258.52051173110516" rx="3" fill="url(#blueBar)"/><text x="291.59999999999997" y="618" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">May</text><rect x="328.688" y="346.6782797526318" width="23.424" height="255.3217202473682" rx="3" fill="url(#blueBar)"/><text x="340.4" y="618" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jun</text><rect x="377.48799999999994" y="345.5150828494547" width="23.424" height="256.4849171505453" rx="3" fill="url(#blueBar)"/><text x="389.19999999999993" y="618" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jul</text><rect x="426.28799999999995" y="349.29547278478026" width="23.424" height="252.70452721521977" rx="3" fill="url(#blueBar)"/><text x="437.99999999999994" y="618" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Aug</text><rect x="475.08799999999997" y="352.4942642685172" width="23.424" height="249.50573573148282" rx="3" fill="url(#blueBar)"/><text x="486.79999999999995" y="618" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Sep</text><rect x="523.888" y="351.6218665911344" width="23.424" height="250.3781334088656" rx="3" fill="url(#blueBar)"/><text x="535.6" y="618" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Oct</text><polyline points="96.4,427.5 145.2,430.0 194.0,432.6 242.8,432.6 291.6,435.2 340.4,437.7 389.2,437.7 438.0,440.3 486.8,440.3 535.6,442.9" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96.4" cy="427.46666666666664" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="96.4" y="420.46666666666664" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">0.68 L</text><circle cx="145.2" cy="430.0333333333333" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="145.2" y="423.0333333333333" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">0.67 L</text><circle cx="194" cy="432.6" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="194" y="425.6" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">0.66 L</text><circle cx="242.79999999999998" cy="432.6" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="242.79999999999998" y="425.6" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">0.66 L</text><circle cx="291.59999999999997" cy="435.16666666666663" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="291.59999999999997" y="428.16666666666663" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">0.65 L</text><circle cx="340.4" cy="437.73333333333335" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="340.4" y="430.73333333333335" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">0.64 L</text><circle cx="389.19999999999993" cy="437.73333333333335" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="389.19999999999993" y="430.73333333333335" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">0.64 L</text><circle cx="437.99999999999994" cy="440.29999999999995" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="437.99999999999994" y="433.29999999999995" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">0.63 L</text><circle cx="486.79999999999995" cy="440.29999999999995" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="486.79999999999995" y="433.29999999999995" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">0.63 L</text><circle cx="535.6" cy="442.8666666666667" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="535.6" y="435.8666666666667" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">0.62 L</text>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="618" y="226" width="558" height="410" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="618" y1="268" x2="1176" y2="268" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="632" y="237" width="82" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="673" y="251" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">ASSET-UTIL</text>
+    <text x="722" y="247" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Port Infrastructure Asset Utilization &amp; Berth Occupancy (%)</text>
+    <text x="722" y="261" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Tingkat pemanfaatan kapasitas terpasang fasilitas Crushing, Conveyor, dan Dermaga Jetty</text>
+    <rect x="1088" y="238" width="76" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="1126" y="251" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">% Util</text>
+    
+      <text x="632" y="295" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Barge Loader Conveyor #1</text>
+      <rect x="753" y="284" width="343" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="753" y="284" width="306.25" height="14" rx="3" fill="#059669"/>
+      <text x="1065.25" y="295" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">89.2% Effective Utilization</text>
+    
+      <text x="632" y="329" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Barge Loader Conveyor #2</text>
+      <rect x="753" y="318" width="343" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="753" y="318" width="287.0235426008968" height="14" rx="3" fill="#0070f2"/>
+      <text x="1046.0235426008967" y="329" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">83.6% Effective Utilization</text>
+    
+      <text x="632" y="363" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Crushing Plant Line 1-2</text>
+      <rect x="753" y="352" width="343" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="753" y="352" width="291.83015695067263" height="14" rx="3" fill="#0d9488"/>
+      <text x="1050.8301569506725" y="363" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">85.0% Capacity Utilization</text>
+    
+      <text x="632" y="397" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Jetty Batulicin Berth #1-2</text>
+      <rect x="753" y="386" width="343" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="753" y="386" width="238.2707399103139" height="14" rx="3" fill="#7c3aed"/>
+      <text x="997.2707399103139" y="397" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">69.4% Berth Occupancy (Optimal)</text>
+    
+      <text x="632" y="431" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Bunati Jetty Berth #1</text>
+      <rect x="753" y="420" width="343" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="753" y="420" width="229.34417040358744" height="14" rx="3" fill="#f59e0b"/>
+      <text x="988.3441704035874" y="431" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">66.8% Berth Occupancy (Optimal)</text>
+    
+  </g>
+    
+</svg>

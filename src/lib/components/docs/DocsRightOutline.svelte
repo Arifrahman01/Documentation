@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { Button } from '$lib/components/ui/button';
 	import type { OutlineNode } from '$lib/utils/markdown';
 
 	interface Props {
@@ -26,20 +27,21 @@
 		aria-selected={isActive}
 		tabindex="0"
 	>
-		<button
-			type="button"
+		<Button
+			variant="ghost"
+			size="sm"
 			onclick={() => onSelectHeading(node.id)}
-			class="block w-full truncate py-1 text-left text-xs transition-colors {isActive
-				? 'font-semibold text-foreground'
-				: 'text-muted-foreground hover:text-foreground'}"
-			style="padding-left: {depth * 12}px;"
+			class="h-7 w-full justify-start truncate px-2 text-left text-xs {isActive
+				? 'bg-secondary font-semibold text-foreground'
+				: 'font-normal text-muted-foreground hover:text-foreground'}"
+			style="padding-left: {8 + depth * 12}px;"
 			title={node.text}
 		>
-			{node.text}
-		</button>
+			<span class="truncate">{node.text}</span>
+		</Button>
 
 		{#if hasChildren}
-			<div>
+			<div class="space-y-0.5">
 				{#each node.children as child}
 					{@render renderNode(child, depth + 1)}
 				{/each}
@@ -49,8 +51,8 @@
 {/snippet}
 
 {#if outlineTree.length > 0}
-	<div class="border-l border-border/60 pl-4 py-1">
-		<div class="mb-2.5 text-[11px] font-semibold text-muted-foreground">
+	<div class="border-l border-border/60 pl-3 py-1">
+		<div class="mb-2 px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
 			Daftar Isi
 		</div>
 

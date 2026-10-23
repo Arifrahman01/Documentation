@@ -1,0 +1,171 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sacHeaderGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="blueBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="tealBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="amberBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="areaBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="720" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- SAC Top Shell Bar -->
+  <path d="M0 12 Q0 0 12 0 L1188 0 Q1200 0 1200 12 L1200 48 L0 48 Z" fill="url(#sacHeaderGrad)"/>
+  <rect x="18" y="12" width="28" height="24" rx="5" fill="#0070f2"/>
+  <text x="32" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="800" fill="#ffffff">SAC</text>
+  <text x="56" y="23" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">FINANCE — Sheet 1: Financial Performance</text>
+  <text x="56" y="38" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8">Active Sheet: Financial Performance</text>
+
+  <!-- Live CDS Badge -->
+  <rect x="930" y="12" width="252" height="24" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <circle cx="946" cy="24" r="4" fill="#10b981"/>
+  <text x="958" y="28" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600" fill="#e2e8f0">LIVE CDS: S4HANA_PROD (J000)</text>
+
+  <!-- Global Input Filter Bar -->
+  <rect x="0" y="48" width="1200" height="52" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+      <g transform="translate(24, 60)">
+        <rect width="258.4" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Company Code:</text>
+        <text x="89.6" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">All (Jhonlin Group)</text>
+        <path d="M240.39999999999998 13 L244.39999999999998 18 L248.39999999999998 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(292.4, 60)">
+        <rect width="150" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Fiscal Year:</text>
+        <text x="83.3" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">2026</text>
+        <path d="M132 13 L136 18 L140 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(452.4, 60)">
+        <rect width="150" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Month:</text>
+        <text x="45.5" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">Jan - Oct</text>
+        <path d="M132 13 L136 18 L140 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+
+  <!-- Active Sheet Tab Indicator on Right -->
+  <rect x="1005" y="60" width="175" height="30" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="1093" y="79" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1d4ed8">Financial Performance</text>
+
+  <!-- Story Content Area -->
+  
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="114" width="220" height="86" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="24" y="114" width="4" height="86" rx="2" fill="#0070f2"/>
+    <rect x="36" y="124" width="40.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="56.25" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">W1-W2</text>
+    <text x="70" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Revenue (Curr / PY)</text>
+    <text x="38" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">14,820 <tspan font-size="11" font-weight="600" fill="#64748b">IDR Bn</tspan></text>
+    <rect x="38" y="172" width="150" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="44" y="184" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ +14.2% vs PY (12,977)</text>
+    
+    <polyline points="157.2,178.4 169.7,175.5 182.1,176.5 194.6,172.4 207.1,173.6 219.5,169.3 232.0,167.6" fill="none" stroke="#0070f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="256" y="114" width="220" height="86" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="256" y="114" width="4" height="86" rx="2" fill="#0284c7"/>
+    <rect x="268" y="124" width="40.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="288.25" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">W3-W4</text>
+    <text x="302" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Gross Profit (Curr / PY)</text>
+    <text x="270" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">4,610 <tspan font-size="11" font-weight="600" fill="#64748b">IDR Bn</tspan></text>
+    <rect x="270" y="172" width="144" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="276" y="184" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ +11.8% vs PY (4,123)</text>
+    
+    <polyline points="389.2,178.4 401.7,175.5 414.1,176.5 426.6,172.4 439.1,173.6 451.5,169.3 464.0,167.6" fill="none" stroke="#0284c7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="488" y="114" width="220" height="86" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="488" y="114" width="4" height="86" rx="2" fill="#0d9488"/>
+    <rect x="500" y="124" width="40.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="520.25" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">W5-W6</text>
+    <text x="534" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Operating Profit</text>
+    <text x="502" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">3,490 <tspan font-size="11" font-weight="600" fill="#64748b">IDR Bn</tspan></text>
+    <rect x="502" y="172" width="144" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="508" y="184" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ +15.4% vs PY (3,024)</text>
+    
+    <polyline points="621.2,178.4 633.7,175.5 646.1,176.5 658.6,172.4 671.1,173.6 683.5,169.3 696.0,167.6" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="720" y="114" width="220" height="86" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="720" y="114" width="4" height="86" rx="2" fill="#059669"/>
+    <rect x="732" y="124" width="40.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="752.25" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">W7-W8</text>
+    <text x="766" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Net Profit (EAT)</text>
+    <text x="734" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">2,680 <tspan font-size="11" font-weight="600" fill="#64748b">IDR Bn</tspan></text>
+    <rect x="734" y="172" width="144" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="740" y="184" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ +16.1% vs PY (2,308)</text>
+    
+    <polyline points="853.2,178.4 865.7,175.5 878.1,176.5 890.6,172.4 903.1,173.6 915.5,169.3 928.0,167.6" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="952" y="114" width="224" height="86" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="952" y="114" width="4" height="86" rx="2" fill="#7c3aed"/>
+    <rect x="964" y="124" width="47" height="16" rx="3" fill="#eff6ff"/>
+           <text x="987.5" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">W9-W10</text>
+    <text x="998" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">EBITDA (Curr / PY)</text>
+    <text x="966" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">4,295 <tspan font-size="11" font-weight="600" fill="#64748b">IDR Bn</tspan></text>
+    <rect x="966" y="172" width="168" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="972" y="184" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ Margin 28.9% (PY: 3,740)</text>
+    
+    <polyline points="1087.8,178.4 1100.5,175.5 1113.2,176.5 1125.9,172.4 1138.6,173.6 1151.3,169.3 1164.0,167.6" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="214" width="580" height="482" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="24" y1="256" x2="604" y2="256" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="38" y="225" width="33" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="54.5" y="239" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">W11</text>
+    <text x="79" y="235" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Monthly Performance (Revenue, Gross/Net Profit &amp; EBITDA %)</text>
+    <text x="79" y="249" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Combination Column &amp; Line Chart — Tren Bulanan Jan s/d Oct 2026</text>
+    <rect x="516" y="226" width="76" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="554" y="239" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">IDR Bn</text>
+    
+    <g transform="translate(294, 261)">
+      <rect x="0" y="2" width="10" height="10" rx="2" fill="#2563eb"/>
+      <text x="14" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">Revenue (IDR Bn)</text>
+      <rect x="105" y="2" width="10" height="10" rx="2" fill="#94a3b8"/>
+             <text x="119" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">EBITDA (IDR Bn)</text>
+      <line x1="200" y1="7" x2="214" y2="7" stroke="#f59e0b" stroke-width="2.5"/>
+             <circle cx="207" cy="7" r="3" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+             <text x="218" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">EBITDA Margin %</text>
+    </g><line x1="72" y1="662" x2="560" y2="662" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="665" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">0</text><text x="566" y="665" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">0%</text><line x1="72" y1="567" x2="560" y2="567" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="570" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">466</text><text x="566" y="570" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">9%</text><line x1="72" y1="472" x2="560" y2="472" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="475" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">931</text><text x="566" y="475" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">18%</text><line x1="72" y1="377" x2="560" y2="377" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="380" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">1397</text><text x="566" y="380" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">27%</text><line x1="72" y1="282" x2="560" y2="282" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="285" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">1863</text><text x="566" y="285" font-family="JetBrains Mono, monospace" font-size="9" fill="#d97706">36%</text><rect x="79.784" y="392.75684380032203" width="15.616" height="269.24315619967797" rx="3" fill="url(#blueBar)"/><rect x="97.4" y="584.4906065485776" width="15.616" height="77.50939345142244" rx="3" fill="#94a3b8"/><text x="96.4" y="678" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jan</text><rect x="128.584" y="380.5185185185185" width="15.616" height="281.4814814814815" rx="3" fill="url(#blueBar)"/><rect x="146.2" y="578.3714439076758" width="15.616" height="83.62855609232422" rx="3" fill="#94a3b8"/><text x="145.2" y="678" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Feb</text><rect x="177.38400000000001" y="366.24047235641433" width="15.616" height="295.75952764358567" rx="3" fill="url(#blueBar)"/><rect x="195" y="572.252281266774" width="15.616" height="89.747718733226" rx="3" fill="#94a3b8"/><text x="194" y="678" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Mar</text><rect x="226.18399999999997" y="374.3993558776167" width="15.616" height="287.6006441223833" rx="3" fill="url(#blueBar)"/><rect x="243.79999999999998" y="576.3317230273752" width="15.616" height="85.66827697262481" rx="3" fill="#94a3b8"/><text x="242.79999999999998" y="678" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Apr</text><rect x="274.984" y="358.08158883521196" width="15.616" height="303.91841116478804" rx="3" fill="url(#blueBar)"/><rect x="292.59999999999997" y="568.1728395061729" width="15.616" height="93.82716049382718" rx="3" fill="#94a3b8"/><text x="291.59999999999997" y="678" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">May</text><rect x="323.784" y="351.96242619431024" width="15.616" height="310.03757380568976" rx="3" fill="url(#blueBar)"/><rect x="341.4" y="564.0933977455717" width="15.616" height="97.90660225442835" rx="3" fill="#94a3b8"/><text x="340.4" y="678" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jun</text><rect x="372.58399999999995" y="360.1213097155126" width="15.616" height="301.8786902844874" rx="3" fill="url(#blueBar)"/><rect x="390.19999999999993" y="570.2125603864735" width="15.616" height="91.78743961352657" rx="3" fill="#94a3b8"/><text x="389.19999999999993" y="678" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Jul</text><rect x="421.38399999999996" y="345.8432635534084" width="15.616" height="316.1567364465916" rx="3" fill="url(#blueBar)"/><rect x="438.99999999999994" y="562.0536768652711" width="15.616" height="99.94632313472896" rx="3" fill="#94a3b8"/><text x="437.99999999999994" y="678" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Aug</text><rect x="470.18399999999997" y="335.64465915190544" width="15.616" height="326.35534084809456" rx="3" fill="url(#blueBar)"/><rect x="487.79999999999995" y="555.9345142243693" width="15.616" height="106.0654857756307" rx="3" fill="#94a3b8"/><text x="486.79999999999995" y="678" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Sep</text><rect x="518.984" y="331.5652173913043" width="15.616" height="330.4347826086957" rx="3" fill="url(#blueBar)"/><rect x="536.6" y="551.8550724637681" width="15.616" height="110.14492753623189" rx="3" fill="#94a3b8"/><text x="535.6" y="678" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Oct</text><polyline points="96.4,376.8 145.2,370.5 194.0,364.2 242.8,369.5 291.6,360.0 340.4,356.9 389.2,363.2 438.0,353.7 486.8,349.5 535.6,345.3" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/><circle cx="96.4" cy="376.79028697571744" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="96.4" y="369.79028697571744" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">27.2%</text><circle cx="145.2" cy="370.49889624724057" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="145.2" y="363.49889624724057" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">27.8%</text><circle cx="194" cy="364.20750551876375" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="194" y="357.20750551876375" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">28.4%</text><circle cx="242.79999999999998" cy="369.4503311258278" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="242.79999999999998" y="362.4503311258278" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">27.9%</text><circle cx="291.59999999999997" cy="360.0132450331125" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="291.59999999999997" y="353.0132450331125" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">28.8%</text><circle cx="340.4" cy="356.8675496688741" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="340.4" y="349.8675496688741" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">29.1%</text><circle cx="389.19999999999993" cy="363.158940397351" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="389.19999999999993" y="356.158940397351" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">28.5%</text><circle cx="437.99999999999994" cy="353.72185430463577" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="437.99999999999994" y="346.72185430463577" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">29.4%</text><circle cx="486.79999999999995" cy="349.5275938189845" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="486.79999999999995" y="342.5275938189845" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">29.8%</text><circle cx="535.6" cy="345.33333333333326" r="3.5" fill="#ffffff" stroke="#d97706" stroke-width="2"/><text x="535.6" y="338.33333333333326" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#b45309">30.2%</text>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="618" y="214" width="558" height="482" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="618" y1="256" x2="1176" y2="256" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="632" y="225" width="33" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="648.5" y="239" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">W12</text>
+    <text x="673" y="235" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Income Statement (Hierarki FSV J000)</text>
+    <text x="673" y="249" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Laporan Laba Rugi Komparatif YoY &amp; MoM dengan Variance %</text>
+    <rect x="1088" y="226" width="76" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="1126" y="239" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">FSV: J000</text>
+    <rect x="630" y="258" width="534" height="22" rx="4" fill="#f1f5f9"/><text x="636" y="273" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">GL Hierarchy (J000)</text><text x="742.8" y="273" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Curr Year</text><text x="849.6" y="273" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Prev Year</text><text x="956.4" y="273" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">YoY Δ</text><text x="1063.2" y="273" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">YoY %</text><rect x="630" y="280" width="534" height="26" fill="#eff6ff"/><line x1="630" y1="306" x2="1164" y2="306" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="297.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#dc2626">▼ REVENUE (Pendapatan Usaha)</text><text x="742.8" y="297.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">14,820.4</text><text x="849.6" y="297.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">12,977.5</text><text x="956.4" y="297.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">+1,842.9</text><text x="1063.2" y="297.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">▲ +14.2%</text><rect x="630" y="306" width="534" height="26" fill="#f8fafc"/><line x1="630" y1="332" x2="1164" y2="332" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="323.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">  ├─ Penjualan Batubara Ekspor</text><text x="742.8" y="323.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">10,410.2</text><text x="849.6" y="323.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">9,020.1</text><text x="956.4" y="323.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#059669">+1,390.1</text><text x="1063.2" y="323.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#059669">▲ +15.4%</text><line x1="630" y1="358" x2="1164" y2="358" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="349.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">  ├─ Penjualan Batubara Domestik</text><text x="742.8" y="349.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">3,120.0</text><text x="849.6" y="349.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">2,810.4</text><text x="956.4" y="349.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#059669">+309.6</text><text x="1063.2" y="349.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#059669">▲ +11.0%</text><rect x="630" y="358" width="534" height="26" fill="#f8fafc"/><line x1="630" y1="384" x2="1164" y2="384" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="375.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">  └─ Jasa Pelabuhan &amp; Logistik Laut</text><text x="742.8" y="375.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">1,290.2</text><text x="849.6" y="375.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">1,147.0</text><text x="956.4" y="375.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#059669">+143.2</text><text x="1063.2" y="375.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#059669">▲ +12.5%</text><line x1="630" y1="410" x2="1164" y2="410" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="401.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#dc2626">▼ COST OF GOODS SOLD (COGS)</text><text x="742.8" y="401.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">(10,210.1)</text><text x="849.6" y="401.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">(8,854.2)</text><text x="956.4" y="401.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">-1,355.9</text><text x="1063.2" y="401.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">▼ +15.3%</text><rect x="630" y="410" width="534" height="26" fill="#f8fafc"/><line x1="630" y1="436" x2="1164" y2="436" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="427.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">  ├─ Biaya Kontraktor &amp; OB Removal</text><text x="742.8" y="427.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">(5,840.0)</text><text x="849.6" y="427.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">(5,120.0)</text><text x="956.4" y="427.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">-720.0</text><text x="1063.2" y="427.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">▼ +14.1%</text><line x1="630" y1="462" x2="1164" y2="462" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="453.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">  ├─ Pemakaian BBM Solar Industri</text><text x="742.8" y="453.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">(2,690.1)</text><text x="849.6" y="453.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">(2,280.2)</text><text x="956.4" y="453.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">-409.9</text><text x="1063.2" y="453.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">▼ +18.0%</text><rect x="630" y="462" width="534" height="26" fill="#f8fafc"/><line x1="630" y1="488" x2="1164" y2="488" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="479.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">  └─ Royalti, Barging &amp; Port Handling</text><text x="742.8" y="479.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">(1,680.0)</text><text x="849.6" y="479.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">(1,454.0)</text><text x="956.4" y="479.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">-226.0</text><text x="1063.2" y="479.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">▼ +15.5%</text><rect x="630" y="488" width="534" height="26" fill="#eff6ff"/><line x1="630" y1="514" x2="1164" y2="514" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="505.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#0f172a">GROSS PROFIT (Laba Kotor)</text><text x="742.8" y="505.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">4,610.3</text><text x="849.6" y="505.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">4,123.3</text><text x="956.4" y="505.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">+487.0</text><text x="1063.2" y="505.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">▲ +11.8%</text><rect x="630" y="514" width="534" height="26" fill="#f8fafc"/><line x1="630" y1="540" x2="1164" y2="540" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="531.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#dc2626">▼ OPERATING EXPENSES (OPEX)</text><text x="742.8" y="531.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">(1,120.0)</text><text x="849.6" y="531.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">(1,099.1)</text><text x="956.4" y="531.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">-20.9</text><text x="1063.2" y="531.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">▼ +1.9%</text><rect x="630" y="540" width="534" height="26" fill="#eff6ff"/><line x1="630" y1="566" x2="1164" y2="566" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="557.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#0f172a">OPERATING PROFIT (EBIT)</text><text x="742.8" y="557.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">3,490.3</text><text x="849.6" y="557.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">3,024.2</text><text x="956.4" y="557.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">+466.1</text><text x="1063.2" y="557.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">▲ +15.4%</text><rect x="630" y="566" width="534" height="26" fill="#eff6ff"/><line x1="630" y1="592" x2="1164" y2="592" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="583.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#0f172a">EBITDA (EBIT + Depr &amp; Amort)</text><text x="742.8" y="583.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">4,295.0</text><text x="849.6" y="583.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">3,740.0</text><text x="956.4" y="583.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">+555.0</text><text x="1063.2" y="583.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">▲ +14.8%</text><rect x="630" y="592" width="534" height="26" fill="#eff6ff"/><line x1="630" y1="618" x2="1164" y2="618" stroke="#e2e8f0" stroke-width="0.7"/><text x="636" y="609.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#0f172a">NET PROFIT (Laba Bersih / EAT)</text><text x="742.8" y="609.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">2,680.5</text><text x="849.6" y="609.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">2,308.4</text><text x="956.4" y="609.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">+372.1</text><text x="1063.2" y="609.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">▲ +16.1%</text>
+  </g>
+    
+</svg>

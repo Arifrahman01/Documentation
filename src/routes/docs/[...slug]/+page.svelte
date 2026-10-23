@@ -1,19 +1,18 @@
 <script lang="ts">
-	import { untrack } from 'svelte';
 	import { ui } from '$lib/stores/ui.svelte';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Badge } from '$lib/components/ui/badge';
+	import { Card } from '$lib/components/ui/card';
 	import { Separator } from '$lib/components/ui/separator';
 	import { Tabs, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
-	import DocEditorModal from '$lib/components/DocEditorModal.svelte';
 	import DocAiAssistantModal from '$lib/components/docs/DocAiAssistantModal.svelte';
 	import DocsContextMenu from '$lib/components/docs/DocsContextMenu.svelte';
 	import DocsLightbox from '$lib/components/docs/DocsLightbox.svelte';
 	import DocsRightOutline from '$lib/components/docs/DocsRightOutline.svelte';
-	import { renderMarkdown, extractOutlineTree } from '$lib/utils/markdown';
+	import { renderMarkdown, extractOutlineTree, slugifyHeading } from '$lib/utils/markdown';
 	import {
 		DOC_TEMPLATES,
 		MARKDOWN_TABLE_SNIPPET,
@@ -29,53 +28,28 @@
 		FolderPlus,
 		Folder,
 		FolderOpen,
-		Copy,
-		Check,
-		ListTree,
 		Plus,
-		Clock,
 		Search,
-		Calendar,
-		Tag,
-		Layers,
-		Building2,
-		BarChart3,
-		Globe,
 		ExternalLink,
 		ChevronDown,
-		ChevronsUpDown,
 		X,
-		Maximize2,
-		Minimize2,
-		Download,
-		FileCode,
-		FolderTree,
-		MousePointerClick,
 		MoreHorizontal,
 		Edit3,
 		Save,
-		Eye,
-		Columns2,
-		Wand2,
 		Code,
 		List,
 		Heading2,
-		Heading3,
 		Bold,
-		Italic,
 		Table,
 		CheckSquare,
 		Image as ImageIcon,
 		FileUp,
-		Loader2,
-		LayoutTemplate
+		Loader2
 	} from '@lucide/svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
-	// Sidebar View Switcher (primarily for < xl screens; on xl+ Explorer is left & Outline is right)
-	let sidebarView = $state<'outline' | 'explorer'>('explorer');
 	let activeSection = $state<'SAP' | 'SAC' | 'WEB' | 'ALL'>('ALL');
 
 	// Local mutable document & tree state
@@ -85,26 +59,17 @@
 	let currentTree = $derived(customTree ?? data.treeData);
 	let sidebarFilter = $state('');
 	let expandedCategories = $state<Record<string, boolean>>({});
+	let expandedSubcategories = $state<Record<string, boolean>>({});
 
-	// VS Code Tabs Management
-	interface DocTab {
-		slug: string;
-		title: string;
-		section?: string;
-	}
-	let openTabs = $state<DocTab[]>([]);
-
-	// Focus mode & In-page search
+	// Focus mode & Outline Scroll-spy
 	let isFocusMode = $state(false);
-	let isSearchActive = $state(false);
-	let inPageSearchQuery = $state('');
 	let activeHeadingId = $state<string>('');
 
 	// Lightbox state for zoomable images
 	let lightboxSrc = $state<string | null>(null);
 	let lightboxAlt = $state<string>('');
 
-	// Obsidian Context Menu & Editor Modal State
+	// Obsidian Context Menu State
 	let contextMenu = $state<{ open: boolean; x: number; y: number; targetDoc: any }>({
 		open: false,
 		x: 0,
@@ -112,16 +77,21 @@
 		targetDoc: null
 	});
 	let isEditorOpen = $state(false);
-	let editorMode = $state<'create' | 'edit'>('edit');
-	let editingDocTarget = $state<any>(null);
-	let copiedUrl = $state(false);
-	let copiedMarkdown = $state(false);
 
 	// Dedicated Single-Document AI Assistant Modal & Pinned Summary State
 	let isDocAiOpen = $state(false);
 	let docAiTarget = $state<any>(null);
 	let docAiInitialPrompt = $state('');
 	let pinnedAiSummary = $state<{ title: string; content: string; slug: string } | null>(null);
+
+	// Tab switcher between FSD (Konsultan) and Story Builder Spec (Tim Internal)
+	let activeDocTab = $state<'fsd' | 'builder'>('fsd');
+
+	$effect(() => {
+		if (data.slug) {
+			activeDocTab = 'fsd';
+		}
+	});
 
 	// =========================================================================
 	// OBSIDIAN FILE EXPLORER STATE (Create Folder / Create File First)
@@ -166,123 +136,6 @@
 	let isUploadingInlineImage = $state(false);
 	let inlineImageInputRef = $state<HTMLInputElement | null>(null);
 	let inlineMdInputRef = $state<HTMLInputElement | null>(null);
-
-	// Load & sync open tabs with localStorage (using untrack + lastSyncedSlug to prevent re-adding a tab when closing it)
-	let tabsInitialized = false;
-	let lastSyncedSlug = '';
-	let closingSlug = '';
-
-	function saveTabsToStorage(tabs: DocTab[]) {
-		if (typeof window !== 'undefined') {
-			try {
-				localStorage.setItem('portal_open_tabs', JSON.stringify(tabs));
-			} catch (_) {}
-		}
-	}
-
-	function ensureTabOpen(docNode: any) {
-		const slug = docNode?.path || docNode?.slug || data.slug;
-		const title = docNode?.title || currentDoc?.title || data.article?.title || slug;
-		const section = docNode?.section || currentDoc?.section || data.article?.section || 'SAP';
-		if (!slug) return;
-
-		if (!openTabs.some((t) => t.slug === slug)) {
-			const updated = [...openTabs, { slug, title, section }].slice(-10);
-			openTabs = updated;
-			saveTabsToStorage(updated);
-		}
-	}
-
-	$effect(() => {
-		const activeSlug = data.slug;
-		const currentTitle = currentDoc?.title || data.article?.title || activeSlug;
-		const currentSection = currentDoc?.section || data.article?.section || 'SAP';
-
-		if (!activeSlug) return;
-
-		untrack(() => {
-			if (closingSlug === activeSlug) return;
-
-			let currentList = openTabs;
-			const isFirstInit = !tabsInitialized && typeof window !== 'undefined';
-			if (isFirstInit) {
-				tabsInitialized = true;
-				try {
-					const stored = localStorage.getItem('portal_open_tabs');
-					if (stored) {
-						const parsed = JSON.parse(stored);
-						if (Array.isArray(parsed)) currentList = parsed;
-					}
-				} catch (_) {}
-			}
-
-			const existingIndex = currentList.findIndex((t) => t.slug === activeSlug);
-			if (existingIndex >= 0) {
-				lastSyncedSlug = activeSlug;
-				if (currentList[existingIndex].title !== currentTitle) {
-					currentList = currentList.map((t, i) =>
-						i === existingIndex ? { ...t, title: currentTitle } : t
-					);
-					openTabs = currentList;
-					saveTabsToStorage(currentList);
-				} else if (isFirstInit) {
-					openTabs = currentList;
-				}
-			} else if (isFirstInit || activeSlug !== lastSyncedSlug) {
-				// Only auto-add tab on initial mount or when navigating to a different document slug
-				lastSyncedSlug = activeSlug;
-				currentList = [
-					...currentList,
-					{ slug: activeSlug, title: currentTitle, section: currentSection }
-				].slice(-10);
-				openTabs = currentList;
-				saveTabsToStorage(currentList);
-			}
-		});
-	});
-
-	async function closeTab(tabSlug: string, event?: Event) {
-		if (event) {
-			event.stopPropagation();
-			event.preventDefault();
-		}
-
-		const idx = openTabs.findIndex((t) => t.slug === tabSlug);
-		if (idx === -1) return;
-
-		const nextTabs = openTabs.filter((t) => t.slug !== tabSlug);
-		openTabs = nextTabs;
-		saveTabsToStorage(nextTabs);
-
-		// Keep lastSyncedSlug equal to current data.slug so $effect never re-adds the closed tab
-		if (tabSlug === data.slug) {
-			closingSlug = tabSlug;
-			lastSyncedSlug = tabSlug;
-			try {
-				if (nextTabs.length > 0) {
-					const nextIndex = Math.min(idx, nextTabs.length - 1);
-					const targetSlug = nextTabs[nextIndex].slug;
-					lastSyncedSlug = targetSlug;
-					await goto(`/docs/${targetSlug}`);
-				}
-			} finally {
-				closingSlug = '';
-			}
-		}
-	}
-
-	function closeAllTabs(event?: Event) {
-		if (event) {
-			event.stopPropagation();
-			event.preventDefault();
-		}
-		lastSyncedSlug = data.slug;
-		openTabs = [];
-		saveTabsToStorage([]);
-	}
-
-	// Category & Sub-Category Accordion helpers
-	let expandedSubcategories = $state<Record<string, boolean>>({});
 
 	function isCategoryExpanded(group: any): boolean {
 		if (sidebarFilter.trim()) return true;
@@ -364,22 +217,6 @@
 			.filter(Boolean);
 	});
 
-	const allExpanded = $derived.by(() => {
-		if (!filteredTree.length) return false;
-		return filteredTree.every((g: any) => isCategoryExpanded(g));
-	});
-
-	function toggleAllCategories() {
-		const nextState = !allExpanded;
-		const updated: Record<string, boolean> = {};
-		for (const g of filteredTree) {
-			updated[g.title] = nextState;
-		}
-		expandedCategories = updated;
-	}
-
-	const categoriesList = $derived.by(() => currentTree.map((g: any) => g.title));
-
 	$effect(() => {
 		if (data.slug) {
 			editorDoc = null;
@@ -443,7 +280,7 @@
 
 	function openExplorerCreateFile(target?: any) {
 		closeContextMenu();
-		sidebarView = 'explorer';
+		isFocusMode = false;
 		const ctx = resolveActiveContext(target);
 		expandedCategories[ctx.category] = true;
 
@@ -461,13 +298,17 @@
 
 		setTimeout(() => {
 			const el = document.getElementById('explorer-creator-input') as HTMLInputElement | null;
-			el?.focus();
-		}, 30);
+			if (el) {
+				el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+				el.focus();
+				el.select();
+			}
+		}, 40);
 	}
 
 	function openExplorerCreateFolder(target?: any) {
 		closeContextMenu();
-		sidebarView = 'explorer';
+		isFocusMode = false;
 		const ctx = resolveActiveContext(target);
 		const isSubfolderTarget = Boolean(target?.isFolder && target?.category && !target?.subcategory);
 
@@ -485,8 +326,12 @@
 
 		setTimeout(() => {
 			const el = document.getElementById('explorer-creator-input') as HTMLInputElement | null;
-			el?.focus();
-		}, 30);
+			if (el) {
+				el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+				el.focus();
+				el.select();
+			}
+		}, 40);
 	}
 
 	async function submitExplorerCreator(e?: Event) {
@@ -549,11 +394,6 @@
 
 				if (json.document?.slug) {
 					pendingAutoEditSlug = json.document.slug;
-					ensureTabOpen({
-						slug: json.document.slug,
-						title: json.document.title,
-						section: json.document.section
-					});
 					await goto(`/docs/${json.document.slug}`);
 				}
 			}
@@ -649,7 +489,7 @@
 			if (!confirm(`Ganti isi catatan saat ini dengan kerangka "${tpl.name}"?`)) return;
 		}
 		inlineContent = tpl.content;
-		inlineStatusMsg = `📋 Kerangka "${tpl.name}" diterapkan!`;
+		inlineStatusMsg = `Kerangka "${tpl.name}" diterapkan`;
 		showTemplateBar = false;
 	}
 
@@ -682,16 +522,16 @@
 
 			if (action === 'generate') {
 				inlineContent = d.result?.content || inlineContent;
-				inlineStatusMsg = '✨ Draft catatan berhasil ditulis oleh AI!';
+				inlineStatusMsg = 'Draft catatan berhasil ditulis oleh AI';
 			} else if (action === 'format') {
 				inlineContent = d.result?.content || inlineContent;
-				inlineStatusMsg = '✨ Catatan mentah berhasil dirapikan ke format Markdown!';
+				inlineStatusMsg = 'Catatan berhasil dirapikan ke format Markdown';
 			} else if (action === 'improve') {
 				inlineContent = d.result?.content || inlineContent;
-				inlineStatusMsg = '✨ Isi catatan berhasil dipoles oleh AI!';
+				inlineStatusMsg = 'Isi catatan berhasil dipoles oleh AI';
 			} else if (action === 'code') {
 				inlineContent = `${inlineContent.trim()}\n\n${d.result?.content || ''}`;
-				inlineStatusMsg = '✨ Contoh blok kode berhasil ditambahkan!';
+				inlineStatusMsg = 'Contoh blok kode berhasil ditambahkan';
 			}
 		} catch (err: any) {
 			inlineErrorMsg = err.message || 'Gagal menjalankan AI';
@@ -723,7 +563,7 @@
 			if (!res.ok || !json.url) throw new Error(json.error || 'Gagal mengunggah gambar');
 
 			inlineContent = inlineContent.replace(placeholder.trim(), `![${cleanFileName}](${json.url})`);
-			inlineStatusMsg = '🖼️ Gambar berhasil disisipkan!';
+			inlineStatusMsg = 'Gambar berhasil disisipkan';
 		} catch (err: any) {
 			inlineContent = inlineContent.replace(placeholder, '');
 			inlineErrorMsg = err.message || 'Gagal mengunggah gambar';
@@ -783,20 +623,40 @@
 		};
 	});
 
-	const readingTime = $derived.by(() => {
-		const words = (currentDoc?.content || '').split(/\s+/).length;
-		return Math.max(1, Math.ceil(words / 180));
-	});
+	// Outline & Markdown Rendering (reactively adapts to active tab: FSD vs Story Builder Spec)
+	const activeMarkdownContent = $derived(
+		activeDocTab === 'builder' && currentDoc?.builderContent
+			? currentDoc.builderContent
+			: currentDoc?.content || ''
+	);
+	const outlineTree = $derived(extractOutlineTree(activeMarkdownContent));
+	const renderedHtml = $derived(renderMarkdown(activeMarkdownContent));
 
-	// Outline & Markdown Rendering (via centralized utility)
-	const outlineTree = $derived(extractOutlineTree(currentDoc?.content || ''));
-	const renderedHtml = $derived(renderMarkdown(currentDoc?.content || ''));
+	let isManualOutlineScroll = false;
+	let manualScrollTimer: ReturnType<typeof setTimeout> | null = null;
 
 	function scrollToHeading(id: string) {
-		const el = document.getElementById(id);
+		if (!id) return;
+		activeHeadingId = id;
+		isManualOutlineScroll = true;
+		if (manualScrollTimer) clearTimeout(manualScrollTimer);
+		manualScrollTimer = setTimeout(() => {
+			isManualOutlineScroll = false;
+		}, 750);
+
+		const el =
+			document.getElementById(id) ||
+			(Array.from(document.querySelectorAll('article h1, article h2, article h3, article h4')).find(
+				(h) => slugifyHeading(h.textContent || '') === id
+			) as HTMLElement | undefined);
+
 		if (el) {
-			el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-			activeHeadingId = id;
+			const headerOffset = 88;
+			const targetY = el.getBoundingClientRect().top + window.scrollY - headerOffset;
+			window.scrollTo({ top: Math.max(0, targetY), behavior: 'smooth' });
+
+			el.classList.remove('outline-anchor-target');
+			void el.offsetWidth;
 			el.classList.add('outline-anchor-target');
 			setTimeout(() => el.classList.remove('outline-anchor-target'), 2000);
 		}
@@ -808,6 +668,7 @@
 
 		const observer = new IntersectionObserver(
 			(entries) => {
+				if (isManualOutlineScroll) return;
 				for (const entry of entries) {
 					if (entry.isIntersecting && entry.target.id) {
 						activeHeadingId = entry.target.id;
@@ -815,10 +676,10 @@
 					}
 				}
 			},
-			{ rootMargin: '-90px 0px -65% 0px', threshold: 0.1 }
+			{ rootMargin: '-80px 0px -65% 0px', threshold: 0.1 }
 		);
 
-		const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id]');
+		const headings = document.querySelectorAll('article h1[id], article h2[id], article h3[id], article h4[id]');
 		headings.forEach((h) => observer.observe(h));
 
 		return () => observer.disconnect();
@@ -879,33 +740,9 @@
 		isDocAiOpen = true;
 	}
 
-	function handleSaved(savedDoc: any) {
-		editorDoc = savedDoc;
-		fetch('/api/docs')
-			.then((r) => r.json())
-			.then((d) => {
-				if (d.treeData) customTree = d.treeData;
-			})
-			.catch(() => {});
-
-		if (savedDoc.slug && savedDoc.slug !== data.slug) {
-			goto(`/docs/${savedDoc.slug}`);
-		}
-	}
-
-	function copyPageUrl() {
-		if (typeof window !== 'undefined') {
-			navigator.clipboard.writeText(window.location.href);
-			copiedUrl = true;
-			setTimeout(() => (copiedUrl = false), 2000);
-		}
-	}
-
 	function copyRawMarkdown() {
 		if (typeof window !== 'undefined' && currentDoc?.content) {
 			navigator.clipboard.writeText(currentDoc.content);
-			copiedMarkdown = true;
-			setTimeout(() => (copiedMarkdown = false), 2000);
 		}
 	}
 
@@ -943,40 +780,122 @@
 		}
 	}
 
+	function isTypingInField(target: EventTarget | null): boolean {
+		if (!target || !(target instanceof HTMLElement)) return false;
+		const tag = target.tagName.toLowerCase();
+		return (
+			tag === 'input' ||
+			tag === 'textarea' ||
+			tag === 'select' ||
+			target.isContentEditable
+		);
+	}
+
 	$effect(() => {
 		if (typeof window !== 'undefined') {
+			const params = new URLSearchParams(window.location.search);
+			const shortcutAction = params.get('shortcut');
+			if (shortcutAction) {
+				const cleanUrl = window.location.pathname;
+				window.history.replaceState({}, '', cleanUrl);
+				setTimeout(() => {
+					if (shortcutAction === 'edit') startInlineEdit(currentDoc);
+					else if (shortcutAction === 'ai') askAiAboutDoc();
+					else if (shortcutAction === 'new') openExplorerCreateFile(currentDoc);
+					else if (shortcutAction === 'folder') openExplorerCreateFolder(currentDoc);
+				}, 80);
+			}
+
 			window.addEventListener('click', closeContextMenu);
 			const handleKey = (e: KeyboardEvent) => {
+				const key = e.key.toLowerCase();
+				const code = e.code;
+				const hasCmdOrCtrl = e.ctrlKey || e.metaKey;
+				const hasAlt = e.altKey;
+				const typing = isTypingInField(e.target);
+
 				if (e.key === 'Escape') {
 					closeContextMenu();
 					if (lightboxSrc) lightboxSrc = null;
 					if (explorerCreator.open) explorerCreator.open = false;
+					if (isDocAiOpen) isDocAiOpen = false;
+					if (isInlineEditing && !typing) isInlineEditing = false;
+					return;
 				}
-				if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && isInlineEditing) {
+
+				// Ctrl+S: Save active inline note
+				if (hasCmdOrCtrl && (key === 's' || code === 'KeyS') && isInlineEditing) {
 					e.preventDefault();
+					e.stopPropagation();
 					saveInlineNote(false);
+					return;
 				}
-				if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e' && !isEditorOpen) {
-					e.preventDefault();
-					if (isInlineEditing) {
-						saveInlineNote(true);
-					} else {
-						startInlineEdit(currentDoc);
+
+				// Ctrl+E / Alt+E (or 'e' when not typing in an input): Edit current note
+				if (
+					((hasCmdOrCtrl || hasAlt) && (key === 'e' || code === 'KeyE')) ||
+					(!typing && !hasCmdOrCtrl && !hasAlt && !e.shiftKey && key === 'e' && !isEditorOpen && !isDocAiOpen && !ui.isAiOpen && !ui.isSearchOpen)
+				) {
+					if (!isEditorOpen) {
+						e.preventDefault();
+						e.stopPropagation();
+						if (isInlineEditing && (hasCmdOrCtrl || hasAlt)) {
+							saveInlineNote(true);
+						} else if (!isInlineEditing) {
+							startInlineEdit(currentDoc);
+						}
 					}
+					return;
 				}
-				if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n' && !isEditorOpen) {
-					e.preventDefault();
-					openExplorerCreateFile(currentDoc);
+
+				// Alt+N / Ctrl+M / Ctrl+N (or 'n' when not typing in an input): Create New Note File
+				if (
+					(hasAlt && (key === 'n' || code === 'KeyN')) ||
+					(hasCmdOrCtrl && (key === 'm' || code === 'KeyM' || key === 'n' || code === 'KeyN')) ||
+					(!typing && !hasCmdOrCtrl && !hasAlt && !e.shiftKey && key === 'n' && !isEditorOpen && !isDocAiOpen && !ui.isAiOpen && !ui.isSearchOpen)
+				) {
+					if (!isEditorOpen) {
+						e.preventDefault();
+						e.stopPropagation();
+						openExplorerCreateFile(currentDoc);
+					}
+					return;
 				}
-				if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i' && !isEditorOpen) {
-					e.preventDefault();
-					askAiAboutDoc();
+
+				// Alt+F (or 'f' when not typing in an input): Create New Folder
+				if (
+					(hasAlt && (key === 'f' || code === 'KeyF')) ||
+					(!typing && !hasCmdOrCtrl && !hasAlt && !e.shiftKey && key === 'f' && !isEditorOpen && !isDocAiOpen && !ui.isAiOpen && !ui.isSearchOpen)
+				) {
+					if (!isEditorOpen) {
+						e.preventDefault();
+						e.stopPropagation();
+						openExplorerCreateFolder(currentDoc);
+					}
+					return;
+				}
+
+				// Ctrl+I / Alt+I (or 'i' when not typing in an input): Open/Toggle Document AI Assistant Modal
+				if (
+					((hasCmdOrCtrl || hasAlt) && (key === 'i' || code === 'KeyI')) ||
+					(!typing && !hasCmdOrCtrl && !hasAlt && !e.shiftKey && key === 'i' && !isEditorOpen && !ui.isAiOpen && !ui.isSearchOpen)
+				) {
+					if (!isEditorOpen) {
+						e.preventDefault();
+						e.stopPropagation();
+						if (isDocAiOpen) {
+							isDocAiOpen = false;
+						} else {
+							askAiAboutDoc();
+						}
+					}
+					return;
 				}
 			};
-			window.addEventListener('keydown', handleKey);
+			window.addEventListener('keydown', handleKey, { capture: true });
 			return () => {
 				window.removeEventListener('click', closeContextMenu);
-				window.removeEventListener('keydown', handleKey);
+				window.removeEventListener('keydown', handleKey, { capture: true });
 			};
 		}
 	});
@@ -1049,8 +968,6 @@
 		const slug = t.slug || t.path || t.id;
 		if (typeof window !== 'undefined') {
 			navigator.clipboard.writeText(`${window.location.origin}/docs/${slug}`);
-			copiedUrl = true;
-			setTimeout(() => (copiedUrl = false), 2000);
 		}
 	}
 
@@ -1059,8 +976,6 @@
 		const t = target || currentDoc;
 		if (t.content && typeof window !== 'undefined') {
 			navigator.clipboard.writeText(t.content);
-			copiedMarkdown = true;
-			setTimeout(() => (copiedMarkdown = false), 2000);
 		} else {
 			copyRawMarkdown();
 		}
@@ -1146,428 +1061,77 @@
 	aria-label="Dokumentasi Workspace"
 >
 	<!-- ======================================================== -->
-	<!-- 1. VS CODE TOP TAB BAR                                    -->
+	<!-- CLEAN WORKSPACE: SIDEBAR EXPLORER + NOTE CANVAS + OUTLINE -->
 	<!-- ======================================================== -->
-	<div class="mt-3 flex items-center justify-between border-b border-border bg-muted/60 rounded-t-xl px-2 pt-1.5 overflow-x-auto">
-		<div class="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5 min-h-[34px]">
-			{#if openTabs.length === 0}
-				<button
-					type="button"
-					onclick={() => ensureTabOpen(currentDoc)}
-					class="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-				>
-					<Plus class="h-3 w-3" />
-					<span>Buka tab untuk dokumen ini</span>
-				</button>
-			{/if}
-
-			{#each openTabs as tab (tab.slug)}
-				{@const isActive = tab.slug === data.slug}
-				<div
-					class="group relative flex items-center gap-1.5 rounded-t-lg border-t-2 pl-3 pr-1.5 py-1.5 text-xs font-medium transition-all {isActive
-						? 'border-indigo-600 bg-background text-foreground shadow-2xs dark:border-indigo-500'
-						: 'border-transparent bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'}"
-					oncontextmenu={(e) => openContextMenu(e, tab)}
-					onauxclick={(e) => {
-						if (e.button === 1) closeTab(tab.slug, e);
-					}}
-					role="tab"
-					tabindex="0"
-				>
-					<a
-						href="/docs/{tab.slug}"
-						class="flex items-center gap-1.5 truncate max-w-[170px] py-0.5"
-						title="{tab.title} (Klik kanan untuk opsi)"
-					>
-						{#if tab.section === 'SAP'}
-							<span class="text-blue-600 dark:text-blue-400 font-bold text-[10px]">SAP</span>
-						{:else if tab.section === 'SAC'}
-							<span class="text-purple-600 dark:text-purple-400 font-bold text-[10px]">SAC</span>
-						{:else}
-							<FileCode class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-						{/if}
-						<span class="truncate">{tab.title}.md</span>
-					</a>
-
-					<button
-						type="button"
-						onpointerdown={(e) => e.stopPropagation()}
-						onmousedown={(e) => e.stopPropagation()}
-						onclick={(e) => closeTab(tab.slug, e)}
-						title="Tutup Tab"
-						aria-label="Tutup Tab {tab.title}"
-						class="relative z-10 flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-red-500/15 hover:text-red-600 dark:hover:text-red-400"
-					>
-						<X class="h-3.5 w-3.5 pointer-events-none" />
-					</button>
-				</div>
-			{/each}
-		</div>
-
-		<div class="flex items-center gap-1 pb-1 pl-2 shrink-0">
-			{#if openTabs.length > 1}
-				<button
-					type="button"
-					onclick={(e) => closeAllTabs(e)}
-					title="Tutup Semua Tab"
-					class="rounded-md px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-colors"
-				>
-					Tutup Semua
-				</button>
-			{/if}
-
-			<Button
-				variant="ghost"
-				size="icon"
-				title={isFocusMode ? 'Keluar Mode Fokus' : 'Mode Fokus Layar Penuh'}
-				onclick={() => (isFocusMode = !isFocusMode)}
-				class="h-7 w-7 text-muted-foreground hover:text-foreground"
-			>
-				{#if isFocusMode}
-					<Minimize2 class="h-3.5 w-3.5" />
-				{:else}
-					<Maximize2 class="h-3.5 w-3.5" />
-				{/if}
-			</Button>
-		</div>
-	</div>
-
-	<!-- ======================================================== -->
-	<!-- 2. UNIFIED BREADCRUMB & COMPACT ACTION BAR               -->
-	<!-- ======================================================== -->
-	<div class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card/90 px-3.5 py-2 text-xs">
-		<!-- Left: Breadcrumb Navigation -->
-		<div class="flex items-center gap-1.5 font-mono text-[11px] overflow-x-auto truncate">
-			<a href="/" class="hover:underline text-muted-foreground hover:text-foreground">Home</a>
-			<ChevronRight class="h-3 w-3 text-muted-foreground shrink-0" />
-			<span
-				class="font-semibold {currentDoc?.section === 'SAP'
-					? 'text-blue-600 dark:text-blue-400'
-					: currentDoc?.section === 'SAC'
-						? 'text-purple-600 dark:text-purple-400'
-						: 'text-emerald-600 dark:text-emerald-400'}"
-			>
-				{currentDoc?.section || data.article.section || 'SAP'}
-			</span>
-			<ChevronRight class="h-3 w-3 text-muted-foreground shrink-0" />
-			<span class="text-muted-foreground truncate">{currentDoc?.category || data.article.category}</span>
-			{#if currentDoc?.subcategory || data.article?.subcategory}
-				<ChevronRight class="h-3 w-3 text-muted-foreground shrink-0" />
-				<span class="text-indigo-600 dark:text-indigo-400 font-medium truncate">
-					{currentDoc?.subcategory || data.article?.subcategory}
-				</span>
-			{/if}
-			<ChevronRight class="h-3 w-3 text-muted-foreground shrink-0" />
-			<span class="font-bold text-foreground truncate">{currentDoc?.title || data.article.title}.md</span>
-		</div>
-
-		<!-- Right: Quick Actions & Discoverable Context Menu Button -->
-		<div class="flex items-center gap-1 shrink-0">
-			{#if currentDoc?.sacUrl}
-				<a
-					href={currentDoc.sacUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					class="inline-flex items-center gap-1 h-7 px-2.5 rounded-md text-[11px] font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-2xs transition-colors mr-1"
-				>
-					<ExternalLink class="h-3 w-3" />
-					<span>Buka Story SAC ↗</span>
-				</a>
-			{/if}
-
-			{#if isInlineEditing}
-				<Button
-					variant="default"
-					size="sm"
-					onclick={() => saveInlineNote(true)}
-					disabled={isSavingInline}
-					class="h-7 gap-1 px-2.5 text-xs bg-emerald-600 text-white hover:bg-emerald-700 shadow-2xs"
-				>
-					{#if isSavingInline}
-						<Loader2 class="h-3.5 w-3.5 animate-spin" />
-					{:else}
-						<Save class="h-3.5 w-3.5" />
-					{/if}
-					<span>Simpan & Baca</span>
-				</Button>
-			{:else}
-				<Button
-					variant="outline"
-					size="sm"
-					title="Tulis / Edit Isi Catatan Ini (Ctrl+E)"
-					onclick={() => startInlineEdit(currentDoc)}
-					class="h-7 gap-1 px-2.5 text-xs"
-				>
-					<Edit3 class="h-3.5 w-3.5 text-blue-500" />
-					<span>Tulis / Edit</span>
-					<kbd class="hidden md:inline-flex items-center rounded bg-muted px-1 py-0.2 text-[9px] font-mono text-muted-foreground">
-						Ctrl+E
-					</kbd>
-				</Button>
-			{/if}
-
-			<Button
-				variant="ghost"
-				size="sm"
-				onclick={() => (isSearchActive = !isSearchActive)}
-				title="Cari teks di halaman ini"
-				class="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
-			>
-				<Search class="h-3.5 w-3.5" />
-				<span class="hidden sm:inline">Cari</span>
-			</Button>
-
-			<Button
-				variant="secondary"
-				size="sm"
-				title="AI Assistant Khusus Dokumen Ini (Ctrl+I)"
-				onclick={askAiAboutDoc}
-				class="h-7 gap-1 px-2.5 text-xs border border-indigo-200 bg-indigo-50 text-indigo-900 hover:bg-indigo-100 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-300"
-			>
-				<Sparkles class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-				<span class="hidden sm:inline">AI Assistant</span>
-				<kbd class="hidden md:inline-flex items-center rounded bg-indigo-200/70 px-1 py-0.2 text-[9px] font-mono text-indigo-900 dark:bg-indigo-900/70 dark:text-indigo-200">
-					Ctrl+I
-				</kbd>
-			</Button>
-
-			<Button
-				variant="ghost"
-				size="icon"
-				title="Salin Tautan Halaman"
-				onclick={copyPageUrl}
-				class="h-7 w-7 text-muted-foreground hover:text-foreground"
-			>
-				{#if copiedUrl}
-					<Check class="h-3.5 w-3.5 text-emerald-600" />
-				{:else}
-					<Copy class="h-3.5 w-3.5" />
-				{/if}
-			</Button>
-
-			<Button
-				variant="ghost"
-				size="icon"
-				title="Unduh File (.md)"
-				onclick={downloadMarkdown}
-				class="h-7 w-7 text-muted-foreground hover:text-foreground"
-			>
-				<Download class="h-3.5 w-3.5" />
-			</Button>
-
-			<!-- Discoverable More Actions Button (Triggers the same Obsidian Context Menu) -->
-			<Button
-				variant="outline"
-				size="sm"
-				title="Opsi Catatan: Edit (Ctrl+E), Tambah Baru (Ctrl+N), Hapus (Atau Klik Kanan di mana saja)"
-				onclick={(e) => openContextMenu(e, currentDoc)}
-				class="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground ml-0.5"
-			>
-				<MoreHorizontal class="h-3.5 w-3.5" />
-				<span class="hidden md:inline text-[11px]">Aksi</span>
-			</Button>
-		</div>
-	</div>
-
-	<!-- In-Page Search Bar Banner -->
-	{#if isSearchActive}
-		<div class="flex items-center gap-2 border-b border-border bg-amber-50/60 px-4 py-2 dark:bg-amber-950/20">
-			<Search class="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
-			<input
-				type="text"
-				bind:value={inPageSearchQuery}
-				onkeydown={(e) => {
-					if (e.key === 'Escape') {
-						isSearchActive = false;
-						inPageSearchQuery = '';
-					}
-				}}
-				placeholder="Ketik kata kunci untuk mencari di dalam catatan ini..."
-				class="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
-			/>
-			<button
-				type="button"
-				onclick={() => {
-					isSearchActive = false;
-					inPageSearchQuery = '';
-				}}
-				title="Tutup Pencarian (ESC)"
-				aria-label="Tutup Pencarian"
-				class="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-amber-500/15 hover:text-foreground"
-			>
-				<X class="h-3.5 w-3.5 pointer-events-none" />
-			</button>
-		</div>
-	{/if}
-
-	<!-- ======================================================== -->
-	<!-- 3. THREE-COLUMN WORKSPACE (EXPLORER + ARTICLE + OUTLINE)  -->
-	<!-- ======================================================== -->
-	<div class="flex gap-7 py-6">
-		<!-- LEFT SIDEBAR: EXPLORER (Pohon Semua Dokumen) -->
+	<div class="flex gap-10 py-8">
+		<!-- LEFT SIDEBAR: MINIMAL FILE EXPLORER -->
 		{#if !isFocusMode}
-			<aside class="hidden lg:block w-68 shrink-0">
-				<div class="sticky top-20 space-y-3">
-					<!-- Switcher only shown on lg screens where Right Outline is hidden; on xl+ Explorer is dedicated left -->
-					<div class="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1 text-center text-xs font-semibold xl:hidden">
-						<button
-							type="button"
-							onclick={() => (sidebarView = 'explorer')}
-							class="flex items-center justify-center gap-1.5 rounded-lg py-1.5 transition-all {sidebarView === 'explorer'
-								? 'bg-background text-foreground shadow-xs'
-								: 'text-muted-foreground hover:text-foreground'}"
-						>
-							<FolderTree class="h-3.5 w-3.5 text-indigo-500" />
-							<span>Explorer</span>
-						</button>
-
-						<button
-							type="button"
-							onclick={() => (sidebarView = 'outline')}
-							class="flex items-center justify-center gap-1.5 rounded-lg py-1.5 transition-all {sidebarView === 'outline'
-								? 'bg-background text-foreground shadow-xs'
-								: 'text-muted-foreground hover:text-foreground'}"
-						>
-							<ListTree class="h-3.5 w-3.5 text-blue-500" />
-							<span>Outline</span>
-						</button>
+			<aside class="hidden lg:block w-64 shrink-0 border-r border-border/60 pr-5">
+				<div
+					class="sticky top-20 space-y-3"
+					oncontextmenu={(e) => openContextMenu(e, null)}
+					role="region"
+					aria-label="File Explorer"
+				>
+					<!-- Explorer Top Header: Section Title + Create File / Create Folder (100% Shadcn) -->
+					<div class="flex items-center justify-between">
+						<span class="text-xs font-semibold text-foreground">
+							Folder {activeSection === 'ALL' ? 'Dokumen' : activeSection}
+						</span>
+						<div class="flex items-center gap-1">
+							<Button
+								variant="outline"
+								size="sm"
+								title="Buat File Catatan Baru (Ctrl+N)"
+								onclick={() => openExplorerCreateFile()}
+								class="h-7 gap-1 px-2 text-xs"
+							>
+								<FilePlus class="h-3.5 w-3.5" />
+								<span>File</span>
+							</Button>
+							<Button
+								variant="outline"
+								size="sm"
+								title="Buat Folder Baru"
+								onclick={() => openExplorerCreateFolder()}
+								class="h-7 gap-1 px-2 text-xs"
+							>
+								<FolderPlus class="h-3.5 w-3.5" />
+								<span>Folder</span>
+							</Button>
+						</div>
 					</div>
 
-					{#if sidebarView === 'outline'}
-						<div class="xl:hidden">
-							<DocsRightOutline
-								{outlineTree}
-								{activeHeadingId}
-								onSelectHeading={scrollToHeading}
-								onContextMenu={(e) => openContextMenu(e, currentDoc)}
-							/>
-						</div>
-					{/if}
-
-					<!-- Explorer Tree (Always visible on xl+, or when sidebarView === 'explorer') -->
-					<div
-						class="space-y-3 {sidebarView === 'outline' ? 'hidden xl:block' : ''}"
-						oncontextmenu={(e) => openContextMenu(e, null)}
-						role="region"
-						aria-label="Semua Dokumen"
-					>
-						<!-- Explorer Header with Obsidian File Explorer Actions: + File | + Folder | Collapse -->
-						<div class="flex items-center justify-between px-1">
-							<span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-								File Explorer
-							</span>
-							<div class="flex items-center gap-1">
-								<Button
-									variant="outline"
-									size="sm"
-									title="Buat File Catatan Baru (Ctrl+N)"
-									onclick={() => openExplorerCreateFile()}
-									class="h-6 gap-1 px-2 text-[11px] font-semibold"
-								>
-									<FilePlus class="h-3 w-3 text-emerald-500" />
-									<span>+ File</span>
-								</Button>
-								<Button
-									variant="outline"
-									size="sm"
-									title="Buat Folder Baru (Kategori)"
-									onclick={() => openExplorerCreateFolder()}
-									class="h-6 gap-1 px-2 text-[11px] font-semibold"
-								>
-									<FolderPlus class="h-3 w-3 text-amber-500" />
-									<span>+ Folder</span>
-								</Button>
-								<Button
-									variant="ghost"
-									size="icon"
-									title={allExpanded ? 'Ciutkan Semua Folder' : 'Bentangkan Semua Folder'}
-									onclick={toggleAllCategories}
-									class="h-6 w-6 text-muted-foreground hover:text-foreground rounded-md"
-								>
-									<ChevronsUpDown class="h-3.5 w-3.5" />
-								</Button>
-							</div>
-						</div>
-
-						<!-- Section Switcher: SAP | SAC | WEB | Semua -->
-						<div class="grid grid-cols-4 gap-1 rounded-xl bg-muted p-1 text-center shadow-2xs">
-							<button
-								type="button"
-								onclick={() => (activeSection = 'SAP')}
-								class="rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'SAP'
-									? 'bg-blue-600 text-white shadow-xs'
-									: 'text-muted-foreground hover:text-foreground'}"
-							>
-								SAP
-							</button>
-							<button
-								type="button"
-								onclick={() => (activeSection = 'SAC')}
-								class="rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'SAC'
-									? 'bg-purple-600 text-white shadow-xs'
-									: 'text-muted-foreground hover:text-foreground'}"
-							>
-								SAC
-							</button>
-							<button
-								type="button"
-								onclick={() => (activeSection = 'WEB')}
-								class="rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'WEB'
-									? 'bg-emerald-600 text-white shadow-xs'
-									: 'text-muted-foreground hover:text-foreground'}"
-							>
-								WEB
-							</button>
-							<button
-								type="button"
-								onclick={() => (activeSection = 'ALL')}
-								class="rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'ALL'
-									? 'bg-foreground text-background shadow-xs'
-									: 'text-muted-foreground hover:text-foreground'}"
-							>
-								Semua
-							</button>
-						</div>
-
-						<!-- OBSIDIAN INLINE FILE / FOLDER CREATOR BOX -->
-						{#if explorerCreator.open}
-							<form
-								onsubmit={submitExplorerCreator}
-								class="rounded-xl border border-indigo-500/40 bg-indigo-500/5 p-2.5 space-y-2 shadow-sm animate-in fade-in duration-100"
-							>
-								<div class="flex items-center justify-between gap-1 text-[10px] font-semibold">
-									<div class="flex items-center gap-1.5 truncate">
-										{#if explorerCreator.type === 'folder'}
-											<FolderPlus class="h-3.5 w-3.5 text-amber-500 shrink-0" />
-											<span class="truncate text-foreground">
-												{explorerCreator.isRootFolder
-													? `Folder Baru di ${explorerCreator.section}`
-													: `Sub-Folder di ${explorerCreator.category}`}
-											</span>
-										{:else}
-											<FilePlus class="h-3.5 w-3.5 text-emerald-500 shrink-0" />
-											<span class="truncate text-foreground">
-												File Baru di {explorerCreator.section} / {explorerCreator.subcategory || explorerCreator.category}
-											</span>
-										{/if}
-									</div>
-									<button
+					<!-- Inline Create File / Folder Box (Shadcn Card) -->
+					{#if explorerCreator.open}
+						<Card class="p-2.5 shadow-xs">
+							<form onsubmit={submitExplorerCreator} class="space-y-2">
+								<div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
+									<span class="truncate">
+										{explorerCreator.type === 'folder'
+											? explorerCreator.isRootFolder
+												? `Folder baru di ${explorerCreator.section}`
+												: `Sub-folder di ${explorerCreator.category}`
+											: `File baru di ${explorerCreator.subcategory || explorerCreator.category}`}
+									</span>
+									<Button
 										type="button"
+										variant="ghost"
+										size="icon"
 										onclick={() => (explorerCreator.open = false)}
-										class="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+										class="h-5 w-5"
 									>
 										<X class="h-3 w-3" />
-									</button>
+									</Button>
 								</div>
 
 								{#if explorerCreator.type === 'file'}
-									<!-- Quick folder selector within current section so user can also pick any folder -->
 									<select
 										bind:value={explorerCreator.category}
 										class="flex h-7 w-full rounded-md border border-input bg-background px-2 py-1 text-[11px] text-foreground focus:outline-none"
 									>
 										{#each currentTree.filter((g: any) => (g.section || 'SAP') === explorerCreator.section) as folderGroup}
-											<option value={folderGroup.title}>📁 {folderGroup.title}</option>
+											<option value={folderGroup.title}>{folderGroup.title}</option>
 										{/each}
 									</select>
 								{/if}
@@ -1578,17 +1142,17 @@
 										type="text"
 										bind:value={explorerCreator.name}
 										placeholder={explorerCreator.type === 'folder'
-											? 'Ketik nama folder lalu Enter...'
-											: 'Ketik nama catatan lalu Enter...'}
+											? 'Nama folder...'
+											: 'Nama file catatan...'}
 										class="h-7 text-xs flex-1"
 									/>
 									<Button
 										type="submit"
 										size="sm"
 										disabled={explorerCreator.isSubmitting || !explorerCreator.name.trim()}
-										class="h-7 px-2.5 text-[11px]"
+										class="h-7 px-2.5 text-xs"
 									>
-										{explorerCreator.isSubmitting ? '...' : 'Buat'}
+										Buat
 									</Button>
 								</div>
 
@@ -1596,342 +1160,349 @@
 									<p class="text-[10px] text-destructive">{explorerCreator.error}</p>
 								{/if}
 							</form>
+						</Card>
+					{/if}
+
+					<!-- Quiet Filter Input -->
+					<div class="relative">
+						<Search class="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+						<Input
+							type="text"
+							bind:value={sidebarFilter}
+							onkeydown={(e) => {
+								if (e.key === 'Escape') sidebarFilter = '';
+							}}
+							placeholder="Cari catatan..."
+							class="h-7 pl-8 pr-6 text-xs"
+						/>
+						{#if sidebarFilter}
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								onclick={() => (sidebarFilter = '')}
+								class="absolute right-1 top-1 h-5 w-5 text-muted-foreground hover:text-foreground"
+							>
+								<X class="h-3 w-3" />
+							</Button>
 						{/if}
+					</div>
 
-						<!-- Quick Filter Input -->
-						<div class="relative">
-							<Search class="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
-							<Input
-								type="text"
-								bind:value={sidebarFilter}
-								onkeydown={(e) => {
-									if (e.key === 'Escape') sidebarFilter = '';
-								}}
-								placeholder="Filter dalam {activeSection === 'ALL' ? 'semua' : activeSection}..."
-								class="h-8 pl-8 pr-7 text-xs"
-							/>
-							{#if sidebarFilter}
-								<button
-									type="button"
-									onclick={() => (sidebarFilter = '')}
-									title="Hapus Filter"
-									aria-label="Hapus Filter"
-									class="absolute right-1.5 top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
-								>
-									<X class="h-3 w-3 pointer-events-none" />
-								</button>
-							{/if}
-						</div>
+					<!-- Clean Folder & File Tree (Uniform Shadcn Styling & Lucide Icons) -->
+					<nav class="space-y-0.5 max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
+						{#each filteredTree as group}
+							{@const expanded = isCategoryExpanded(group)}
+							<div
+								class="group/folder"
+								oncontextmenu={(e) =>
+									openContextMenu(e, {
+										isFolder: true,
+										nodeCount: group.nodes.length,
+										section: group.section,
+										category: group.title,
+										title: group.title
+									})}
+								role="group"
+							>
+								<div class="flex items-center justify-between rounded-md pr-1 hover:bg-accent/60 transition-colors">
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onclick={() => toggleCategory(group.title, group)}
+										class="h-7 flex-1 justify-start gap-1.5 px-2 text-xs font-medium text-foreground truncate"
+									>
+										<ChevronDown
+											class="h-3.5 w-3.5 text-muted-foreground transition-transform duration-150 shrink-0 {expanded
+												? 'rotate-0'
+												: '-rotate-90'}"
+										/>
+										{#if expanded}
+											<FolderOpen class="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+										{:else}
+											<Folder class="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+										{/if}
+										<span class="truncate">{group.title}</span>
+									</Button>
 
-						<!-- Navigation Groups (File Explorer Folders & Files) -->
-						<nav class="space-y-1 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
-							{#each filteredTree as group}
-								{@const expanded = isCategoryExpanded(group)}
-								<div
-									class="group/folder rounded-xl transition-colors {expanded ? 'bg-muted/30' : ''}"
-									oncontextmenu={(e) =>
-										openContextMenu(e, {
-											isFolder: true,
-											nodeCount: group.nodes.length,
-											section: group.section,
-											category: group.title,
-											title: `Folder: ${group.title}`
-										})}
-									role="group"
-								>
-									<div class="flex items-center justify-between pr-1 rounded-lg hover:bg-muted/80 transition-colors">
-										<button
+									<div class="flex items-center gap-0.5 opacity-0 group-hover/folder:opacity-100 transition-opacity shrink-0">
+										<Button
 											type="button"
-											onclick={() => toggleCategory(group.title, group)}
-											class="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-foreground truncate"
+											variant="ghost"
+											size="icon"
+											title="Buat File di folder {group.title}"
+											onclick={(e) => {
+												e.stopPropagation();
+												openExplorerCreateFile({
+													section: group.section,
+													category: group.title
+												});
+											}}
+											class="h-5 w-5 text-muted-foreground hover:text-foreground"
 										>
-											<ChevronDown
-												class="h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 shrink-0 {expanded
-													? 'rotate-0 text-foreground'
-													: '-rotate-90'}"
-											/>
-											{#if expanded}
-												<FolderOpen class="h-3.5 w-3.5 text-amber-500 shrink-0" />
-											{:else}
-												<Folder class="h-3.5 w-3.5 text-amber-500 shrink-0" />
-											{/if}
-											<span class="truncate font-medium">{group.title}</span>
-										</button>
+											<Plus class="h-3 w-3" />
+										</Button>
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon"
+											title="Buat Sub-Folder di {group.title}"
+											onclick={(e) => {
+												e.stopPropagation();
+												openExplorerCreateFolder({
+													isFolder: true,
+													section: group.section,
+													category: group.title
+												});
+											}}
+											class="h-5 w-5 text-muted-foreground hover:text-foreground"
+										>
+											<FolderPlus class="h-3 w-3" />
+										</Button>
+									</div>
+								</div>
 
-										<div class="flex items-center gap-0.5 shrink-0">
-											<!-- Quick Create File & Create Sub-Folder buttons on folder row -->
-											<button
+								{#if expanded}
+									<div class="space-y-0.5 pl-3 ml-2.5 border-l border-border/60 my-0.5">
+										<!-- Sub-Folders -->
+										{#each group.subcategories || [] as subGroup}
+											{@const subExpanded = isSubcategoryExpanded(group.title, subGroup)}
+											<div
+												oncontextmenu={(e) =>
+													openContextMenu(e, {
+														isFolder: true,
+														nodeCount: subGroup.nodes.length,
+														section: group.section,
+														category: group.title,
+														subcategory: subGroup.title,
+														title: `${group.title} / ${subGroup.title}`
+													})}
+												role="group"
+											>
+												<div class="group/sub flex items-center justify-between rounded-md pr-1 hover:bg-accent/50">
+													<Button
+														type="button"
+														variant="ghost"
+														size="sm"
+														onclick={() => toggleSubcategory(group.title, subGroup)}
+														class="h-7 flex-1 justify-start gap-1.5 px-2 text-xs font-medium text-muted-foreground hover:text-foreground truncate"
+													>
+														<ChevronDown
+															class="h-3 w-3 transition-transform duration-150 shrink-0 {subExpanded
+																? 'rotate-0'
+																: '-rotate-90'}"
+														/>
+														<Folder class="h-3 w-3 text-muted-foreground shrink-0" />
+														<span class="truncate">{subGroup.title}</span>
+													</Button>
+													<Button
+														type="button"
+														variant="ghost"
+														size="icon"
+														title="Buat File di {subGroup.title}"
+														onclick={() =>
+															openExplorerCreateFile({
+																section: group.section,
+																category: group.title,
+																subcategory: subGroup.title
+															})}
+														class="opacity-0 group-hover/sub:opacity-100 h-5 w-5 text-muted-foreground hover:text-foreground"
+													>
+														<Plus class="h-3 w-3" />
+													</Button>
+												</div>
+
+												{#if subExpanded}
+													<div class="space-y-0.5 pl-3 ml-2 border-l border-border/50 py-0.5">
+														{#each subGroup.nodes as node}
+															{@const isCurrent = node.path === data.slug || node.slug === data.slug}
+															<a
+																href="/docs/{node.path}"
+																oncontextmenu={(e) => openContextMenu(e, node)}
+																class="flex items-center gap-2 rounded-md px-2 py-1 text-xs transition-colors {isCurrent
+																	? 'bg-secondary font-semibold text-secondary-foreground'
+																	: 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}"
+															>
+																<FileText class="h-3 w-3 opacity-60 shrink-0" />
+																<span class="truncate">{node.title}</span>
+															</a>
+														{/each}
+														{#if subGroup.nodes.length === 0}
+															<Button
+																type="button"
+																variant="ghost"
+																size="sm"
+																onclick={() =>
+																	openExplorerCreateFile({
+																		section: group.section,
+																		category: group.title,
+																		subcategory: subGroup.title
+																	})}
+																class="h-6 w-full justify-start px-2 text-[11px] text-muted-foreground"
+															>
+																<Plus class="h-3 w-3 mr-1" />
+																<span>Buat file</span>
+															</Button>
+														{/if}
+													</div>
+												{/if}
+											</div>
+										{/each}
+
+										<!-- Direct Files in Folder -->
+										{#each group.directNodes || group.nodes as node}
+											{@const isCurrent = node.path === data.slug || node.slug === data.slug}
+											<a
+												href="/docs/{node.path}"
+												oncontextmenu={(e) => openContextMenu(e, node)}
+												class="flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors {isCurrent
+													? 'bg-secondary font-semibold text-secondary-foreground'
+													: 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}"
+											>
+												<FileText class="h-3.5 w-3.5 opacity-60 shrink-0" />
+												<span class="truncate">{node.title}</span>
+											</a>
+										{/each}
+
+										{#if (group.directNodes || group.nodes).length === 0 && (group.subcategories || []).length === 0}
+											<Button
 												type="button"
-												title="Buat File Baru di folder {group.title}"
-												onclick={(e) => {
-													e.stopPropagation();
+												variant="ghost"
+												size="sm"
+												onclick={() =>
 													openExplorerCreateFile({
 														section: group.section,
 														category: group.title
-													});
-												}}
-												class="opacity-0 group-hover/folder:opacity-100 flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-emerald-500 transition-opacity"
+													})}
+												class="h-6 w-full justify-start px-2 text-[11px] text-muted-foreground"
 											>
-												<FilePlus class="h-3 w-3" />
-											</button>
-											<button
-												type="button"
-												title="Buat Sub-Folder di dalam {group.title}"
-												onclick={(e) => {
-													e.stopPropagation();
-													openExplorerCreateFolder({
-														isFolder: true,
-														section: group.section,
-														category: group.title
-													});
-												}}
-												class="opacity-0 group-hover/folder:opacity-100 flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-amber-500 transition-opacity"
-											>
-												<FolderPlus class="h-3 w-3" />
-											</button>
-
-											{#if activeSection === 'ALL' && group.section}
-												<span
-													class="rounded px-1.5 py-0.2 text-[9px] font-semibold uppercase {group.section === 'SAP'
-														? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-														: group.section === 'SAC'
-															? 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
-															: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'}"
-												>
-													{group.section}
-												</span>
-											{/if}
-											<span class="text-[10px] text-muted-foreground font-medium px-1.5 py-0.2 rounded-full bg-muted">
-												{group.nodes.length}
-											</span>
-										</div>
+												<Plus class="h-3 w-3 mr-1" />
+												<span>Buat file</span>
+											</Button>
+										{/if}
 									</div>
-
-									{#if expanded}
-										<div class="space-y-1 pl-2.5 ml-3 border-l-2 border-border my-1 animate-in fade-in duration-150">
-											<!-- Sub-Categories (Nested Sub-Folders) -->
-											{#each group.subcategories || [] as subGroup}
-												{@const subExpanded = isSubcategoryExpanded(group.title, subGroup)}
-												<div
-													class="rounded-lg bg-muted/20"
-													oncontextmenu={(e) =>
-														openContextMenu(e, {
-															isFolder: true,
-															nodeCount: subGroup.nodes.length,
-															section: group.section,
-															category: group.title,
-															subcategory: subGroup.title,
-															title: `Sub-Folder: ${group.title} / ${subGroup.title}`
-														})}
-													role="group"
-												>
-													<div class="flex items-center justify-between pr-1">
-														<button
-															type="button"
-															onclick={() => toggleSubcategory(group.title, subGroup)}
-															class="flex-1 flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-muted/80 transition-colors truncate"
-														>
-															<ChevronDown
-																class="h-3 w-3 transition-transform duration-150 shrink-0 {subExpanded
-																	? 'rotate-0'
-																	: '-rotate-90'}"
-															/>
-															<Folder class="h-3 w-3 shrink-0" />
-															<span class="truncate">{subGroup.title}</span>
-															<span class="ml-auto text-[9px] text-muted-foreground px-1 rounded bg-muted">
-																{subGroup.nodes.length}
-															</span>
-														</button>
-														<button
-															type="button"
-															title="Buat File Baru di Sub-Folder {subGroup.title}"
-															onclick={() =>
-																openExplorerCreateFile({
-																	section: group.section,
-																	category: group.title,
-																	subcategory: subGroup.title
-																})}
-															class="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-emerald-500"
-														>
-															<FilePlus class="h-3 w-3" />
-														</button>
-													</div>
-
-													{#if subExpanded}
-														<div class="space-y-0.5 pl-2.5 ml-2.5 border-l border-indigo-500/30 py-0.5">
-															{#each subGroup.nodes as node}
-																{@const isCurrent = node.path === data.slug || node.slug === data.slug}
-																<a
-																	href="/docs/{node.path}"
-																	onclick={() => ensureTabOpen(node)}
-																	oncontextmenu={(e) => openContextMenu(e, node)}
-																	class="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors {isCurrent
-																		? 'bg-foreground text-background shadow-2xs font-semibold'
-																		: 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
-																	title="{node.title} (Klik kanan untuk opsi)"
-																>
-																	<div class="flex items-center gap-2 truncate">
-																		<FileText class="h-3.5 w-3.5 opacity-60 shrink-0" />
-																		<span class="truncate">{node.title}</span>
-																	</div>
-																</a>
-															{/each}
-															{#if subGroup.nodes.length === 0}
-																<button
-																	type="button"
-																	onclick={() =>
-																		openExplorerCreateFile({
-																			section: group.section,
-																			category: group.title,
-																			subcategory: subGroup.title
-																		})}
-																	class="w-full text-left px-2 py-1 text-[10px] italic text-muted-foreground hover:text-foreground"
-																>
-																	+ Buat file di sub-folder ini...
-																</button>
-															{/if}
-														</div>
-													{/if}
-												</div>
-											{/each}
-
-											<!-- Direct Documents inside Category (without Sub-Category) -->
-											{#each group.directNodes || group.nodes as node}
-												{@const isCurrent = node.path === data.slug || node.slug === data.slug}
-												<a
-													href="/docs/{node.path}"
-													onclick={() => ensureTabOpen(node)}
-													oncontextmenu={(e) => openContextMenu(e, node)}
-													class="flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors {isCurrent
-														? 'bg-foreground text-background shadow-2xs font-semibold'
-														: 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
-													title="{node.title} (Klik kanan untuk opsi)"
-												>
-													<div class="flex items-center gap-2 truncate">
-														<FileText class="h-3.5 w-3.5 opacity-60 shrink-0" />
-														<span class="truncate">{node.title}</span>
-													</div>
-												</a>
-											{/each}
-
-											{#if (group.directNodes || group.nodes).length === 0 && (group.subcategories || []).length === 0}
-												<button
-													type="button"
-													onclick={() =>
-														openExplorerCreateFile({
-															section: group.section,
-															category: group.title
-														})}
-													class="w-full text-left px-2.5 py-1.5 text-[11px] italic text-muted-foreground hover:text-foreground"
-												>
-													Folder kosong — klik untuk + Buat File
-												</button>
-											{/if}
-										</div>
-									{/if}
-								</div>
-							{/each}
-						</nav>
-					</div>
+								{/if}
+							</div>
+						{/each}
+					</nav>
 				</div>
 			</aside>
 		{/if}
 
-		<!-- CENTER AREA: DOCUMENT CONTENT OR OBSIDIAN IN-PAGE NOTE EDITOR -->
+		<!-- CENTER AREA: CLEAN NOTE CANVAS (READING OR WRITING) -->
 		<!-- svelte-ignore a11y_click_events_have_key_events -->
 		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<div
-			class="min-w-0 flex-1 {isFocusMode ? 'max-w-4xl mx-auto' : ''}"
+			class="min-w-0 flex-1 max-w-3xl"
 			oncontextmenu={(e) => openContextMenu(e, currentDoc)}
 			onclick={handleArticleClick}
 			ondblclick={handleArticleDblClick}
 			role="article"
 		>
+			<!-- Single Quiet Top Bar: Folder Path on Left, Clean Shadcn Buttons on Right -->
+			<div class="mb-6 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+				<div class="flex items-center gap-1.5 truncate">
+					<Folder class="h-3.5 w-3.5 shrink-0" />
+					<span>{currentDoc?.section || data.article.section || 'SAP'}</span>
+					<span>/</span>
+					<span class="truncate">{currentDoc?.category || data.article.category}</span>
+					{#if currentDoc?.subcategory || data.article?.subcategory}
+						<span>/</span>
+						<span class="truncate text-foreground font-medium">
+							{currentDoc?.subcategory || data.article?.subcategory}
+						</span>
+					{/if}
+					{#if inlineStatusMsg}
+						<Badge variant="secondary" class="ml-2 text-[10px]">{inlineStatusMsg}</Badge>
+					{/if}
+				</div>
+
+				<div class="flex items-center gap-1.5 shrink-0">
+					{#if currentDoc?.sacUrl}
+						<Button
+							href={currentDoc.sacUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							variant="outline"
+							size="sm"
+							class="h-7 gap-1 px-2.5 text-xs"
+						>
+							<ExternalLink class="h-3 w-3" />
+							<span>Story SAC</span>
+						</Button>
+					{/if}
+
+					{#if isInlineEditing}
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onclick={() => (isInlineEditing = false)}
+							class="h-7 px-2.5 text-xs"
+						>
+							Batal
+						</Button>
+						<Button
+							type="button"
+							variant="default"
+							size="sm"
+							disabled={isSavingInline}
+							onclick={() => saveInlineNote(true)}
+							class="h-7 gap-1.5 px-3 text-xs"
+						>
+							{#if isSavingInline}
+								<Loader2 class="h-3 w-3 animate-spin" />
+							{:else}
+								<Save class="h-3 w-3" />
+							{/if}
+							<span>Simpan</span>
+						</Button>
+					{:else}
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onclick={() => startInlineEdit(currentDoc)}
+							class="h-7 gap-1.5 px-2.5 text-xs"
+						>
+							<Edit3 class="h-3 w-3" />
+							<span>Edit</span>
+						</Button>
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							onclick={askAiAboutDoc}
+							class="h-7 gap-1.5 px-2.5 text-xs"
+						>
+							<Sparkles class="h-3 w-3" />
+							<span>AI</span>
+						</Button>
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon"
+							title="Opsi lainnya"
+							onclick={(e) => openContextMenu(e, currentDoc)}
+							class="h-7 w-7 text-muted-foreground hover:text-foreground"
+						>
+							<MoreHorizontal class="h-4 w-4" />
+						</Button>
+					{/if}
+				</div>
+			</div>
+
 			{#if isInlineEditing}
 				<!-- ============================================================ -->
-				<!-- OBSIDIAN IN-PAGE NOTE EDITOR (Write Directly Inside Note!)   -->
+				<!-- CLEAN OBSIDIAN NOTE EDITOR (100% Shadcn Components)          -->
 				<!-- ============================================================ -->
-				<div class="space-y-4 rounded-2xl border border-indigo-500/30 bg-card/60 p-5 shadow-sm animate-in fade-in duration-150">
-					<!-- Top Automatic Folder Path & Action Buttons -->
-					<div class="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-						<div class="flex flex-wrap items-center gap-1.5 text-xs">
-							{#if (currentDoc?.section || data.article.section) === 'SAP'}
-								<Badge class="gap-1 border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300">
-									<Building2 class="h-3 w-3" />
-									<span>SAP Enterprise</span>
-								</Badge>
-							{:else if (currentDoc?.section || data.article.section) === 'SAC'}
-								<Badge class="gap-1 border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300">
-									<BarChart3 class="h-3 w-3" />
-									<span>SAC Analytics</span>
-								</Badge>
-							{:else}
-								<Badge class="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
-									<Globe class="h-3 w-3" />
-									<span>WEB Stack</span>
-								</Badge>
-							{/if}
-
-							<span class="text-muted-foreground">/</span>
-							<Badge variant="outline" class="gap-1 text-[11px] font-semibold">
-								<Folder class="h-3 w-3 text-amber-500" />
-								<span>{currentDoc?.category || data.article.category}</span>
-							</Badge>
-
-							{#if currentDoc?.subcategory || data.article?.subcategory}
-								<span class="text-muted-foreground">/</span>
-								<Badge variant="secondary" class="gap-1 text-[11px] font-semibold border border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-									<FolderTree class="h-3 w-3" />
-									<span>{currentDoc?.subcategory || data.article?.subcategory}</span>
-								</Badge>
-							{/if}
-
-							{#if inlineStatusMsg}
-								<span class="ml-2 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-									{inlineStatusMsg}
-								</span>
-							{/if}
-						</div>
-
-						<div class="flex items-center gap-1.5">
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onclick={() => (isInlineEditing = false)}
-								class="h-8 gap-1 text-xs"
-							>
-								<Eye class="h-3.5 w-3.5" />
-								<span>Mode Baca</span>
-							</Button>
-							<Button
-								type="button"
-								variant="default"
-								size="sm"
-								disabled={isSavingInline}
-								onclick={() => saveInlineNote(true)}
-								class="h-8 gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 text-xs shadow-xs"
-							>
-								{#if isSavingInline}
-									<Loader2 class="h-3.5 w-3.5 animate-spin" />
-									<span>Menyimpan...</span>
-								{:else}
-									<Save class="h-3.5 w-3.5" />
-									<span>Simpan Catatan (Ctrl+S)</span>
-								{/if}
-							</Button>
-						</div>
-					</div>
-
-					<!-- Note Title Input (Like Obsidian / Notion Note Heading) -->
-					<div>
-						<Input
-							type="text"
-							bind:value={inlineTitle}
-							placeholder="Judul Catatan..."
-							class="h-11 border-transparent bg-muted/40 px-3 text-xl font-extrabold tracking-tight text-foreground focus-visible:border-indigo-500 sm:text-2xl"
-						/>
-					</div>
+				<div class="space-y-3 animate-in fade-in duration-100">
+					<Input
+						type="text"
+						bind:value={inlineTitle}
+						placeholder="Judul catatan..."
+						class="h-11 px-3 text-xl font-bold tracking-tight"
+					/>
 
 					{#if inlineErrorMsg}
 						<div class="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
@@ -1939,115 +1510,100 @@
 						</div>
 					{/if}
 
-					<!-- Formatting & Mode Toolbar -->
-					<div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-muted/40 p-2">
+					<!-- Single Simple Toolbar Row Using Shadcn Buttons -->
+					<div class="flex flex-wrap items-center justify-between gap-2 border-y border-border/60 py-1.5">
 						<Tabs bind:value={inlineMode} class="w-auto">
-							<TabsList class="h-8 bg-background/80 p-0.5">
-								<TabsTrigger value="edit" class="gap-1.5 px-2.5 py-1 text-xs">
-									<Edit3 class="h-3 w-3" />
-									<span>Tulis</span>
-								</TabsTrigger>
-								<TabsTrigger value="split" class="gap-1.5 px-2.5 py-1 text-xs">
-									<Columns2 class="h-3 w-3" />
-									<span>Split</span>
-								</TabsTrigger>
-								<TabsTrigger value="preview" class="gap-1.5 px-2.5 py-1 text-xs">
-									<Eye class="h-3 w-3" />
-									<span>Preview</span>
-								</TabsTrigger>
+							<TabsList class="h-7 p-0.5">
+								<TabsTrigger value="edit" class="px-2.5 py-0.5 text-xs">Tulis</TabsTrigger>
+								<TabsTrigger value="split" class="px-2.5 py-0.5 text-xs">Split</TabsTrigger>
+								<TabsTrigger value="preview" class="px-2.5 py-0.5 text-xs">Preview</TabsTrigger>
 							</TabsList>
 						</Tabs>
 
-						<div class="flex flex-wrap items-center gap-1">
-							<button
+						<div class="flex items-center gap-0.5">
+							<Button
 								type="button"
-								title="Heading 2"
+								variant="ghost"
+								size="icon"
+								title="Heading"
 								onclick={() => insertInlineSnippet('\n## ', '\n')}
-								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
+								class="h-7 w-7"
 							>
 								<Heading2 class="h-3.5 w-3.5" />
-							</button>
-							<button
+							</Button>
+							<Button
 								type="button"
-								title="Heading 3"
-								onclick={() => insertInlineSnippet('\n### ', '\n')}
-								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
-							>
-								<Heading3 class="h-3.5 w-3.5" />
-							</button>
-							<button
-								type="button"
+								variant="ghost"
+								size="icon"
 								title="Bold"
 								onclick={() => insertInlineSnippet('**', '**')}
-								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
+								class="h-7 w-7"
 							>
 								<Bold class="h-3.5 w-3.5" />
-							</button>
-							<button
+							</Button>
+							<Button
 								type="button"
-								title="Italic"
-								onclick={() => insertInlineSnippet('*', '*')}
-								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
-							>
-								<Italic class="h-3.5 w-3.5" />
-							</button>
-							<button
-								type="button"
-								title="Bullet List"
+								variant="ghost"
+								size="icon"
+								title="List"
 								onclick={() => insertInlineSnippet('\n- ', '')}
-								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
+								class="h-7 w-7"
 							>
 								<List class="h-3.5 w-3.5" />
-							</button>
-							<button
+							</Button>
+							<Button
 								type="button"
-								title="Sisipkan Checklist"
+								variant="ghost"
+								size="icon"
+								title="Checklist"
 								onclick={() => insertInlineSnippet(MARKDOWN_CHECKLIST_SNIPPET, '')}
-								class="flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-background hover:text-foreground"
+								class="h-7 w-7"
 							>
-								<CheckSquare class="h-3.5 w-3.5 text-emerald-500" />
-								<span class="hidden sm:inline">Checklist</span>
-							</button>
-							<button
+								<CheckSquare class="h-3.5 w-3.5" />
+							</Button>
+							<Button
 								type="button"
-								title="Sisipkan Tabel Markdown"
+								variant="ghost"
+								size="icon"
+								title="Tabel"
 								onclick={() => insertInlineSnippet(MARKDOWN_TABLE_SNIPPET, '')}
-								class="flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-background hover:text-foreground"
+								class="h-7 w-7"
 							>
-								<Table class="h-3.5 w-3.5 text-indigo-500" />
-								<span class="hidden sm:inline">Tabel</span>
-							</button>
-							<button
+								<Table class="h-3.5 w-3.5" />
+							</Button>
+							<Button
 								type="button"
-								title="Blok Kode"
+								variant="ghost"
+								size="icon"
+								title="Kode"
 								onclick={() => insertInlineSnippet('\n```javascript\n', '\n```\n')}
-								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
+								class="h-7 w-7"
 							>
 								<Code class="h-3.5 w-3.5" />
-							</button>
-							<button
+							</Button>
+							<Button
 								type="button"
-								title="Unggah Gambar / Screenshot"
+								variant="ghost"
+								size="icon"
+								title="Sisipkan Gambar (atau tekan Ctrl+V)"
 								onclick={() => inlineImageInputRef?.click()}
-								disabled={isUploadingInlineImage}
-								class="flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-background hover:text-foreground"
+								class="h-7 w-7"
 							>
-								<ImageIcon class="h-3.5 w-3.5 text-indigo-500" />
-								<span class="hidden sm:inline">{isUploadingInlineImage ? 'Unggah...' : '+ Gambar'}</span>
-							</button>
-							<button
+								<ImageIcon class="h-3.5 w-3.5" />
+							</Button>
+							<Button
 								type="button"
-								title="Tampilkan Template Cepat & AI Writer"
+								variant="secondary"
+								size="sm"
 								onclick={() => (showTemplateBar = !showTemplateBar)}
-								class="flex items-center gap-1 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-500/20 dark:text-indigo-400"
+								class="ml-1 h-7 gap-1 px-2 text-xs"
 							>
 								<Sparkles class="h-3 w-3" />
 								<span>Template & AI</span>
-							</button>
+							</Button>
 						</div>
 					</div>
 
-					<!-- Hidden File Inputs for Inline Editor -->
 					<input
 						type="file"
 						bind:this={inlineImageInputRef}
@@ -2063,77 +1619,63 @@
 						onchange={handleInlineMdImport}
 					/>
 
-					<!-- Optional Collapsible Template & AI Writer Bar -->
 					{#if showTemplateBar}
-						<div class="rounded-xl border border-indigo-500/30 bg-indigo-500/5 p-3 space-y-3 animate-in fade-in duration-100">
-							<div class="flex flex-wrap items-center justify-between gap-2">
-								<span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
-									<LayoutTemplate class="h-3.5 w-3.5 text-indigo-500" />
-									<span>Pilih Kerangka Template 1-Klik atau Bantuan AI:</span>
-								</span>
-								<button
-									type="button"
-									onclick={() => inlineMdInputRef?.click()}
-									class="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-foreground hover:bg-muted"
-								>
-									<FileUp class="h-3 w-3 text-indigo-500" />
-									<span>Import File (.md / .txt)</span>
-								</button>
-							</div>
-
-							<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+						<Card class="p-3 space-y-2.5 shadow-2xs">
+							<div class="flex flex-wrap gap-1.5">
 								{#each DOC_TEMPLATES as tpl}
-									<button
+									<Button
 										type="button"
+										variant="outline"
+										size="sm"
 										onclick={() => applyInlineTemplate(tpl)}
-										class="flex flex-col items-start rounded-lg border border-border bg-background p-2 text-left hover:border-indigo-500/60 transition-all"
+										class="h-7 px-2.5 text-xs"
 									>
-										<span class="text-[11px] font-bold text-foreground truncate">{tpl.name}</span>
-										<span class="text-[10px] text-muted-foreground line-clamp-1">{tpl.description}</span>
-									</button>
+										{tpl.name}
+									</Button>
 								{/each}
+								<Button
+									type="button"
+									variant="secondary"
+									size="sm"
+									onclick={() => inlineMdInputRef?.click()}
+									class="h-7 gap-1 px-2.5 text-xs"
+								>
+									<FileUp class="h-3 w-3" />
+									<span>Import .md</span>
+								</Button>
 							</div>
 
-							<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1 border-t border-border/60">
+							<div class="flex items-center gap-2">
 								<Input
 									type="text"
 									bind:value={inlineAiPrompt}
-									placeholder="Ketik instruksi untuk dibuatkan AI (opsional)..."
+									placeholder="Tulis topik untuk dibuatkan AI..."
 									class="h-8 text-xs flex-1"
 									disabled={isInlineAiLoading}
 								/>
-								<div class="flex items-center gap-1.5">
-									<Button
-										type="button"
-										size="sm"
-										disabled={isInlineAiLoading}
-										onclick={() => runInlineAiAction('generate')}
-										class="h-8 gap-1 bg-indigo-600 text-white hover:bg-indigo-700 text-xs"
-									>
-										{#if isInlineAiLoading}
-											<Loader2 class="h-3 w-3 animate-spin" />
-										{:else}
-											<Wand2 class="h-3 w-3" />
-										{/if}
-										<span>Tulis AI</span>
-									</Button>
-									<Button
-										type="button"
-										size="sm"
-										variant="outline"
-										disabled={isInlineAiLoading || !inlineContent}
-										onclick={() => runInlineAiAction('format')}
-										class="h-8 gap-1 text-xs"
-									>
-										<Sparkles class="h-3 w-3" />
-										<span>Rapikan Format</span>
-									</Button>
-								</div>
+								<Button
+									type="button"
+									size="sm"
+									disabled={isInlineAiLoading}
+									onclick={() => runInlineAiAction('generate')}
+									class="h-8 text-xs"
+								>
+									{isInlineAiLoading ? 'Memproses...' : 'Tulis AI'}
+								</Button>
+								<Button
+									type="button"
+									size="sm"
+									variant="outline"
+									disabled={isInlineAiLoading || !inlineContent}
+									onclick={() => runInlineAiAction('format')}
+									class="h-8 text-xs"
+								>
+									Rapikan
+								</Button>
 							</div>
-						</div>
+						</Card>
 					{/if}
 
-					<!-- Main Content Writing Area (Only fill the content!) -->
 					{#if inlineMode === 'edit'}
 						<Textarea
 							id="inline-note-textarea"
@@ -2141,9 +1683,9 @@
 							onpaste={handleInlinePaste}
 							ondrop={handleInlineDrop}
 							ondragover={(e) => e.preventDefault()}
-							rows={20}
-							placeholder="Langsung ketik isi catatan dokumentasi di sini... (Mendukung Markdown, Paste Screenshot Ctrl+V, Tabel, dan Code Block)"
-							class="min-h-[440px] rounded-xl p-4 font-mono text-xs leading-relaxed shadow-inner"
+							rows={22}
+							placeholder="Mulai tulis catatan di sini..."
+							class="min-h-[480px] rounded-xl p-4 font-mono text-xs leading-relaxed"
 						/>
 					{:else if inlineMode === 'split'}
 						<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -2153,229 +1695,108 @@
 								onpaste={handleInlinePaste}
 								ondrop={handleInlineDrop}
 								ondragover={(e) => e.preventDefault()}
-								rows={20}
-								placeholder="Langsung ketik isi catatan dokumentasi di sini..."
-								class="h-[460px] resize-none rounded-xl p-4 font-mono text-xs leading-relaxed shadow-inner"
+								rows={22}
+								placeholder="Mulai tulis catatan di sini..."
+								class="h-[480px] resize-none rounded-xl p-4 font-mono text-xs leading-relaxed"
 							/>
-							<div class="h-[460px] overflow-y-auto rounded-xl border border-border bg-background/60 p-5">
+							<Card class="h-[480px] overflow-y-auto p-5 shadow-none">
 								<div class="prose prose-zinc dark:prose-invert max-w-none text-xs leading-relaxed">
-									{@html renderMarkdown(inlineContent || '*Pratinjau catatan akan tampil di sini...*')}
+									{@html renderMarkdown(inlineContent || '*Pratinjau catatan...*')}
 								</div>
-							</div>
+							</Card>
 						</div>
 					{:else}
-						<div class="min-h-[400px] rounded-xl border border-border bg-background/60 p-6">
+						<Card class="min-h-[420px] p-6 shadow-none">
 							<div class="prose prose-zinc dark:prose-invert max-w-none text-xs leading-relaxed">
 								{@html renderMarkdown(inlineContent || '*Catatan masih kosong.*')}
 							</div>
-						</div>
+						</Card>
 					{/if}
-
-					<div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground pt-1">
-						<span>
-							💡 Lokasi otomatis di <strong class="text-foreground">{currentDoc?.section || data.article.section} / {currentDoc?.category || data.article.category}</strong>. Tekan <strong class="text-foreground">Ctrl + S</strong> untuk menyimpan atau <strong class="text-foreground">Ctrl + V</strong> untuk paste gambar.
-						</span>
-						<Button
-							type="button"
-							size="sm"
-							disabled={isSavingInline}
-							onclick={() => saveInlineNote(true)}
-							class="h-8 gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 text-xs"
-						>
-							<Save class="h-3.5 w-3.5" />
-							<span>Simpan & Selesai</span>
-						</Button>
-					</div>
 				</div>
 			{:else}
 				<!-- ============================================================ -->
-				<!-- READING VIEW (Standard Note View)                            -->
+				<!-- CLEAN READING VIEW (Just Title + Content, Zero Visual Noise) -->
 				<!-- ============================================================ -->
-				<!-- Document Header & Meta -->
-				<div class="mb-7">
-					<div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-						<div class="flex flex-wrap items-center gap-2">
-							{#if (currentDoc?.section || data.article.section) === 'SAP'}
-								<Badge class="gap-1 border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300">
-									<Building2 class="h-3 w-3" />
-									<span>SAP Enterprise</span>
-								</Badge>
-							{:else if (currentDoc?.section || data.article.section) === 'SAC'}
-								<Badge class="gap-1 border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300">
-									<BarChart3 class="h-3 w-3" />
-									<span>SAC Analytics</span>
-								</Badge>
-							{:else}
-								<Badge class="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
-									<Globe class="h-3 w-3" />
-									<span>WEB Stack</span>
-								</Badge>
-							{/if}
+				<h1 class="text-3xl font-bold tracking-tight text-foreground sm:text-4xl mb-4">
+					{currentDoc?.title || data.article.title}
+				</h1>
 
-							<Badge variant="outline" class="gap-1 text-[11px] font-semibold">
-								<Folder class="h-3 w-3 text-amber-500" />
-								<span>{currentDoc?.category || data.article.category}</span>
-							</Badge>
-							{#if currentDoc?.subcategory || data.article?.subcategory}
-								<Badge variant="secondary" class="gap-1 text-[11px] font-semibold border border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
-									<FolderTree class="h-3 w-3" />
-									<span>{currentDoc?.subcategory || data.article?.subcategory}</span>
-								</Badge>
-							{/if}
-							<span class="text-xs text-muted-foreground">•</span>
-							<div class="flex items-center gap-1 text-xs text-muted-foreground">
-								<Clock class="h-3.5 w-3.5" />
-								<span>{readingTime} menit baca</span>
-							</div>
-							{#if currentDoc?.updatedAt}
-								<span class="text-xs text-muted-foreground">•</span>
-								<div class="flex items-center gap-1 text-xs text-muted-foreground">
-									<Calendar class="h-3.5 w-3.5" />
-									<span>
-										{new Date(currentDoc.updatedAt).toLocaleDateString('id-ID', {
-											day: 'numeric',
-											month: 'short',
-											year: 'numeric'
-										})}
-									</span>
-								</div>
-							{/if}
-						</div>
-
-						<Button
-							variant="outline"
-							size="sm"
-							onclick={() => startInlineEdit(currentDoc)}
-							class="h-8 gap-1.5 text-xs"
-						>
-							<Edit3 class="h-3.5 w-3.5 text-blue-500" />
-							<span>Tulis / Edit Isi Catatan</span>
-						</Button>
+				{#if currentDoc?.builderContent}
+					<div class="mb-6 flex items-center">
+						<Tabs bind:value={activeDocTab} class="w-full sm:w-auto">
+							<TabsList class="inline-flex h-9 w-full sm:w-auto items-center justify-start rounded-lg bg-muted/60 p-1 text-muted-foreground shadow-xs">
+								<TabsTrigger
+									value="fsd"
+									class="inline-flex items-center gap-2 px-3.5 py-1 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs"
+								>
+									<FileText class="h-3.5 w-3.5" />
+									<span>FSD</span>
+								</TabsTrigger>
+								<TabsTrigger
+									value="builder"
+									class="inline-flex items-center gap-2 px-3.5 py-1 text-xs font-semibold data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-xs"
+								>
+									<Table class="h-3.5 w-3.5" />
+									<span>Builder</span>
+								</TabsTrigger>
+							</TabsList>
+						</Tabs>
 					</div>
+				{/if}
 
-					<h1 class="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-						{currentDoc?.title || data.article.title}
-					</h1>
-
-					{#if currentDoc?.description || data.article.snippet}
-						<p class="mt-2.5 text-sm leading-relaxed text-muted-foreground">
-							{currentDoc?.description || data.article.snippet}
-						</p>
-					{/if}
-
-					{#if currentDoc?.tags && currentDoc.tags.length > 0}
-						<div class="mt-3.5 flex flex-wrap items-center gap-1.5">
-							{#each currentDoc.tags as tag}
-								<Badge variant="outline" class="gap-1 px-2 py-0.5 text-[10px] text-muted-foreground">
-									<Tag class="h-2.5 w-2.5 opacity-60" />
-									<span>{tag}</span>
-								</Badge>
-							{/each}
-						</div>
-					{/if}
-				</div>
-
-				<!-- Pinned Inline AI Summary Card (when user pins an analysis from DocAiAssistantModal) -->
 				{#if pinnedAiSummary && pinnedAiSummary.slug === data.slug}
-					<div class="mb-7 overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/20 via-background to-background p-4 shadow-sm ring-1 ring-indigo-500/15 animate-in fade-in duration-150">
-						<div class="mb-2.5 flex items-center justify-between border-b border-border/70 pb-2">
-							<div class="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
-								<Sparkles class="h-3.5 w-3.5" />
+					<Card class="mb-6 p-4 shadow-2xs">
+						<div class="mb-2 flex items-center justify-between text-xs font-semibold text-foreground">
+							<span class="flex items-center gap-1.5">
+								<Sparkles class="h-3.5 w-3.5 text-muted-foreground" />
 								<span>{pinnedAiSummary.title}</span>
-								<Badge variant="outline" class="text-[9px] px-1.5 py-0 border-indigo-500/30 text-indigo-500">
-									Disematkan
-								</Badge>
-							</div>
-							<div class="flex items-center gap-1">
-								<button
-									type="button"
-									onclick={askAiAboutDoc}
-									class="rounded-md px-2 py-1 text-[11px] font-medium text-indigo-600 hover:bg-indigo-500/10 dark:text-indigo-400 transition-colors"
-								>
-									Buka Modal AI
-								</button>
-								<button
-									type="button"
-									onclick={() => (pinnedAiSummary = null)}
-									title="Tutup sematan AI"
-									aria-label="Tutup sematan AI"
-									class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-red-500/15 hover:text-red-500 transition-colors"
-								>
-									<X class="h-3.5 w-3.5 pointer-events-none" />
-								</button>
-							</div>
+							</span>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon"
+								onclick={() => (pinnedAiSummary = null)}
+								class="h-6 w-6"
+							>
+								<X class="h-3.5 w-3.5" />
+							</Button>
 						</div>
 						<div class="prose prose-xs dark:prose-invert max-w-none leading-relaxed">
 							{@html renderMarkdown(pinnedAiSummary.content)}
 						</div>
-					</div>
+					</Card>
 				{/if}
 
-				<!-- Markdown Rendered Body -->
 				<article class="prose prose-zinc dark:prose-invert max-w-none leading-relaxed">
 					{@html renderedHtml}
 				</article>
 
-				<!-- Obsidian Quick Hint Banner -->
-				<div class="mt-12 rounded-2xl border border-border bg-muted/30 p-4">
-					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-						<div class="flex items-center gap-2">
-							<MousePointerClick class="h-4 w-4 text-indigo-500 shrink-0" />
-							<span class="text-xs text-muted-foreground">
-								Tip: Buat <strong class="text-foreground">+ Folder</strong> atau <strong class="text-foreground">+ File</strong> di File Explorer kiri, lalu tulis isinya langsung di halaman ini (<strong class="text-foreground">Double-Click</strong> teks atau tekan <kbd class="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-mono">Ctrl+E</kbd>).
-							</span>
-						</div>
+				{#if data.prevArticle || data.nextArticle}
+					<Separator class="my-10" />
+					<div class="flex items-center justify-between gap-4">
+						{#if data.prevArticle}
+							<Button variant="ghost" size="sm" href="/docs/{data.prevArticle.path}" class="gap-1.5 text-xs">
+								<ChevronLeft class="h-3.5 w-3.5" />
+								<span>{data.prevArticle.title}</span>
+							</Button>
+						{:else}
+							<div></div>
+						{/if}
 
-						<Button size="sm" onclick={copyPageUrl} variant="ghost" class="gap-1 text-xs shrink-0">
-							{#if copiedUrl}
-								<Check class="h-3.5 w-3.5 text-emerald-600" />
-								<span>Tersalin</span>
-							{:else}
-								<Copy class="h-3.5 w-3.5" />
-								<span>Salin Link</span>
-							{/if}
-						</Button>
+						{#if data.nextArticle}
+							<Button variant="ghost" size="sm" href="/docs/{data.nextArticle.path}" class="gap-1.5 text-xs">
+								<span>{data.nextArticle.title}</span>
+								<ChevronRight class="h-3.5 w-3.5" />
+							</Button>
+						{/if}
 					</div>
-				</div>
-
-				<Separator class="my-8" />
-
-				<!-- Pagination Footer -->
-				<div class="flex items-center justify-between gap-4">
-					{#if data.prevArticle}
-						<a href="/docs/{data.prevArticle.path}" class="flex-1">
-							<div class="group flex flex-col rounded-xl border border-border p-4 transition-all hover:bg-muted/50">
-								<span class="flex items-center gap-1 text-[11px] text-muted-foreground">
-									<ChevronLeft class="h-3.5 w-3.5" /> Sebelumnya
-								</span>
-								<span class="mt-1 text-sm font-semibold text-foreground">
-									{data.prevArticle.title}
-								</span>
-							</div>
-						</a>
-					{:else}
-						<div></div>
-					{/if}
-
-					{#if data.nextArticle}
-						<a href="/docs/{data.nextArticle.path}" class="flex-1 text-right">
-							<div class="group flex flex-col rounded-xl border border-border p-4 transition-all hover:bg-muted/50">
-								<span class="flex items-center justify-end gap-1 text-[11px] text-muted-foreground">
-									Selanjutnya <ChevronRight class="h-3.5 w-3.5" />
-								</span>
-								<span class="mt-1 text-sm font-semibold text-foreground">
-									{data.nextArticle.title}
-								</span>
-							</div>
-						</a>
-					{/if}
-				</div>
+				{/if}
 			{/if}
 		</div>
 
-		<!-- RIGHT SIDEBAR: DEDICATED OUTLINE ("Di Halaman Ini") on XL+ Screens -->
-		{#if !isFocusMode}
-			<aside class="hidden xl:block w-60 shrink-0">
+		<!-- RIGHT SIDEBAR: MINIMAL OUTLINE -->
+		{#if !isFocusMode && !isInlineEditing}
+			<aside class="hidden xl:block w-52 shrink-0">
 				<div class="sticky top-20">
 					<DocsRightOutline
 						{outlineTree}
@@ -2412,15 +1833,6 @@
 	src={lightboxSrc}
 	alt={lightboxAlt}
 	onClose={() => (lightboxSrc = null)}
-/>
-
-<!-- Modal Document Editor & AI Generator -->
-<DocEditorModal
-	bind:isOpen={isEditorOpen}
-	mode={editorMode}
-	initialDoc={editingDocTarget || (editorMode === 'edit' ? currentDoc : null)}
-	categories={categoriesList}
-	onSave={handleSaved}
 />
 
 <!-- Dedicated Single-Document AI Assistant Modal -->

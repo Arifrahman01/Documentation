@@ -1,0 +1,195 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 670" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sacHeaderGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="blueBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="tealBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="amberBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="areaBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="670" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- SAC Top Shell Bar -->
+  <path d="M0 12 Q0 0 12 0 L1188 0 Q1200 0 1200 12 L1200 48 L0 48 Z" fill="url(#sacHeaderGrad)"/>
+  <rect x="18" y="12" width="28" height="24" rx="5" fill="#0070f2"/>
+  <text x="32" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="800" fill="#ffffff">SAC</text>
+  <text x="56" y="23" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">PM MINING — Story 1: Plant Maintenance Armada Gabungan (JB, DSP &amp; JML)</text>
+  <text x="56" y="38" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8">Active Sheet: Fleet Physical Availability, Work Orders &amp; MTBF/MTTR</text>
+
+  <!-- Live CDS Badge -->
+  <rect x="930" y="12" width="252" height="24" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <circle cx="946" cy="24" r="4" fill="#10b981"/>
+  <text x="958" y="28" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600" fill="#e2e8f0">LIVE CDS: S4HANA_PROD (J000)</text>
+
+  <!-- Global Input Filter Bar -->
+  <rect x="0" y="48" width="1200" height="52" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+      <g transform="translate(24, 60)">
+        <rect width="190.4" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Plant:</text>
+        <text x="45.5" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">JB01, DSP1, JML1</text>
+        <path d="M172.4 13 L176.4 18 L180.4 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(224.4, 60)">
+        <rect width="224.4" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Equipment Class:</text>
+        <text x="108.5" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">Heavy Fleet</text>
+        <path d="M206.4 13 L210.4 18 L214.4 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(458.8, 60)">
+        <rect width="150" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Period:</text>
+        <text x="51.8" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">Oct 2026</text>
+        <path d="M132 13 L136 18 L140 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+
+  <!-- Active Sheet Tab Indicator on Right -->
+  <rect x="1005" y="60" width="175" height="30" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="1093" y="79" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1d4ed8">Fleet Physical Availabil</text>
+
+  <!-- Story Content Area -->
+  
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="114" width="280" height="95" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="24" y="114" width="4" height="95" rx="2" fill="#059669"/>
+    <rect x="36" y="124" width="34" height="16" rx="3" fill="#eff6ff"/>
+           <text x="53" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">PM-1</text>
+    <text x="70" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Fleet Physical Availability (PA)</text>
+    <text x="38" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">91.8% <tspan font-size="11" font-weight="600" fill="#64748b">(Target 90%)</tspan></text>
+    <rect x="38" y="181" width="168" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="44" y="193" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ +1.8% di atas Target SLA</text>
+    
+    <polyline points="212.0,187.4 225.3,184.5 238.7,185.5 252.0,181.4 265.3,182.6 278.7,178.3 292.0,176.6" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="318" y="114" width="280" height="95" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="318" y="114" width="4" height="95" rx="2" fill="#0070f2"/>
+    <rect x="330" y="124" width="34" height="16" rx="3" fill="#eff6ff"/>
+           <text x="347" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">PM-2</text>
+    <text x="364" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Total Active Units Ready</text>
+    <text x="332" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">642 <tspan font-size="11" font-weight="600" fill="#64748b">Units</tspan></text>
+    <rect x="332" y="181" width="180" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="338" y="193" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">Dari 699 Total Populasi Alat</text>
+    
+    <polyline points="506.0,187.4 519.3,184.5 532.7,185.5 546.0,181.4 559.3,182.6 572.7,178.3 586.0,176.6" fill="none" stroke="#0070f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="612" y="114" width="275" height="95" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="612" y="114" width="4" height="95" rx="2" fill="#0d9488"/>
+    <rect x="624" y="124" width="34" height="16" rx="3" fill="#eff6ff"/>
+           <text x="641" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">PM-3</text>
+    <text x="658" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Preventive Maint. Ratio</text>
+    <text x="626" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">82.4% <tspan font-size="11" font-weight="600" fill="#64748b">PM vs CM</tspan></text>
+    <rect x="626" y="181" width="186" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="632" y="193" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ Unscheduled Breakdown &lt; 18%</text>
+    
+    <polyline points="795.0,187.4 808.3,184.5 821.7,185.5 835.0,181.4 848.3,182.6 861.7,178.3 875.0,176.6" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="901" y="114" width="275" height="95" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="901" y="114" width="4" height="95" rx="2" fill="#7c3aed"/>
+    <rect x="913" y="124" width="34" height="16" rx="3" fill="#eff6ff"/>
+           <text x="930" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">PM-4</text>
+    <text x="947" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Mean Time Between Failure</text>
+    <text x="915" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">148.5 <tspan font-size="11" font-weight="600" fill="#64748b">Hours (MTBF)</tspan></text>
+    <rect x="915" y="181" width="150" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="921" y="193" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▲ MTTR Turun ke 4.2 Jam</text>
+    
+    <polyline points="1084.0,187.4 1097.3,184.5 1110.7,185.5 1124.0,181.4 1137.3,182.6 1150.7,178.3 1164.0,176.6" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="223" width="610" height="230" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="24" y1="265" x2="634" y2="265" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="38" y="234" width="54" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="65" y="248" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">PAGE 1</text>
+    <text x="100" y="244" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Heavy Equipment Status by Fleet Category (Active vs Breakdown)</text>
+    <text x="100" y="258" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Distribusi kesiapan populasi unit alat berat lintas entitas (Unit)</text>
+    <rect x="546" y="235" width="76" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="584" y="248" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">Units</text>
+    
+    <g transform="translate(324, 270)">
+      <rect x="0" y="2" width="10" height="10" rx="2" fill="#2563eb"/>
+      <text x="14" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">Active Ready (Unit)</text>
+      <rect x="105" y="2" width="10" height="10" rx="2" fill="#94a3b8"/>
+             <text x="119" y="10" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#334155">Workshop / BD (Unit)</text>
+      
+    </g><line x1="72" y1="419" x2="590" y2="419" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="422" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">0</text><line x1="72" y1="387" x2="590" y2="387" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="390" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">82</text><line x1="72" y1="355" x2="590" y2="355" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="358" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">164</text><line x1="72" y1="323" x2="590" y2="323" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="326" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">246</text><line x1="72" y1="291" x2="590" y2="291" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="294" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">328</text><rect x="96.16666666666666" y="400.25400457665904" width="18" height="18.74599542334096" rx="3" fill="url(#blueBar)"/><rect x="116.16666666666666" y="417.4378337147216" width="18" height="1.5621662852784135" rx="3" fill="#94a3b8"/><text x="115.16666666666666" y="435" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Excavator PC2000</text><rect x="182.49999999999997" y="307.69565217391306" width="18" height="111.30434782608695" rx="3" fill="url(#blueBar)"/><rect x="202.49999999999997" y="409.6270022883295" width="18" height="9.37299771167048" rx="3" fill="#94a3b8"/><text x="201.49999999999997" y="435" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Dump Truck HD785</text><rect x="268.8333333333333" y="383.0701754385965" width="18" height="35.92982456140351" rx="3" fill="url(#blueBar)"/><rect x="288.8333333333333" y="415.8756674294432" width="18" height="3.124332570556827" rx="3" fill="#94a3b8"/><text x="287.8333333333333" y="435" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Dozer D375</text><rect x="355.1666666666667" y="401.81617086193745" width="18" height="17.18382913806255" rx="3" fill="url(#blueBar)"/><rect x="375.1666666666667" y="417.8283752860412" width="18" height="1.17162471395881" rx="3" fill="#94a3b8"/><text x="374.1666666666667" y="435" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Motor Grader</text><rect x="441.5" y="392.44317315026694" width="18" height="26.556826849733028" rx="3" fill="url(#blueBar)"/><rect x="461.5" y="417.047292143402" width="18" height="1.9527078565980167" rx="3" fill="#94a3b8"/><text x="460.5" y="435" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Wheel Loader</text><rect x="527.8333333333333" y="377.99313501144167" width="18" height="41.006864988558355" rx="3" fill="url(#blueBar)"/><rect x="547.8333333333333" y="413.9229595728452" width="18" height="5.077040427154843" rx="3" fill="#94a3b8"/><text x="546.8333333333333" y="435" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569" font-weight="500">Crusher/Loader</text>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="648" y="223" width="528" height="230" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="648" y1="265" x2="1176" y2="265" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="662" y="234" width="54" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="689" y="248" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">PAGE 2</text>
+    <text x="724" y="244" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Maintenance Work Order Distribution (SAP PM Order Type)</text>
+    <text x="724" y="258" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Rasio Preventive (PM01) vs Corrective/Breakdown (PM02/PM03)</text>
+    <rect x="1079.8" y="235" width="84.2" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="1121.9" y="248" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">Donut Chart</text>
+    <circle cx="763" cy="359" r="62" fill="none" stroke="#f1f5f9" stroke-width="20"/><circle cx="763" cy="359" r="62" fill="none" stroke="#059669" stroke-width="20" stroke-dasharray="245.4 389.6" stroke-dashoffset="0.0" transform="rotate(-90 763 359)"/><circle cx="763" cy="359" r="62" fill="none" stroke="#0070f2" stroke-width="20" stroke-dasharray="74.0 389.6" stroke-dashoffset="-245.4" transform="rotate(-90 763 359)"/><circle cx="763" cy="359" r="62" fill="none" stroke="#f59e0b" stroke-width="20" stroke-dasharray="46.7 389.6" stroke-dashoffset="-319.4" transform="rotate(-90 763 359)"/><circle cx="763" cy="359" r="62" fill="none" stroke="#ef4444" stroke-width="20" stroke-dasharray="23.4 389.6" stroke-dashoffset="-366.2" transform="rotate(-90 763 359)"/>
+    <text x="763" y="356" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#64748b">Total WO</text>
+    <text x="763" y="372" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="800" fill="#0f172a">1,420 WO</text>
+  
+      <rect x="853" y="278" width="10" height="10" rx="2" fill="#059669"/>
+      <text x="869" y="287" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#334155">PM01 Scheduled Service</text>
+      <text x="1160" y="287" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">895 WO (63%)</text>
+    
+      <rect x="853" y="306" width="10" height="10" rx="2" fill="#0070f2"/>
+      <text x="869" y="315" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#334155">PM04 Condition Overhaul</text>
+      <text x="1160" y="315" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">275 WO (19%)</text>
+    
+      <rect x="853" y="334" width="10" height="10" rx="2" fill="#f59e0b"/>
+      <text x="869" y="343" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#334155">PM02 Corrective Repair</text>
+      <text x="1160" y="343" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">170 WO (12%)</text>
+    
+      <rect x="853" y="362" width="10" height="10" rx="2" fill="#ef4444"/>
+      <text x="869" y="371" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#334155">PM03 Emergency Breakdown</text>
+      <text x="1160" y="371" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">80 WO (6%)</text>
+    
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="467" width="1152" height="180" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="24" y1="509" x2="1176" y2="509" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="38" y="478" width="54" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="65" y="492" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">PAGE 3</text>
+    <text x="100" y="488" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Reliability Metrics Trend — MTBF (Hours) &amp; MTTR (Hours)</text>
+    <text x="100" y="502" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Peningkatan keandalan alat berat (Mean Time Between Failures naik, waktu perbaikan turun)</text>
+    <rect x="1088" y="479" width="76" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="1126" y="492" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">Hours</text>
+    
+      <line x1="40" y1="518" x2="54" y2="518" stroke="#0070f2" stroke-width="2.5"/>
+      <circle cx="47" cy="518" r="3" fill="#ffffff" stroke="#0070f2" stroke-width="1.5"/>
+      <text x="60" y="521" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#334155">MTBF — Mean Time Between Failures (Jam)</text>
+    
+      <line x1="165" y1="518" x2="179" y2="518" stroke="#059669" stroke-width="2.5"/>
+      <circle cx="172" cy="518" r="3" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+      <text x="185" y="521" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#334155">PA % — Physical Availability (%)</text>
+    <line x1="72" y1="615" x2="1152" y2="615" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="618" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">80</text><line x1="72" y1="594.5" x2="1152" y2="594.5" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="597.5" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">100</text><line x1="72" y1="574" x2="1152" y2="574" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="577" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">121</text><line x1="72" y1="553.5" x2="1152" y2="553.5" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="556.5" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">141</text><line x1="72" y1="533" x2="1152" y2="533" stroke="#e2e8f0" stroke-dasharray="3,3"/><text x="66" y="536" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="9" fill="#64748b">161</text><text x="72" y="631" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569">Jan</text><text x="192" y="631" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569">Feb</text><text x="312" y="631" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569">Mar</text><text x="432" y="631" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569">Apr</text><text x="552" y="631" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569">May</text><text x="672" y="631" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569">Jun</text><text x="792" y="631" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569">Jul</text><text x="912" y="631" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569">Aug</text><text x="1032" y="631" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569">Sep</text><text x="1152" y="631" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" fill="#475569">Oct</text><polyline points="72.0,566.4 192.0,563.4 312.0,560.3 432.0,558.3 552.0,555.3 672.0,553.2 792.0,551.2 912.0,549.2 1032.0,547.2 1152.0,545.7" fill="none" stroke="#0070f2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="72" cy="566.4074074074074" r="3" fill="#ffffff" stroke="#0070f2" stroke-width="2"/><text x="72" y="559.4074074074074" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#0070f2">128</text><circle cx="192" cy="563.3703703703703" r="3" fill="#ffffff" stroke="#0070f2" stroke-width="2"/><circle cx="312" cy="560.3333333333334" r="3" fill="#ffffff" stroke="#0070f2" stroke-width="2"/><circle cx="432" cy="558.3086419753087" r="3" fill="#ffffff" stroke="#0070f2" stroke-width="2"/><circle cx="552" cy="555.2716049382716" r="3" fill="#ffffff" stroke="#0070f2" stroke-width="2"/><circle cx="672" cy="553.2469135802469" r="3" fill="#ffffff" stroke="#0070f2" stroke-width="2"/><text x="672" y="546.2469135802469" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#0070f2">141</text><circle cx="792" cy="551.2222222222222" r="3" fill="#ffffff" stroke="#0070f2" stroke-width="2"/><circle cx="912" cy="549.1975308641976" r="3" fill="#ffffff" stroke="#0070f2" stroke-width="2"/><circle cx="1032" cy="547.1728395061729" r="3" fill="#ffffff" stroke="#0070f2" stroke-width="2"/><circle cx="1152" cy="545.6543209876543" r="3" fill="#ffffff" stroke="#0070f2" stroke-width="2"/><text x="1152" y="538.6543209876543" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#0070f2">148.5</text><polyline points="72.0,605.7 192.0,605.4 312.0,604.8 432.0,604.5 552.0,604.1 672.0,603.9 792.0,603.7 912.0,603.4 1032.0,603.3 1152.0,603.1" fill="none" stroke="#059669" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="72" cy="605.6864197530864" r="3" fill="#ffffff" stroke="#059669" stroke-width="2"/><text x="72" y="598.6864197530864" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#059669">89.2</text><circle cx="192" cy="605.3827160493827" r="3" fill="#ffffff" stroke="#059669" stroke-width="2"/><circle cx="312" cy="604.7753086419754" r="3" fill="#ffffff" stroke="#059669" stroke-width="2"/><circle cx="432" cy="604.4716049382716" r="3" fill="#ffffff" stroke="#059669" stroke-width="2"/><circle cx="552" cy="604.0666666666667" r="3" fill="#ffffff" stroke="#059669" stroke-width="2"/><circle cx="672" cy="603.8641975308642" r="3" fill="#ffffff" stroke="#059669" stroke-width="2"/><text x="672" y="596.8641975308642" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#059669">91</text><circle cx="792" cy="603.6617283950617" r="3" fill="#ffffff" stroke="#059669" stroke-width="2"/><circle cx="912" cy="603.358024691358" r="3" fill="#ffffff" stroke="#059669" stroke-width="2"/><circle cx="1032" cy="603.2567901234568" r="3" fill="#ffffff" stroke="#059669" stroke-width="2"/><circle cx="1152" cy="603.0543209876544" r="3" fill="#ffffff" stroke="#059669" stroke-width="2"/><text x="1152" y="596.0543209876544" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="8.5" font-weight="700" fill="#059669">91.8</text>
+  </g>
+    
+</svg>

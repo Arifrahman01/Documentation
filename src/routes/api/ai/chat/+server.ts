@@ -87,7 +87,9 @@ ${docCtx.substring(0, 12000)}
 				contextualPrompt += `\n\n[KONTEKS DOKUMEN AKTIF SAAT INI]:\n"""\n${docCtx.substring(0, 3500)}\n"""`;
 			}
 			if (relevantKnowledge) {
-				contextualPrompt += `\n\n${relevantKnowledge}\n\nIngat: Jawab HANYA berdasarkan fakta di atas. Dilarang mengarang fakta di luar dokumen!`;
+				contextualPrompt += `\n\n[REFERENSI DOKUMENTASI & APLIKASI INTERNAL PORTAL]:\n${relevantKnowledge}\n\nCatatan Panduan: Gunakan referensi internal di atas jika relevan dengan pertanyaan pengguna. Namun jika pertanyaan pengguna lebih luas (misalnya troubleshooting SAP/SAC/Web, T-Code, arsitektur, rumus, atau kode teknis yang belum tertulis di referensi di atas), tetap jawab secara lengkap, solutif, dan mendalam sesuai keahlian teknis SAP, SAC, dan Web Anda.`;
+			} else {
+				contextualPrompt += `\n\nCatatan Panduan: Jawab pertanyaan pengguna seputar SAP, SAC, Web, dan sistem enterprise secara lengkap, praktis, dan solutif menggunakan keahlian teknis Anda.`;
 			}
 		}
 

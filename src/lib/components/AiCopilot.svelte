@@ -1,10 +1,10 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { ui } from '$lib/stores/ui.svelte';
 	import { marked } from 'marked';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Separator } from '$lib/components/ui/separator';
 	import { 
 		Sparkles, 
 		X, 
@@ -33,49 +33,53 @@
 	let inputQuery = $state('');
 	let isLoading = $state(false);
 	let messagesContainer = $state<HTMLDivElement | null>(null);
+	let inputEl = $state<HTMLInputElement | null>(null);
 	let copiedIndex = $state<number | null>(null);
 
 	const contextualPrompts = $derived.by(() => {
 		const ctx = ui.currentContext;
 		if (ctx.type === 'docs' && ctx.title) {
 			return [
-				`⚡ Rangkum konsep utama "${ctx.title}"`,
-				'💻 Buatkan contoh kode implementasi lengkap',
-				'⚠️ Apa potensi kendala teknis & solusinya?',
-				'🔍 Jelaskan arsitektur data binding & modelnya'
+				`Rangkum konsep utama "${ctx.title}"`,
+				'Buatkan contoh kode implementasi lengkap',
+				'Apa potensi kendala teknis & solusinya?',
+				'Jelaskan arsitektur data binding & modelnya'
 			];
 		}
 		if (ctx.type === 'apps') {
 			return [
-				'🚗 Jelaskan alur kerja Fuel Management System (FMS)',
-				'📊 Bagaimana cara integrasi CDS Views ke SAC?',
-				'💼 Alur approval di Marketing System (JMS)',
-				'🛡️ Fitur pelaporan insiden di KPI Safety (SHE)',
-				'💳 Mekanisme notifikasi penagihan di PPPN'
+				'Jelaskan alur kerja Fuel Management System (FMS)',
+				'Bagaimana cara integrasi CDS Views ke SAC?',
+				'Alur approval di Marketing System (JMS)',
+				'Fitur pelaporan insiden di KPI Safety (SHE)',
+				'Mekanisme notifikasi penagihan di PPPN'
 			];
 		}
 		if (ctx.type === 'api') {
 			return [
-				'🌐 Jelaskan endpoint /api/ai/chat dan format payloadnya',
-				'⏱️ Cara kerja in-memory response cache TTL',
-				'🔒 Best practice CSRF & Bearer token authorization',
-				'📡 Contoh request cURL untuk pencarian semantik'
+				'Jelaskan endpoint /api/ai/chat dan format payloadnya',
+				'Cara kerja in-memory response cache TTL',
+				'Best practice CSRF & Bearer token authorization',
+				'Contoh request cURL untuk pencarian semantik'
 			];
 		}
 		return [
-			'🚗 Apa fungsi Fuel Management System (FMS)?',
-			'📊 Bagaimana integrasi CDS Views ke SAC Dev & Prod?',
-			'🛡️ Modul apa saja yang ada di KPI Safety?',
-			'💳 Apa tujuan aplikasi penagihan PPPN?',
-			'📁 Akses dokumen di File Manager Enterprise'
+			'Apa fungsi Fuel Management System (FMS)?',
+			'Bagaimana integrasi CDS Views ke SAC Dev & Prod?',
+			'Modul apa saja yang ada di KPI Safety?',
+			'Apa tujuan aplikasi penagihan PPPN?',
+			'Akses dokumen di File Manager Enterprise'
 		];
 	});
 
 	$effect(() => {
-		if (ui.isAiOpen && ui.aiInitialPrompt) {
-			const prompt = ui.aiInitialPrompt;
-			ui.aiInitialPrompt = '';
-			sendMessage(prompt);
+		if (ui.isAiOpen) {
+			setTimeout(() => inputEl?.focus(), 60);
+			if (ui.aiInitialPrompt) {
+				const prompt = ui.aiInitialPrompt;
+				ui.aiInitialPrompt = '';
+				sendMessage(prompt);
+			}
 		}
 	});
 
@@ -123,11 +127,12 @@
 				...messages,
 				{
 					role: 'assistant',
-					content: `⚠️ Terjadi kendala saat menghubungi AI Copilot: ${err.message || 'Server offline'}. Pastikan endpoint AI lokal aktif.`
+					content: `Terjadi kendala saat menghubungi AI Copilot: ${err.message || 'Server offline'}. Pastikan endpoint AI lokal aktif.`
 				}
 			];
 		} finally {
 			isLoading = false;
+			setTimeout(() => inputEl?.focus(), 20);
 		}
 	}
 
@@ -152,33 +157,34 @@
 		copiedIndex = index;
 		setTimeout(() => (copiedIndex = null), 2000);
 	}
+	onMount(() => {
+		const onKeyDown = (e: KeyboardEvent) => {
+			const isJ = e.key.toLowerCase() === 'j' || e.code === 'KeyJ';
+			if (((e.ctrlKey || e.metaKey) || e.altKey) && isJ) {
+				e.preventDefault();
+				e.stopPropagation();
+				if (ui.isAiOpen) ui.closeAi();
+				else ui.openAi();
+			} else if (e.key === 'Escape' && ui.isAiOpen) {
+				e.preventDefault();
+				ui.closeAi();
+			}
+		};
+		window.addEventListener('keydown', onKeyDown, { capture: true });
+		return () => window.removeEventListener('keydown', onKeyDown, { capture: true });
+	});
 </script>
-
-<svelte:window
-	onkeydown={(e) => {
-		if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'j') {
-			e.preventDefault();
-			if (ui.isAiOpen) ui.closeAi();
-			else ui.openAi();
-		}
-	}}
-/>
 
 <!-- Floating Trigger Pill (Bottom Right) -->
 {#if !ui.isAiOpen}
-	<button
-		type="button"
+	<Button
 		onclick={() => ui.openAi()}
-		class="fixed bottom-6 right-6 z-40 flex items-center gap-2.5 rounded-full border border-border bg-foreground px-4 py-2.5 text-xs font-semibold text-background shadow-xl backdrop-blur-md transition-all hover:scale-105 hover:shadow-2xl"
+		class="fixed bottom-6 right-6 z-40 h-10 gap-2 rounded-full px-4 text-xs font-semibold shadow-xl transition-transform hover:scale-105"
 	>
-		<div class="relative flex h-2 w-2">
-			<span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
-			<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
-		</div>
-		<Sparkles class="h-4 w-4 text-amber-300 dark:text-amber-500" />
+		<Sparkles class="h-3.5 w-3.5" />
 		<span>Ask AI Copilot</span>
-		<Badge variant="outline" class="px-1 py-0.2 text-[9px] bg-background text-foreground">Ctrl J</Badge>
-	</button>
+		<Badge variant="outline" class="px-1.5 py-0 text-[9px] bg-background text-foreground">Ctrl J</Badge>
+	</Button>
 {/if}
 
 <!-- Slide-over Drawer -->
@@ -187,7 +193,7 @@
 	<div
 		role="dialog"
 		aria-modal="true"
-		class="fixed inset-0 z-50 flex justify-end bg-zinc-950/40 backdrop-blur-xs transition-opacity"
+		class="fixed inset-0 z-50 flex justify-end bg-black/50 backdrop-blur-xs transition-opacity"
 		onclick={(e) => { if (e.target === e.currentTarget) ui.closeAi(); }}
 		onkeydown={(e) => { if (e.key === 'Escape') ui.closeAi(); }}
 		tabindex="-1"
@@ -197,13 +203,13 @@
 			<!-- Header -->
 			<div class="flex items-center justify-between border-b border-border px-5 py-4">
 				<div class="flex items-center gap-3">
-					<div class="flex h-9 w-9 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-400">
-						<Sparkles class="h-5 w-5" />
+					<div class="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-muted text-foreground">
+						<Sparkles class="h-4 w-4" />
 					</div>
 					<div>
 						<div class="flex items-center gap-2">
 							<h3 class="text-sm font-semibold text-foreground">AI Copilot</h3>
-							<Badge class="bg-indigo-600 text-white text-[10px]">
+							<Badge variant="secondary" class="text-[10px]">
 								Enterprise
 							</Badge>
 						</div>
@@ -236,7 +242,7 @@
 			<!-- Context Indicator Banner -->
 			<div class="border-b border-border bg-muted/30 px-5 py-2 text-[11px] text-muted-foreground">
 				<div class="flex items-center gap-2 font-medium">
-					<span class="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+					<span class="inline-block h-1.5 w-1.5 rounded-full bg-foreground/70"></span>
 					<span>Konteks: <strong>{ui.currentContext.title || 'Portal Dokumentasi'}</strong></span>
 				</div>
 			</div>
@@ -246,38 +252,40 @@
 				{#each messages as msg, idx}
 					<div class="flex gap-3 {msg.role === 'user' ? 'justify-end' : 'justify-start'}">
 						{#if msg.role === 'assistant'}
-							<div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-foreground">
+							<div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border bg-muted text-foreground">
 								<Bot class="h-4 w-4" />
 							</div>
 						{/if}
 
-						<div class="group relative max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed {msg.role === 'user'
-							? 'bg-foreground text-background rounded-br-sm'
-							: 'bg-muted text-foreground rounded-tl-sm border border-border/60'}">
+						<div class="group relative max-w-[85%] rounded-xl px-4 py-3 text-xs leading-relaxed {msg.role === 'user'
+							? 'bg-primary text-primary-foreground'
+							: 'bg-muted/60 text-foreground border border-border'}">
 							
 							{#if msg.role === 'assistant'}
 								<div class="prose prose-xs dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-4 [&>pre]:my-2 [&>pre]:p-2.5 [&>pre]:rounded-lg [&>pre]:bg-zinc-950 [&>pre]:text-zinc-100 [&>code]:bg-zinc-200/60 dark:[&>code]:bg-zinc-800/80 [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded">
 									{@html marked.parse(msg.content)}
 								</div>
 								
-								<button
+								<Button
+									variant="ghost"
+									size="icon"
 									onclick={() => copyMessage(msg.content, idx)}
-									class="absolute right-2 top-2 opacity-0 group-hover:opacity-100 transition-opacity rounded p-1 text-muted-foreground hover:text-foreground"
+									class="absolute right-1.5 top-1.5 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
 									title="Salin jawaban"
 								>
 									{#if copiedIndex === idx}
-										<Check class="h-3.5 w-3.5 text-emerald-500" />
+										<Check class="h-3 w-3" />
 									{:else}
-										<Copy class="h-3.5 w-3.5" />
+										<Copy class="h-3 w-3" />
 									{/if}
-								</button>
+								</Button>
 							{:else}
 								<div class="whitespace-pre-wrap">{msg.content}</div>
 							{/if}
 						</div>
 
 						{#if msg.role === 'user'}
-							<div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-foreground text-background">
+							<div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
 								<User class="h-4 w-4" />
 							</div>
 						{/if}
@@ -286,11 +294,11 @@
 
 				{#if isLoading}
 					<div class="flex items-center gap-3">
-						<div class="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-foreground">
+						<div class="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-foreground">
 							<Bot class="h-4 w-4" />
 						</div>
-						<div class="flex items-center gap-2 rounded-2xl rounded-tl-sm bg-muted px-4 py-2.5 text-xs text-muted-foreground border border-border/60">
-							<Loader2 class="h-3.5 w-3.5 animate-spin text-indigo-500" />
+						<div class="flex items-center gap-2 rounded-xl bg-muted/60 px-4 py-2.5 text-xs text-muted-foreground border border-border">
+							<Loader2 class="h-3.5 w-3.5 animate-spin" />
 							<span>Menyiapkan jawaban cerdas...</span>
 						</div>
 					</div>
@@ -304,14 +312,16 @@
 				</div>
 				<div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
 					{#each contextualPrompts as prompt}
-						<button
+						<Button
+							variant="outline"
+							size="sm"
 							onclick={() => sendMessage(prompt)}
 							disabled={isLoading}
-							class="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-[11px] text-foreground transition-colors hover:bg-muted"
+							class="h-7 gap-1 px-2.5 text-[11px] font-normal"
 						>
 							<span>{prompt}</span>
 							<ArrowRight class="h-2.5 w-2.5 opacity-50" />
-						</button>
+						</Button>
 					{/each}
 				</div>
 			</div>
@@ -320,24 +330,24 @@
 			<div class="border-t border-border p-4">
 				<div class="relative flex items-center">
 					<Input
+						bind:ref={inputEl}
 						type="text"
 						bind:value={inputQuery}
 						onkeydown={handleKeydown}
-						disabled={isLoading}
 						placeholder="Tanyakan apapun ke AI Copilot..."
-						class="pr-12 text-xs h-11"
+						class="pr-12 text-xs h-10"
 					/>
 					<Button
 						size="icon"
 						onclick={() => sendMessage()}
 						disabled={!inputQuery.trim() || isLoading}
-						class="absolute right-1.5 h-8 w-8"
+						class="absolute right-1.5 h-7 w-7"
 					>
 						<Send class="h-3.5 w-3.5" />
 					</Button>
 				</div>
 				<div class="mt-2 text-center text-[10px] text-muted-foreground">
-					Tekan <kbd class="rounded border border-border bg-muted px-1">Enter</kbd> untuk mengirim
+					Tekan <Badge variant="outline" class="px-1 py-0 text-[9px] font-mono">Enter</Badge> untuk mengirim
 				</div>
 			</div>
 		</div>

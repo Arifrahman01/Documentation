@@ -1,53 +1,96 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import { ui } from '$lib/stores/ui.svelte';
 	import docsData from '$lib/data/docsIndex.json';
 	import appsData from '$lib/data/apps.json';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Separator } from '$lib/components/ui/separator';
+	import { Input } from '$lib/components/ui/input';
 	import { Search, FileText, ExternalLink, Sparkles, X, CornerDownLeft } from '@lucide/svelte';
+
+	interface DocSearchItem {
+		slug: string;
+		title: string;
+		category: string;
+		subcategory?: string;
+		section?: string;
+		snippet?: string;
+		description?: string;
+	}
 
 	let searchQuery = $state('');
 	let selectedIndex = $state(0);
 	let inputEl = $state<HTMLInputElement | null>(null);
+	let liveDocs = $state<DocSearchItem[]>((docsData.documents || []) as DocSearchItem[]);
+	let liveApps = $state(appsData.programs || []);
 
 	$effect(() => {
 		if (ui.isSearchOpen) {
 			searchQuery = '';
 			selectedIndex = 0;
 			setTimeout(() => inputEl?.focus(), 50);
+
+			fetch('/api/docs')
+				.then((r) => (r.ok ? r.json() : null))
+				.then((d) => {
+					if (Array.isArray(d?.documents)) liveDocs = d.documents;
+				})
+				.catch(() => {});
+
+			fetch('/api/apps')
+				.then((r) => (r.ok ? r.json() : null))
+				.then((d) => {
+					if (Array.isArray(d?.programs)) liveApps = d.programs;
+				})
+				.catch(() => {});
 		}
 	});
 
-	// Filtered articles
 	const filteredArticles = $derived.by(() => {
 		const q = searchQuery.toLowerCase().trim();
-		if (!q) return docsData.articles.slice(0, 5);
-		return docsData.articles.filter(
-			(a) =>
-				a.title.toLowerCase().includes(q) ||
-				a.category.toLowerCase().includes(q) ||
-				a.snippet.toLowerCase().includes(q)
-		).slice(0, 8);
+		if (!q) return liveDocs.slice(0, 5);
+		return liveDocs
+			.filter(
+				(a) =>
+					a.title.toLowerCase().includes(q) ||
+					a.category.toLowerCase().includes(q) ||
+					(a.subcategory && a.subcategory.toLowerCase().includes(q)) ||
+					(a.snippet && a.snippet.toLowerCase().includes(q)) ||
+					(a.description && a.description.toLowerCase().includes(q))
+			)
+			.slice(0, 8);
 	});
 
-	// Filtered apps
 	const filteredApps = $derived.by(() => {
 		const q = searchQuery.toLowerCase().trim();
-		if (!q) return appsData.programs.slice(0, 3);
-		return appsData.programs.filter(
-			(p) =>
-				p.title.toLowerCase().includes(q) ||
-				p.subtitle.toLowerCase().includes(q) ||
-				p.description.toLowerCase().includes(q) ||
-				p.tags.some((t) => t.toLowerCase().includes(q))
-		).slice(0, 4);
+		if (!q) return liveApps.slice(0, 3);
+		return liveApps
+			.filter(
+				(p) =>
+					p.title.toLowerCase().includes(q) ||
+					p.subtitle.toLowerCase().includes(q) ||
+					p.description.toLowerCase().includes(q) ||
+					p.tags.some((t: string) => t.toLowerCase().includes(q))
+			)
+			.slice(0, 4);
 	});
 
 	const allResults = $derived([
-		...filteredArticles.map((a) => ({ type: 'doc' as const, id: a.path, title: a.title, category: a.category, path: `/docs/${a.path}` })),
-		...filteredApps.map((p) => ({ type: 'app' as const, id: p.id, title: p.title, category: p.categoryName, url: p.url }))
+		...filteredArticles.map((a) => ({
+			type: 'doc' as const,
+			id: a.slug,
+			title: a.title,
+			category: a.subcategory ? `${a.category} / ${a.subcategory}` : a.category,
+			path: `/docs/${a.slug}`
+		})),
+		...filteredApps.map((p) => ({
+			type: 'app' as const,
+			id: p.id,
+			title: p.title,
+			category: p.categoryName,
+			url: p.url
+		}))
 	]);
 
 	function handleKeydown(e: KeyboardEvent) {
@@ -85,24 +128,31 @@
 		ui.closeSearch();
 		ui.openAi(q);
 	}
-</script>
 
-<svelte:window
-	onkeydown={(e) => {
-		if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-			e.preventDefault();
-			if (ui.isSearchOpen) ui.closeSearch();
-			else ui.openSearch();
-		}
-	}}
-/>
+	onMount(() => {
+		const onKeyDown = (e: KeyboardEvent) => {
+			const isK = e.key.toLowerCase() === 'k' || e.code === 'KeyK';
+			if (((e.ctrlKey || e.metaKey) || e.altKey) && isK) {
+				e.preventDefault();
+				e.stopPropagation();
+				if (ui.isSearchOpen) ui.closeSearch();
+				else ui.openSearch();
+			} else if (e.key === 'Escape' && ui.isSearchOpen) {
+				e.preventDefault();
+				ui.closeSearch();
+			}
+		};
+		window.addEventListener('keydown', onKeyDown, { capture: true });
+		return () => window.removeEventListener('keydown', onKeyDown, { capture: true });
+	});
+</script>
 
 {#if ui.isSearchOpen}
 	<!-- Backdrop -->
 	<div 
 		role="dialog"
 		aria-modal="true"
-		class="fixed inset-0 z-50 flex items-start justify-center bg-zinc-950/60 p-4 pt-[12vh] backdrop-blur-xs sm:p-6 sm:pt-[15vh]"
+		class="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-4 pt-[12vh] backdrop-blur-xs sm:p-6 sm:pt-[15vh]"
 		onclick={(e) => { if (e.target === e.currentTarget) ui.closeSearch(); }}
 		onkeydown={handleKeydown}
 		tabindex="-1"
@@ -110,25 +160,27 @@
 		<!-- Modal Box with Shadcn Styling -->
 		<div class="relative w-full max-w-2xl overflow-hidden rounded-xl border border-border bg-popover text-popover-foreground shadow-2xl transition-all">
 			<!-- Search Bar Input -->
-			<div class="flex items-center border-b border-border px-4">
-				<Search class="h-5 w-5 text-muted-foreground" />
-				<input
-					bind:this={inputEl}
+			<div class="flex items-center border-b border-border px-4 py-2 gap-2">
+				<Search class="h-4 w-4 text-muted-foreground shrink-0" />
+				<Input
+					bind:ref={inputEl}
 					bind:value={searchQuery}
 					onkeydown={handleKeydown}
 					type="text"
 					placeholder="Cari dokumentasi teknis, API, atau sistem aplikasi..."
-					class="h-14 w-full bg-transparent px-3 text-sm text-foreground placeholder-muted-foreground focus:outline-none"
+					class="h-10 border-0 bg-transparent px-1 text-sm shadow-none focus-visible:ring-0"
 				/>
 				{#if searchQuery}
-					<button
+					<Button
+						variant="ghost"
+						size="icon"
 						onclick={() => (searchQuery = '')}
-						class="rounded p-1 text-muted-foreground hover:text-foreground"
+						class="h-7 w-7 text-muted-foreground hover:text-foreground"
 					>
-						<X class="h-4 w-4" />
-					</button>
+						<X class="h-3.5 w-3.5" />
+					</Button>
 				{/if}
-				<Badge variant="outline" class="ml-2 px-1.5 py-0.5 text-[10px]">
+				<Badge variant="outline" class="px-1.5 py-0.5 text-[10px] font-mono">
 					ESC
 				</Badge>
 			</div>
@@ -145,24 +197,25 @@
 							onclick={askAiAboutSearch}
 							class="mt-4 gap-1.5 text-xs"
 						>
-							<Sparkles class="h-3.5 w-3.5 text-amber-300 dark:text-amber-500" />
+							<Sparkles class="h-3.5 w-3.5" />
 							<span>Tanya AI "{searchQuery}"</span>
 						</Button>
 					</div>
 				{:else}
 					<!-- Ask AI Quick Action if there is a query -->
 					{#if searchQuery.trim()}
-						<div class="mb-2 px-2">
-							<button
+						<div class="mb-2 px-1">
+							<Button
+								variant="outline"
 								onclick={askAiAboutSearch}
-								class="flex w-full items-center justify-between rounded-lg border border-indigo-200/60 bg-indigo-50/50 p-2.5 text-left text-xs font-medium text-indigo-950 transition-colors hover:bg-indigo-100/70 dark:border-indigo-900/50 dark:bg-indigo-950/30 dark:text-indigo-200 dark:hover:bg-indigo-950/60"
+								class="flex h-auto w-full items-center justify-between p-2.5 text-left text-xs font-medium"
 							>
 								<div class="flex items-center gap-2">
-									<Sparkles class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+									<Sparkles class="h-4 w-4 text-muted-foreground" />
 									<span>Tanyakan AI Copilot tentang <strong>"{searchQuery}"</strong></span>
 								</div>
-								<Badge class="bg-indigo-600 text-white text-[10px]">AI Copilot</Badge>
-							</button>
+								<Badge variant="secondary" class="text-[10px]">AI Copilot</Badge>
+							</Button>
 						</div>
 					{/if}
 
@@ -174,24 +227,25 @@
 						<div class="space-y-0.5 mb-3">
 							{#each filteredArticles as article, i}
 								{@const isSelected = selectedIndex === i}
-								<button
-									onclick={() => selectItem({ type: 'doc', id: article.path, title: article.title, category: article.category, path: `/docs/${article.path}` })}
+								<Button
+									variant={isSelected ? 'secondary' : 'ghost'}
+									onclick={() => selectItem({ type: 'doc', id: article.slug, title: article.title, category: article.category, path: `/docs/${article.slug}` })}
 									onmouseenter={() => (selectedIndex = i)}
-									class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors {isSelected
-										? 'bg-accent text-accent-foreground'
-										: 'text-foreground hover:bg-muted/50'}"
+									class="flex h-auto w-full items-center justify-between px-3 py-2 text-left text-xs font-normal"
 								>
 									<div class="flex items-center gap-2.5">
 										<FileText class="h-4 w-4 text-muted-foreground" />
 										<div>
-											<div class="font-medium">{article.title}</div>
-											<div class="text-[10px] text-muted-foreground">{article.category}</div>
+											<div class="font-medium text-foreground">{article.title}</div>
+											<div class="text-[10px] text-muted-foreground">
+												{article.subcategory ? `${article.category} / ${article.subcategory}` : article.category}
+											</div>
 										</div>
 									</div>
 									{#if isSelected}
 										<CornerDownLeft class="h-3.5 w-3.5 text-muted-foreground" />
 									{/if}
-								</button>
+								</Button>
 							{/each}
 						</div>
 					{/if}
@@ -205,24 +259,23 @@
 							{#each filteredApps as prog, j}
 								{@const itemIdx = filteredArticles.length + j}
 								{@const isSelected = selectedIndex === itemIdx}
-								<button
+								<Button
+									variant={isSelected ? 'secondary' : 'ghost'}
 									onclick={() => selectItem({ type: 'app', id: prog.id, title: prog.title, category: prog.categoryName, url: prog.url })}
 									onmouseenter={() => (selectedIndex = itemIdx)}
-									class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition-colors {isSelected
-										? 'bg-accent text-accent-foreground'
-										: 'text-foreground hover:bg-muted/50'}"
+									class="flex h-auto w-full items-center justify-between px-3 py-2 text-left text-xs font-normal"
 								>
 									<div class="flex items-center gap-2.5">
-										<ExternalLink class="h-4 w-4 text-emerald-500" />
+										<ExternalLink class="h-4 w-4 text-muted-foreground" />
 										<div>
-											<div class="font-medium">{prog.title}</div>
+											<div class="font-medium text-foreground">{prog.title}</div>
 											<div class="text-[10px] text-muted-foreground">{prog.subtitle}</div>
 										</div>
 									</div>
 									<Badge variant="secondary" class="text-[10px]">
 										{prog.status}
 									</Badge>
-								</button>
+								</Button>
 							{/each}
 						</div>
 					{/if}
@@ -233,10 +286,10 @@
 			<div class="flex items-center justify-between border-t border-border bg-muted/30 px-4 py-2.5 text-[11px] text-muted-foreground">
 				<div class="flex items-center gap-3">
 					<span class="flex items-center gap-1">
-						<kbd class="rounded border border-border bg-background px-1 py-0.2">↑↓</kbd> Navigasi
+						<Badge variant="outline" class="px-1 py-0 text-[9px] font-mono">↑↓</Badge> Navigasi
 					</span>
 					<span class="flex items-center gap-1">
-						<kbd class="rounded border border-border bg-background px-1 py-0.2">↵</kbd> Buka
+						<Badge variant="outline" class="px-1 py-0 text-[9px] font-mono">↵</Badge> Buka
 					</span>
 				</div>
 				<span>Pencarian Cepat Portal Dokumentasi</span>

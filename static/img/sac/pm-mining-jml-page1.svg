@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 660" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sacHeaderGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="blueBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="tealBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="amberBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="areaBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="660" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- SAC Top Shell Bar -->
+  <path d="M0 12 Q0 0 12 0 L1188 0 Q1200 0 1200 12 L1200 48 L0 48 Z" fill="url(#sacHeaderGrad)"/>
+  <rect x="18" y="12" width="28" height="24" rx="5" fill="#0070f2"/>
+  <text x="32" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="800" fill="#ffffff">SAC</text>
+  <text x="56" y="23" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">PM MINING — Story 2: JML Detail Unit Breakdown &amp; Component Wear</text>
+  <text x="56" y="38" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8">Active Sheet: Individual Equipment HM, Component Life &amp; PR/PO Backlog</text>
+
+  <!-- Live CDS Badge -->
+  <rect x="930" y="12" width="252" height="24" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <circle cx="946" cy="24" r="4" fill="#10b981"/>
+  <text x="958" y="28" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600" fill="#e2e8f0">LIVE CDS: S4HANA_PROD (J000)</text>
+
+  <!-- Global Input Filter Bar -->
+  <rect x="0" y="48" width="1200" height="52" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+      <g transform="translate(24, 60)">
+        <rect width="156.39999999999998" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Company Code:</text>
+        <text x="89.6" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">JML1</text>
+        <path d="M138.39999999999998 13 L142.39999999999998 18 L146.39999999999998 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(190.39999999999998, 60)">
+        <rect width="231.2" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Workshop:</text>
+        <text x="64.4" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">Batulicin Heavy Bay</text>
+        <path d="M213.2 13 L217.2 18 L221.2 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(431.59999999999997, 60)">
+        <rect width="176.79999999999998" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Status:</text>
+        <text x="51.8" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">All Equipment</text>
+        <path d="M158.79999999999998 13 L162.79999999999998 18 L166.79999999999998 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+
+  <!-- Active Sheet Tab Indicator on Right -->
+  <rect x="1005" y="60" width="175" height="30" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="1093" y="79" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1d4ed8">Individual Equipment HM,</text>
+
+  <!-- Story Content Area -->
+  
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="114" width="1152" height="255" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="24" y1="156" x2="1176" y2="156" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="38" y="125" width="54" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="65" y="139" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">PAGE 1</text>
+    <text x="100" y="135" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Individual Equipment Health, Hour Meter (HM) &amp; Next Service Tracking</text>
+    <text x="100" y="149" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Daftar inventaris peralatan (EQUNR), akumulasi jam kerja mesin, dan sisa jam menuju servis berkala</text>
+    <rect x="1005.4" y="126" width="158.6" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="1084.7" y="139" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">SAP Table: EQUI / IMPTT</text>
+    <rect x="36" y="158" width="1128" height="22" rx="4" fill="#f1f5f9"/><text x="42" y="173" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Equipment ID</text><text x="203.14285714285714" y="173" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Model / Description</text><text x="364.2857142857143" y="173" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Current HM</text><text x="525.4285714285714" y="173" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Next PM Target</text><text x="686.5714285714286" y="173" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Remaining HM</text><text x="847.7142857142857" y="173" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Component Wear</text><text x="1008.8571428571429" y="173" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Workshop Status</text><rect x="36" y="180" width="1128" height="26" fill="#eff6ff"/><line x1="36" y1="206" x2="1164" y2="206" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="197.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#0f172a">EQ-JML-EX014</text><text x="203.14285714285714" y="197.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">Komatsu PC2000-8 Backhoe</text><text x="364.2857142857143" y="197.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">18,420 HM</text><text x="525.4285714285714" y="197.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">18,500 HM (PM1000)</text><text x="686.5714285714286" y="197.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">80 HM</text><text x="847.7142857142857" y="197.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">Engine 78% | Hyd 64%</text><text x="1008.8571428571429" y="197.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#059669">▲ ACTIVE OPERATIONAL</text><rect x="36" y="206" width="1128" height="26" fill="#f8fafc"/><line x1="36" y1="232" x2="1164" y2="232" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="223.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">EQ-JML-DT108</text><text x="203.14285714285714" y="223.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Komatsu HD785-7 Dump Truck</text><text x="364.2857142857143" y="223.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">24,910 HM</text><text x="525.4285714285714" y="223.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">25,000 HM (Ovhl)</text><text x="686.5714285714286" y="223.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">90 HM</text><text x="847.7142857142857" y="223.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Transm 92% (Alert)</text><text x="1008.8571428571429" y="223.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">▼ SCHEDULED OVERHAUL</text><line x1="36" y1="258" x2="1164" y2="258" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="249.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">EQ-JML-DZ042</text><text x="203.14285714285714" y="249.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Komatsu D375A-6R Dozer</text><text x="364.2857142857143" y="249.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">14,210 HM</text><text x="525.4285714285714" y="249.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">14,500 HM (PM500)</text><text x="686.5714285714286" y="249.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">290 HM</text><text x="847.7142857142857" y="249.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Undercarriage 52%</text><text x="1008.8571428571429" y="249.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#059669">▲ ACTIVE OPERATIONAL</text><rect x="36" y="258" width="1128" height="26" fill="#f8fafc"/><line x1="36" y1="284" x2="1164" y2="284" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="275.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">EQ-JML-WL019</text><text x="203.14285714285714" y="275.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">CAT 988K Wheel Loader</text><text x="364.2857142857143" y="275.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">11,880 HM</text><text x="525.4285714285714" y="275.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">12,000 HM (PM2000)</text><text x="686.5714285714286" y="275.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">120 HM</text><text x="847.7142857142857" y="275.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Final Drive 88%</text><text x="1008.8571428571429" y="275.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#dc2626">▼ WAITING PART (WOP)</text><line x1="36" y1="310" x2="1164" y2="310" stroke="#e2e8f0" stroke-width="0.7"/><text x="42" y="301.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">EQ-JML-CR005</text><text x="203.14285714285714" y="301.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Liebherr Crane HS 895 HD</text><text x="364.2857142857143" y="301.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">9,450 HM</text><text x="525.4285714285714" y="301.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">9,500 HM (PM500)</text><text x="686.5714285714286" y="301.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">50 HM</text><text x="847.7142857142857" y="301.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Slewing Bearing 41%</text><text x="1008.8571428571429" y="301.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#059669">▲ ACTIVE OPERATIONAL</text>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="383" width="560" height="252" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="24" y1="425" x2="584" y2="425" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="38" y="394" width="54" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="65" y="408" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">PAGE 2</text>
+    <text x="100" y="404" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Critical Component Life Usage (% Toward PCR Target)</text>
+    <text x="100" y="418" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Persentase umur pakai komponen utama terhadap batas penggantian (PCR)</text>
+    <rect x="496" y="395" width="76" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="534" y="408" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">% Life</text>
+    
+      <text x="38" y="452" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Transmission HD785 #108</text>
+      <rect x="159" y="441" width="345" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="159" y="441" width="308.0357142857143" height="14" rx="3" fill="#ef4444"/>
+      <text x="473.0357142857143" y="452" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">92% (18,400 / 20,000 HM)</text>
+    
+      <text x="38" y="486" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Final Drive CAT988 #019</text>
+      <rect x="159" y="475" width="345" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="159" y="475" width="294.64285714285717" height="14" rx="3" fill="#f59e0b"/>
+      <text x="459.64285714285717" y="486" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">88% (15,840 / 18,000 HM)</text>
+    
+      <text x="38" y="520" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Engine Assy PC2000 #014</text>
+      <rect x="159" y="509" width="345" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="159" y="509" width="261.1607142857143" height="14" rx="3" fill="#0070f2"/>
+      <text x="426.1607142857143" y="520" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">78% (19,500 / 25,000 HM)</text>
+    
+      <text x="38" y="554" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Hydraulic Pump PC2000</text>
+      <rect x="159" y="543" width="345" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="159" y="543" width="214.28571428571428" height="14" rx="3" fill="#0d9488"/>
+      <text x="379.2857142857143" y="554" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">64% (9,600 / 15,000 HM)</text>
+    
+      <text x="38" y="588" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="600" fill="#334155">Undercarriage D375 #042</text>
+      <rect x="159" y="577" width="345" height="14" rx="3" fill="#f1f5f9"/>
+      <rect x="159" y="577" width="174.10714285714283" height="14" rx="3" fill="#059669"/>
+      <text x="339.10714285714283" y="588" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">52% (6,240 / 12,000 HM)</text>
+    
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="598" y="383" width="578" height="252" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="598" y1="425" x2="1176" y2="425" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="612" y="394" width="54" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="639" y="408" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">PAGE 3</text>
+    <text x="674" y="404" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Sparepart Backlog &amp; Workshop Requisition (Waiting for Parts)</text>
+    <text x="674" y="418" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Integrasi Work Order (PM) dengan Purchase Requisition / PO (SAP MM)</text>
+    <rect x="1086" y="395" width="78" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="1125" y="408" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">MM-PM Link</text>
+    <rect x="610" y="427" width="554" height="22" rx="4" fill="#f1f5f9"/><text x="616" y="442" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Work Order</text><text x="726.8" y="442" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Equipment</text><text x="837.6" y="442" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">Required Sparepart</text><text x="948.4" y="442" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">PR / PO Status</text><text x="1059.2" y="442" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">ETA Site</text><rect x="610" y="449" width="554" height="26" fill="#eff6ff"/><line x1="610" y1="475" x2="1164" y2="475" stroke="#e2e8f0" stroke-width="0.7"/><text x="616" y="466.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#0f172a">WO-4009182</text><text x="726.8" y="466.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">EQ-JML-WL019</text><text x="837.6" y="466.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">Planetary Final Drive Seal Kit</text><text x="948.4" y="466.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">PO #4500192841</text><text x="1059.2" y="466.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="700" fill="#0f172a">25 Oct 2026</text><rect x="610" y="475" width="554" height="26" fill="#f8fafc"/><line x1="610" y1="501" x2="1164" y2="501" stroke="#e2e8f0" stroke-width="0.7"/><text x="616" y="492.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">WO-4009204</text><text x="726.8" y="492.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">EQ-JML-DT108</text><text x="837.6" y="492.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Overhaul Transmission Master Kit</text><text x="948.4" y="492.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">In Transit (Balikpapan)</text><text x="1059.2" y="492.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">26 Oct 2026</text><line x1="610" y1="527" x2="1164" y2="527" stroke="#e2e8f0" stroke-width="0.7"/><text x="616" y="518.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">WO-4009219</text><text x="726.8" y="518.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">EQ-JML-EX014</text><text x="837.6" y="518.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">High Pressure Hose Boom Cyl.</text><text x="948.4" y="518.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Available in Warehouse</text><text x="1059.2" y="518.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Ready (GI)</text><rect x="610" y="527" width="554" height="26" fill="#f8fafc"/><line x1="610" y1="553" x2="1164" y2="553" stroke="#e2e8f0" stroke-width="0.7"/><text x="616" y="544.68" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#334155">WO-4009235</text><text x="726.8" y="544.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">EQ-JML-DZ042</text><text x="837.6" y="544.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">Track Link Assembly D375</text><text x="948.4" y="544.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">PR Released (Appr L2)</text><text x="1059.2" y="544.68" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="500" fill="#334155">02 Nov 2026</text>
+  </g>
+    
+</svg>

@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 390" width="100%" height="100%">
+  <defs>
+    <linearGradient id="sacHeaderGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="blueBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#1d4ed8"/>
+    </linearGradient>
+    <linearGradient id="tealBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d9488"/>
+      <stop offset="100%" stop-color="#0f766e"/>
+    </linearGradient>
+    <linearGradient id="amberBar" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <linearGradient id="areaBlue" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.28"/>
+      <stop offset="100%" stop-color="#3b82f6" stop-opacity="0.02"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-2%" y="-2%" width="104%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- Canvas Background -->
+  <rect width="1200" height="390" rx="12" fill="#f1f5f9" stroke="#cbd5e1" stroke-width="1.5"/>
+
+  <!-- SAC Top Shell Bar -->
+  <path d="M0 12 Q0 0 12 0 L1188 0 Q1200 0 1200 12 L1200 48 L0 48 Z" fill="url(#sacHeaderGrad)"/>
+  <rect x="18" y="12" width="28" height="24" rx="5" fill="#0070f2"/>
+  <text x="32" y="28" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="800" fill="#ffffff">SAC</text>
+  <text x="56" y="23" font-family="Inter, system-ui, sans-serif" font-size="13" font-weight="700" fill="#ffffff">Financial Position — Detail Widget 4 &amp; 5: Loan Pie Chart &amp; Debt Numeric Points</text>
+  <text x="56" y="38" font-family="Inter, system-ui, sans-serif" font-size="10.5" font-weight="500" fill="#94a3b8">Active Sheet: Loan Facility Breakdown &amp; Debt Maturities</text>
+
+  <!-- Live CDS Badge -->
+  <rect x="930" y="12" width="252" height="24" rx="12" fill="#1e293b" stroke="#334155" stroke-width="1"/>
+  <circle cx="946" cy="24" r="4" fill="#10b981"/>
+  <text x="958" y="28" font-family="JetBrains Mono, monospace" font-size="10" font-weight="600" fill="#e2e8f0">LIVE CDS: S4HANA_PROD (J000)</text>
+
+  <!-- Global Input Filter Bar -->
+  <rect x="0" y="48" width="1200" height="52" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  
+      <g transform="translate(24, 60)">
+        <rect width="258.4" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Company Code:</text>
+        <text x="89.6" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">All (Jhonlin Group)</text>
+        <path d="M240.39999999999998 13 L244.39999999999998 18 L248.39999999999998 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(292.4, 60)">
+        <rect width="150" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Fiscal Year:</text>
+        <text x="83.3" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">2026</text>
+        <path d="M132 13 L136 18 L140 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+      <g transform="translate(452.4, 60)">
+        <rect width="150" height="30" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="1"/>
+        <text x="10" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#64748b" font-weight="500">Month:</text>
+        <text x="45.5" y="19" font-family="Inter, system-ui, sans-serif" font-size="11" fill="#0f172a" font-weight="700">Jan - Oct</text>
+        <path d="M132 13 L136 18 L140 13" fill="none" stroke="#64748b" stroke-width="1.5" stroke-linecap="round"/>
+      </g>
+
+  <!-- Active Sheet Tab Indicator on Right -->
+  <rect x="1005" y="60" width="175" height="30" rx="6" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="1093" y="79" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="700" fill="#1d4ed8">Loan Facility Breakdown </text>
+
+  <!-- Story Content Area -->
+  
+      
+  <g filter="url(#cardShadow)">
+    <rect x="24" y="114" width="610" height="254" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <line x1="24" y1="156" x2="634" y2="156" stroke="#f1f5f9" stroke-width="1"/>
+    <rect x="38" y="125" width="68" height="20" rx="4" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+           <text x="72" y="139" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#1d4ed8">WIDGET 4</text>
+    <text x="114" y="135" font-family="Inter, system-ui, sans-serif" font-size="12" font-weight="700" fill="#0f172a">Loan — Pie / Donut Chart (Komposisi Pinjaman Bank)</text>
+    <text x="114" y="149" font-family="Inter, system-ui, sans-serif" font-size="10" fill="#64748b">Proporsi baki debet pinjaman berdasarkan kreditur / sindikasi bank</text>
+    <rect x="537.8" y="126" width="84.2" height="19" rx="4" fill="#f8fafc" stroke="#e2e8f0"/>
+           <text x="579.9" y="139" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" font-weight="600" fill="#475569">Donut Chart</text>
+    <circle cx="139" cy="262" r="62" fill="none" stroke="#f1f5f9" stroke-width="20"/><circle cx="139" cy="262" r="62" fill="none" stroke="#0070f2" stroke-width="20" stroke-dasharray="175.3 389.6" stroke-dashoffset="0.0" transform="rotate(-90 139 262)"/><circle cx="139" cy="262" r="62" fill="none" stroke="#0d9488" stroke-width="20" stroke-dasharray="116.9 389.6" stroke-dashoffset="-175.3" transform="rotate(-90 139 262)"/><circle cx="139" cy="262" r="62" fill="none" stroke="#f59e0b" stroke-width="20" stroke-dasharray="62.3 389.6" stroke-dashoffset="-292.2" transform="rotate(-90 139 262)"/><circle cx="139" cy="262" r="62" fill="none" stroke="#6366f1" stroke-width="20" stroke-dasharray="35.1 389.6" stroke-dashoffset="-354.5" transform="rotate(-90 139 262)"/>
+    <text x="139" y="259" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="600" fill="#64748b">Total Debt</text>
+    <text x="139" y="275" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="13" font-weight="800" fill="#0f172a">6,350 Bn</text>
+  
+      <rect x="229" y="169" width="10" height="10" rx="2" fill="#0070f2"/>
+      <text x="245" y="178" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#334155">Bank Mandiri Corporate</text>
+      <text x="618" y="178" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">2,858 Bn (45%)</text>
+    
+      <rect x="229" y="197" width="10" height="10" rx="2" fill="#0d9488"/>
+      <text x="245" y="206" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#334155">BNI Sindikasi Tambang</text>
+      <text x="618" y="206" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">1,905 Bn (30%)</text>
+    
+      <rect x="229" y="225" width="10" height="10" rx="2" fill="#f59e0b"/>
+      <text x="245" y="234" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#334155">BRI Armada &amp; Port</text>
+      <text x="618" y="234" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">1,016 Bn (16%)</text>
+    
+      <rect x="229" y="253" width="10" height="10" rx="2" fill="#6366f1"/>
+      <text x="245" y="262" font-family="Inter, system-ui, sans-serif" font-size="10" font-weight="600" fill="#334155">Leasing Alat Berat</text>
+      <text x="618" y="262" text-anchor="end" font-family="JetBrains Mono, monospace" font-size="10" font-weight="700" fill="#0f172a">571 Bn (9%)</text>
+    
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="650" y="114" width="526" height="120" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="650" y="114" width="4" height="120" rx="2" fill="#f59e0b"/>
+    <rect x="662" y="124" width="66.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="695.25" y="135" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">WIDGET 5A</text>
+    <text x="696" y="136" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Current Maturities of Long-Term Debt</text>
+    <text x="664" y="166" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">1,420.5 <tspan font-size="11" font-weight="600" fill="#64748b">IDR Bn</tspan></text>
+    <rect x="664" y="206" width="306" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="670" y="218" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">Porsi Pinjaman Jatuh Tempo &lt;= 12 Bulan (FSV J000)</text>
+    
+    <polyline points="1084.0,212.4 1097.3,209.5 1110.7,210.5 1124.0,206.4 1137.3,207.6 1150.7,203.3 1164.0,201.6" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+      
+  <g filter="url(#cardShadow)">
+    <rect x="650" y="248" width="526" height="120" rx="8" fill="#ffffff" stroke="#e2e8f0" stroke-width="1"/>
+    <rect x="650" y="248" width="4" height="120" rx="2" fill="#0070f2"/>
+    <rect x="662" y="258" width="66.5" height="16" rx="3" fill="#eff6ff"/>
+           <text x="695.25" y="269" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9" font-weight="700" fill="#1d4ed8">WIDGET 5B</text>
+    <text x="696" y="270" font-family="Inter, system-ui, sans-serif" font-size="11" font-weight="600" fill="#475569">Total Interest-Bearing Debt (Long-Term + Short-Term)</text>
+    <text x="664" y="300" font-family="Inter, system-ui, sans-serif" font-size="21" font-weight="800" fill="#0f172a">6,350.0 <tspan font-size="11" font-weight="600" fill="#64748b">IDR Bn</tspan></text>
+    <rect x="664" y="340" width="282" height="18" rx="4" fill="#ecfdf5"/>
+           <text x="670" y="352" font-family="Inter, system-ui, sans-serif" font-size="9.5" font-weight="700" fill="#059669">▼ Turun -6.4% YoY Seiring Pelunasan Terjadwal</text>
+    
+    <polyline points="1084.0,346.4 1097.3,343.5 1110.7,344.5 1124.0,340.4 1137.3,341.6 1150.7,337.3 1164.0,335.6" fill="none" stroke="#0070f2" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+    
+</svg>

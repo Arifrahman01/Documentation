@@ -248,16 +248,22 @@ export function buildDocTree(docs: DocumentItem[]) {
 		sectionMap[sec].get(cat)!.push(node);
 	}
 
-	const treeData = Array.from(folderMetaMap.values()).map((entry) => ({
-		title: entry.title,
-		section: entry.section,
-		icon: 'Folder',
-		subfolders: Array.from(entry.subfolders),
-		nodes: entry.nodes
-	}));
+	const treeData = Array.from(folderMetaMap.values())
+		.sort((a, b) => {
+			if (a.section !== b.section) return a.section.localeCompare(b.section);
+			return a.title.localeCompare(b.title, undefined, { numeric: true });
+		})
+		.map((entry) => ({
+			title: entry.title,
+			section: entry.section,
+			icon: 'Folder',
+			subfolders: Array.from(entry.subfolders),
+			nodes: entry.nodes
+		}));
 
 	const sectionTree = sections.map((sec) => {
-		const catEntries = Array.from((sectionMap[sec] || new Map()).entries());
+		const catEntries = Array.from((sectionMap[sec] || new Map()).entries())
+			.sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
 		return {
 			section: sec,
 			title: sec,

@@ -7,9 +7,19 @@ export interface OutlineNode {
 	children: OutlineNode[];
 }
 
+export function decodeHtmlEntities(str: string): string {
+	return str
+		.replace(/&amp;/g, '&')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&quot;/g, '"')
+		.replace(/&#39;/g, "'")
+		.replace(/&#x27;/g, "'")
+		.replace(/&nbsp;/g, ' ');
+}
+
 export function slugifyHeading(text: string): string {
-	return text
-		.replace(/<[^>]+>/g, '')
+	return decodeHtmlEntities(text.replace(/<[^>]+>/g, ''))
 		.trim()
 		.replace(/[*_`~]/g, '')
 		.toLowerCase()
@@ -22,6 +32,7 @@ export function extractOutlineTree(markdownContent: string): OutlineNode[] {
 	if (!markdownContent) return [];
 	const lines = markdownContent.split('\n');
 	const rawHeadings: { id: string; text: string; level: number }[] = [];
+	const seenIds = new Map<string, number>();
 
 	let insideCodeBlock = false;
 	for (const line of lines) {
@@ -34,10 +45,15 @@ export function extractOutlineTree(markdownContent: string): OutlineNode[] {
 		const m = line.match(/^(#{1,4})\s+(.+)$/);
 		if (m) {
 			const level = m[1].length;
-			const text = m[2].trim().replace(/[*_`~]/g, '');
-			const id = slugifyHeading(text);
-			if (id && text) {
-				rawHeadings.push({ id, text, level });
+			const cleanText = decodeHtmlEntities(m[2].replace(/<[^>]+>/g, ''))
+				.trim()
+				.replace(/[*_`~]/g, '');
+			const baseId = slugifyHeading(cleanText);
+			if (baseId && cleanText) {
+				const count = seenIds.get(baseId) || 0;
+				seenIds.set(baseId, count + 1);
+				const id = count === 0 ? baseId : `${baseId}-${count}`;
+				rawHeadings.push({ id, text: cleanText, level });
 			}
 		}
 	}
@@ -92,23 +108,23 @@ export function renderMarkdown(content: string): string {
 	// Transform GitHub-style Alerts: [!NOTE], [!TIP], [!IMPORTANT], [!WARNING], [!CAUTION]
 	raw = raw.replace(
 		/>\s*\[!NOTE\]\s*(.*?)(?=(\n\n|\n>|$))/gs,
-		'<div class="my-4 rounded-xl border-l-4 border-blue-500 bg-blue-50/80 p-4 text-xs leading-relaxed text-blue-950 dark:bg-blue-950/40 dark:text-blue-200"><strong class="block mb-1 font-bold text-blue-700 dark:text-blue-300">ℹ️ Catatan (Note)</strong>$1</div>'
+		'<div class="my-4 rounded-xl border-l-4 border-border bg-muted/50 p-4 text-xs leading-relaxed text-foreground"><strong class="block mb-1 font-bold text-foreground">Catatan (Note)</strong>$1</div>'
 	);
 	raw = raw.replace(
 		/>\s*\[!TIP\]\s*(.*?)(?=(\n\n|\n>|$))/gs,
-		'<div class="my-4 rounded-xl border-l-4 border-emerald-500 bg-emerald-50/80 p-4 text-xs leading-relaxed text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200"><strong class="block mb-1 font-bold text-emerald-700 dark:text-emerald-300">💡 Tips Best Practice</strong>$1</div>'
+		'<div class="my-4 rounded-xl border-l-4 border-border bg-muted/50 p-4 text-xs leading-relaxed text-foreground"><strong class="block mb-1 font-bold text-foreground">Tips Best Practice</strong>$1</div>'
 	);
 	raw = raw.replace(
 		/>\s*\[!IMPORTANT\]\s*(.*?)(?=(\n\n|\n>|$))/gs,
-		'<div class="my-4 rounded-xl border-l-4 border-purple-500 bg-purple-50/80 p-4 text-xs leading-relaxed text-purple-950 dark:bg-purple-950/40 dark:text-purple-200"><strong class="block mb-1 font-bold text-purple-700 dark:text-purple-300">📌 Penting (Important)</strong>$1</div>'
+		'<div class="my-4 rounded-xl border-l-4 border-border bg-muted/50 p-4 text-xs leading-relaxed text-foreground"><strong class="block mb-1 font-bold text-foreground">Penting (Important)</strong>$1</div>'
 	);
 	raw = raw.replace(
 		/>\s*\[!WARNING\]\s*(.*?)(?=(\n\n|\n>|$))/gs,
-		'<div class="my-4 rounded-xl border-l-4 border-amber-500 bg-amber-50/80 p-4 text-xs leading-relaxed text-amber-950 dark:bg-amber-950/40 dark:text-amber-200"><strong class="block mb-1 font-bold text-amber-700 dark:text-amber-300">⚠️ Perhatian (Warning)</strong>$1</div>'
+		'<div class="my-4 rounded-xl border-l-4 border-border bg-muted/50 p-4 text-xs leading-relaxed text-foreground"><strong class="block mb-1 font-bold text-foreground">Perhatian (Warning)</strong>$1</div>'
 	);
 	raw = raw.replace(
 		/>\s*\[!CAUTION\]\s*(.*?)(?=(\n\n|\n>|$))/gs,
-		'<div class="my-4 rounded-xl border-l-4 border-red-500 bg-red-50/80 p-4 text-xs leading-relaxed text-red-950 dark:bg-red-950/40 dark:text-red-200"><strong class="block mb-1 font-bold text-red-700 dark:text-red-300">🚨 Peringatan Kritis (Caution)</strong>$1</div>'
+		'<div class="my-4 rounded-xl border-l-4 border-destructive bg-destructive/10 p-4 text-xs leading-relaxed text-foreground"><strong class="block mb-1 font-bold text-destructive">Peringatan Kritis (Caution)</strong>$1</div>'
 	);
 
 	let parsed = marked.parse(raw) as string;
@@ -120,9 +136,13 @@ export function renderMarkdown(content: string): string {
 	);
 	parsed = parsed.replace(/<\/table>/g, '</table></div>');
 
-	// Add IDs to headings H1-H4 for Outline navigation
-	parsed = parsed.replace(/<h([1-4])>(.*?)<\/h\1>/g, (_match, level, innerHtml) => {
-		const id = slugifyHeading(innerHtml);
+	// Add IDs to headings H1-H4 for Outline navigation (matching extractOutlineTree 100%)
+	const seenIds = new Map<string, number>();
+	parsed = parsed.replace(/<h([1-4])>([\s\S]*?)<\/h\1>/g, (_match, level, innerHtml) => {
+		const baseId = slugifyHeading(innerHtml);
+		const count = seenIds.get(baseId) || 0;
+		seenIds.set(baseId, count + 1);
+		const id = count === 0 ? baseId : `${baseId}-${count}`;
 		return `<h${level} id="${id}" class="scroll-mt-24 group relative">${innerHtml}</h${level}>`;
 	});
 

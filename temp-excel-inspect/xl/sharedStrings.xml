@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="219" uniqueCount="116"><si><t>No</t></si><si><t>Widget</t></si><si><t>Measure</t></si><si><t>Dimension</t></si><si><t>Source Data</t></si><si><t>CDS File</t></si><si><t>Widget on Page</t></si><si><t>Financial Performance Summary (Revenue - Current) - Numeric Point</t></si><si><t>Financial Performance Summary (Revenue - Previous) - Numeric Point</t></si><si><t>Financial Performance Summary (Gross Profit - Current) - Numeric Point Point</t></si><si><t>Financial Performance Summary (Gross Profit - Previous) - Numeric Point</t></si><si><t>Financial Performance Summary (Operating Profit - Previous) - Numeric Point</t></si><si><t>Financial Performance Summary (Operating Profit - Current) - Numeric Point</t></si><si><t>Financial Performance Summary (Net Profit - Current) - Numeric Point</t></si><si><t>Financial Performance Summary (Net Profit - Previous) - Numeric Point</t></si><si><t>Financial Performance Summary (EBITDA - Current) - Numeric Point</t></si><si><t>Financial Performance Summary (EBITDA - Previous) - Numeric Point</t></si><si><t>Monthly Performance - Combination Column &amp; Line Chart</t></si><si><t>Income Statement - Table</t></si><si><t>JG_M_S4HLV_ZCFIGL001 (model)
+ZVCFIGL001 (query)
+ZCFIGL001 (CDS)</t></si><si><r><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Pendapatan</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Formula - Calculated Measure (Helper)</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+Previous Year = Previous Year Amount * -1</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Restricted Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Revenue (Current) = Current Year dibagi berdasarkan G/L Account (Dimensions) mengambil value Pendapatan</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+
+Formula - Calculated Measure (Helper)</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+Current Year = Current Year Amount * -1</t></r></si><si><r><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Pendapatan</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">, </t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Beban Pokok Pendapatan</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Restricted Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Gross Profit (Current) = Current Year dibagi berdasarkan G/L Account (Dimensions) mengambil value Pendapatan, Beban Pokok Pendapatan</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+
+Formula - Calculated Measure (Helper)</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+Current Year = Current Year Amount * -1</t></r></si><si><r><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Pendapatan</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">, </t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Beban Pokok Pendapatan</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">, </t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Beban Administrasi &amp; Umum</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Restricted Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Operating Profit (Current) = Current Year dibagi berdasarkan G/L Account (Dimensions) mengambil value Pendapatan, Beban Pokok Pendapatan, Beban Administrasi &amp; Umum</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+
+Formula - Calculated Measure (Helper)</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+Current Year = Current Year Amount * -1</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Restricted Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Net Profit (Current) = Current Year dibagi berdasarkan G/L Account (Dimensions) mengambil value PROFIT AND LOSS</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+
+Formula - Calculated Measure (Helper)</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+Current Year = Current Year Amount * -1</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>PROFIT AND LOSS</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Pendapatan, Beban Pokok Pendapatan Pelabuhan, Beban Pokok Pendapatan Transportasi, Beban Pokok Pendapatan Batu Bara, Beban Supplies, Beban SDM, Beban Sewa, Beban Perawatan dan Perbaikan, Beban Umum, Beban SDM, Beban Utilitas, Beban Rumah Tangga, Beban Perlengkapan, Beban Asuransi Aset, Beban ekspedisi angkutan, Beban transportasi dan akomodasi, Beban konsumsi, Beban perjalanan dinas lainnya, Beban perjalanan cuti/fieldbreak, Beban sewa, Beban perawatan dan perbaikan, Beban jasa profesional, Beban legalitas dan perijinan, corporate social resposibility, Beban administrasi dan umum, beban pajak daerah, beban retribusi, Beban PNBP, Beban Denda Pajak, Beban Pajak Penghasilan (PPh) - Adum, Beban Pajak Pertambahan Nilai-Adum, PBBKB-Adum, Beban PPh 4 (2) Final-Adum, Beban Pajak Final  - Adum</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Restricted Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>EBITDA (Current) = Current Year dibagi berdasarkan G/L Account (Dimensions) mengambil value Pendapatan, Beban Pokok Pendapatan Pelabuhan, Beban Pokok Pendapatan Transportasi, Beban Pokok Pendapatan Batu Bara, Beban Supplies, Beban SDM, Beban Sewa, Beban Perawatan dan Perbaikan, Beban Umum, Beban SDM, Beban Utilitas, Beban Rumah Tangga, Beban Perlengkapan, Beban Asuransi Aset, Beban ekspedisi angkutan, Beban transportasi dan akomodasi, Beban konsumsi, Beban perjalanan dinas lainnya, Beban perjalanan cuti/fieldbreak, Beban sewa, Beban perawatan dan perbaikan, Beban jasa profesional, Beban legalitas dan perijinan, corporate social resposibility, Beban administrasi dan umum, beban pajak daerah, beban retribusi, Beban PNBP, Beban Denda Pajak, Beban Pajak Penghasilan (PPh) - Adum, Beban Pajak Pertambahan Nilai-Adum, PBBKB-Adum, Beban PPh 4 (2) Final-Adum, Beban Pajak Final  - Adum</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+
+Formula - Calculated Measure (Helper)</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+Current Year = Current Year Amount * -1
+
+**Note
+Jika terdapat Value EBITDA yang kategorinya sama, sebetulnya menggunakan nomor akun yang berbeda</t></r></si><si><r><t xml:space="preserve">Amount (Measure Input)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Digunakan sebagai filter amount (Bar Chart) yang ingin ditampilkan. Berisikan Revenue, Gross Profit, Operating Profit, Net Profit, EBITDA
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>New Measure Input Control (Measure Input)</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+Digunakan sebagai filter amount (Line Chart) yang ingin ditampilkan. Berisikan GP Margin, OP Margin, NP Margin, EBITDA Margin</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+
+Formula - Calculated Measure (Helper)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">GP Margin = Gross Profit / Revenue
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Calculated Measure (Helper)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">OP Margin = Operating Profit / Revenue
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula = Calculated Measure (Helper)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">NP Margin = Net Profit / Revenue
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula = Calculated Measure (Helper)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>EBITDA Margin = EBITDA / Revenue</t></r></si><si><t>Calendar Month
+Calendar Year (Color)</t></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Story Calculation
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Current Year (Column)
+Previous Year (Column)
+Variance (Column)
+Variance (%) (Column)
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Calculated Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Current Year = Current Year Amount * -1
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Calculated Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Previous Year = Previous Year Amount * -1
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Calculated Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Variance = ABS (Current Year Amount) - ABS (Previous Year Amount)
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Calculated Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Variance (%) = (ABS(Current Year Amount) - ABS(Previous Year Amount)) / ABS (Amount in Company Code Currency)</t></r></si><si><r><t xml:space="preserve">G/L Account (Rows)
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>G/L Account = PROFIT AND LOSS</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Measures</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+Current Year Amount = Formula on CDS
+case
+      when PostingDate between $parameters.P_FromPostingDate and $parameters.P_ToPostingDate
+      then AmountInCompanyCodeCurrency
+      else 0
+    end as CurrentYearAmount
+</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Measures</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+Previous Year Amount = Formula on CDS
+case
+      when PostingDate between dats_add_months($parameters.P_FromPostingDate, -12, 'NULL') and dats_add_months($parameters.P_ToPostingDate, -12, 'NULL')
+      then AmountInCompanyCodeCurrency
+      else 0
+    end as PreviousYearAmount</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Measures</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+Current Year Amount = Formula on CDS
+case
+      when PostingDate between $parameters.P_FromPostingDate and $parameters.P_ToPostingDate
+      then AmountInCompanyCodeCurrency
+      else 0
+    end as CurrentYearAmount
+
+Previous Year Amount = Formula on CDS
+case
+      when PostingDate between dats_add_months($parameters.P_FromPostingDate, -12, 'NULL') and dats_add_months($parameters.P_ToPostingDate, -12, 'NULL')
+      then AmountInCompanyCodeCurrency
+      else 0
+    end as PreviousYearAmount</t></r></si><si><t>Asset - Stacked Bar/Column</t></si><si><t>Liabilities &amp; Equity - Stacked Bar/Column</t></si><si><t>Covenant Ratio - Table</t></si><si><t>Loan - Pie Chart</t></si><si><t>Debt - Numeric Point</t></si><si><t>JG_M_S4HLV_ZCFIGL002 (models)
+ZVCFIGL002 (query)
+ZCFIGL002 (CDS)</t></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Calculated Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Amount = ABS(Amount in Company Code Currency)</t></r></si><si><r><t xml:space="preserve">Calendar Year
+G/L Account (color)
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">G/L Account = Asset Lancar, Asset Tidak Lancar
+</t></r></si><si><r><t xml:space="preserve">Calendar Year
+G/L Account (color)
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>G/L Account = Liabilitas Jangka Pendek, Liabilitas Jangka Panjang, Ekuitas</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Measures
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Amount in Company Code Currency = I_GLAccountYearToDateBalanceC - AmountInCompanyCodeCurrency</t></r></si><si><r><t xml:space="preserve">Model Measure
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Amount in Company Code Currency 
+Credit Amount in Company Code Currency
+Debit Amount in Company Code Currency
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Story Calculation
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Current Asset
+Current Ratio
+Debt to EBITDA
+DSCR
+DER (Debt to Equity Ratio)
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Restricted Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Current Asset = Amount (Measure) yang dihitung berdasarkan G/L Account (Dimensions) dan mengambil nilai Asset Lancar</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+
+Formula - Calculated Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Current Ratio = Current Asset / Current Liability
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Debt to EBITDA (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Debt to EBITDA = YTD Debt / EBITDA YTD
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - DSCR (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">DSCR = EBITDA YTD / Total Debt
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - DER (Debt to Equity Ratio) (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>DER = Total Debt / Total Equity</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+
+**</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Note
+Current Asset, Current Liability, YTD Debt, EBITDA YTD, Total Debt dan Total Equity merupakan Story Calculation yang bersifat Helper</t></r></si><si><r><t xml:space="preserve">Calendar Year (Columns)
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Amount in Company Code Currency, Credit Amount in Company Code Currency, Debit Amount in Company Code Currency,Current Asset, Current Ratio, Debt to EBITDA, DSCR, DER (Debt to Equity Ratio)</t></r></si><si><t>G/L Account (color)
+Calendar Year (Trellis)</t></si><si><r><t xml:space="preserve">Formula - Restricted Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Total Debt = Amount (Measure) yang di hitung berdasarkan G/L Account (Dimensions) dan diambil nilai Liabilitasnya
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Restricted Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Current Maturities = Amount (Measure) yang di hitung berdasarkan G/L Account (Dimensions) dan diambil nilai Liab Jangka Panjang yg jatuh tempo dlm 1 Thn</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+
+Formula - Calculated Measure (Helper)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Amount = ABS(Amount in Company Code Currency)</t></r></si><si><t>Calendar Year (Trellis)</t></si><si><t>Account Payable - Table</t></si><si><t>Account Receivable - Table</t></si><si><t>JG_M_S4HLV_ZCFIAP001 (models)
+ZVCFIAP001 (Query)
+ZCFIAP001(CDS)</t></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Rows
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Vendor Group
+Vendor
+Status Afiliasi
+Trade Category</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+</t></r></si><si><r><t xml:space="preserve">Columns
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>All Member</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+
+Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Liabilitas dan Ekuitas</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Rows
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Customer Group
+Customer
+Status Afiliasi
+Trade Category</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+</t></r></si><si><r><t xml:space="preserve">Columns
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>All Member</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+
+Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Aset</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Measures
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">TotalAmountInDisplayCrcy, Sumber value disini di dapatkan dari Association ke I_GLAccountInChartOfAccounts dan I_ChartOfAccounts. Ini menjadi sumber value seharusnya.
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Dimensions
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Untuk bagian Vendor Group dan Vendor. menggunakan AMDP sebagai bantuan untuk bagian tampilan story nya, sehingga tidak ada secara explisit di dalam CDS utama nya. Sedangkan untuk Status Afiliasi dan Trade Category merupakan formula yang ada di ZBFIAP001_2
+
+
+**Note
+untuk memunculkan tampilan Total, Current, Overdue &lt;= 30 Days dll digunakan AMDP. Source code dapat di cek melalui ZFI_CL_AP_001</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Measures
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">TotalAmountInDisplayCrcy, Sumber value disini di dapatkan dari Association ke I_GLAccountInChartOfAccounts dan I_ChartOfAccounts. Ini menjadi sumber value seharusnya.
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Dimensions
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Untuk bagian Customer Group dan Customer. menggunakan AMDP sebagai bantuan untuk bagian tampilan story nya, sehingga tidak ada secara explisit di dalam CDS utama nya. Sedangkan untuk Status Afiliasi dan Trade Category merupakan formula yang ada di ZBFIAR001_2
+
+
+**Note
+untuk memunculkan tampilan Total, Current, Overdue &lt;= 30 Days dll digunakan AMDP. Source code dapat di cek melalui ZFI_CL_AR_001</t></r></si><si><t>Cash/Bank Position - Numeric Point</t></si><si><t>Cash Position per Month - Table</t></si><si><t>Cash In, Cash Out per Month - Bar/Column Chart</t></si><si><t>Cash out by Bank - Bar/Column Chart</t></si><si><t>Exchange Rate to IDR - Table</t></si><si><t xml:space="preserve">JG_M_S4HLV_ZCFIGL004 (models)
+ZVCFIGL004(Query)
+ZCFIGL004 (CDS)
+</t></si><si><t xml:space="preserve">JG_M_S4HLV_ZCFIGL005 (models)
+ZVCFIGL005(Query)
+ZCFIGL005 (CDS)
+</t></si><si><t>JG_M_S4HLV_ZCXXFX001 (models)
+ZVCXXFX001 (Query)
+ZCXXFX001 (CDS)</t></si><si><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Cash Position</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+</t></r></si><si><r><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>G/L Account = Kas dan Setara Kas</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Measures
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Cash Position = Amount in Company Code Currency = I_GLAccountLineItem - AmountInCompanyCodeCurrency</t></r></si><si><r><t xml:space="preserve">Column
+Model Measure
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Cash Position = Amount in Company Code Currency
+Cash Out = Credit Balance in Company Code Currency
+Cash In = Debit Balance in Company Code Currency
+Amount in Company Code Currency
+Credit Amount in Company Code Currency
+Debit Amount in Company Code Currency
+Ending Balance in Company Code Currency
+Starting Balance in Company Code Currency
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Story Calculation
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Ending Balance = Merupakan Calculation pada level story yang menggunakan formula bar, untuk memunculkannya klik titik 3 pada widget kemudian pilih show/hide, kemudian Formulas. pastikan seluruh kolom tidak ada yang ter hide untuk melihat formula nya.</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Formula</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve"> </t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>penyusunnya adalah =runningsum(C1,true). yang mana C1 disini adalah Cash Position</t></r></si><si><r><t xml:space="preserve">Rows
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Fiscal Year Period
+Calendar Month</t></r></si><si><r><t xml:space="preserve">Calendar Year
+Calendar Month
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>G/L Account = Kas dan Setara Kas</t></r></si><si><t>Credit Amount in Company Code Currency</t></si><si><r><t xml:space="preserve">G/L Account
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>G/L Account = Kas dan Setara Kas</t></r></si><si><r><t xml:space="preserve">Rows
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">From Currency
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Filters
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Measures = KMK, Closing</t></r></si><si><t xml:space="preserve">Cash In = Debit Balance in Company Code Currency
+Cash Out = Credit Balance in Company Code Currency
+</t></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Measures
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Debit Balance in Company Code Currency = Formula on CDS
+case
+    when I_GLAccountLineItem.PostingDate &lt;= $parameters.P_PostingDate
+    and I_GLAccountLineItem.FiscalPeriod &lt;&gt; '000'
+    then I_GLAccountLineItem.DebitAmountInCoCodeCrcy
+    else 0
+    end as DebitBalanceInCoCodeCrcy
+
+Credit Balance in Company Code Currency = Formula on CDS
+case
+    when I_GLAccountLineItem.PostingDate &lt;= $parameters.P_PostingDate
+    and I_GLAccountLineItem.FiscalPeriod &lt;&gt; '000'
+    then I_GLAccountLineItem.CreditAmountInCoCodeCrcy
+    else 0
+    end as CreditBalanceInCoCodeCrcy
+
+**Note
+Sumber keduanya adalah I_GLAccountLineItem</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Measures
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Amount In Company Code Currency = I_GLAccountLineItem - AmountInCompanyCodeCurrency
+
+Credit Balance in Company Code Currency = Formula on CDS
+case
+    when I_GLAccountLineItem.PostingDate &lt;= $parameters.P_PostingDate
+    and I_GLAccountLineItem.FiscalPeriod &lt;&gt; '000'
+    then I_GLAccountLineItem.CreditAmountInCoCodeCrcy
+    else 0
+    end as CreditBalanceInCoCodeCrcy
+
+Debit Balance in Company Code Currency = Formula on CDS
+case
+    when I_GLAccountLineItem.PostingDate &lt;= $parameters.P_PostingDate
+    and I_GLAccountLineItem.FiscalPeriod &lt;&gt; '000'
+    then I_GLAccountLineItem.DebitAmountInCoCodeCrcy
+    else 0
+    end as DebitBalanceInCoCodeCrcy
+
+**Note
+Seluruh Model Measure berumber dari I_GLAccountLineItem, source code dapat di cek melalui CDS ZBFIGL004</t></r></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Measures</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+Credit Amount in Company Code Currency = I_GLAccountLineItem - CreditAmountInCoCodeCrcy
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Dimensions
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>G/L Account = I_GLAccountLineItem - G/Laccount</t></r></si><si><r><t xml:space="preserve">Measures
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Exchange Rate = Formula on CDS
+case
+    when a.SourceCurrency = 'JPY'
+    then a.ExchangeRate
+    else a.ExchangeRate * 1000
+    end as ExchangeRate
+
+kemudian dibalut dengan kondisi
+where a.TargetCurrency = 'IDR' 
+        and ( a.ExchangeRateType = 'M' or a.ExchangeRateType = 'C')
+        and a.ExchangeRateEffectiveDate &lt;= $parameters.P_GDATU
+
+</t></r></si><si><r><t xml:space="preserve">Column
+Model Measure
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Exchange Rate
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Story Calculation
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">KMK
+Closing
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Restricted Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">KMK = Last (measure) yang dihitung berdasarkan Exchange Rate Type (Dimensions) mengambil value M
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Restricted Measure (Main Formula)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Closing = Last (measure) yang dihitung berdasarkan Exchange Rate Type (Dimensions) mengambil value C
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Formula - Aggregation (Helper)
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Last = Exchange Rate (Measure) yang diambil nilai terakhirnya (Operation - Last) di aggregation berdasarkan Valin From</t></r></si><si><t>Actual Price - Line Chart</t></si><si><t>Harga Batubara Acuan (HBA) - Line Chart</t></si><si><t>Indonesia Coal Index (ICI) - Line Chart</t></si><si><t xml:space="preserve">JG_M_S4HLV_ZCSDBI001 (models)
+ZVCSDBI001 (Query)
+ZCSDBI001 (CDS)
+</t></si><si><t>JG_M_FFIIM_HBA (Import models)</t></si><si><t>JG_M_FFIIM_ICI (Import models)</t></si><si><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Average Sales Amount</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+</t></r></si><si><t>Year of Billing
+Calendar Month of Billing
+Product (color)</t></si><si><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Measures
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Average Sales Amount = Formula on CDS
+case
+    when SalesVolumeQuantity =  0
+    then 0
+    else division(SalesVolumeNetAmount,SalesVolumeQuantity, 2 ) 
+    end as AverageSalesAmount
+
+</t></r><r><rPr><b/><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">Dimensions
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Year of Billing = I_BillingDocumentItemCube - BillingDocumentDateYear
+
+Calendar Month of Billing = I_BillingDocumentItemCube - BillingDocDateCalendarMonth
+
+Product = I_BillingDocumentItemCube - Product</t></r></si><si><r><t>Price</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t xml:space="preserve">
+</t></r></si><si><t>Date
+Grade (color)</t></si><si><r><t xml:space="preserve">Import Data
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Di import menggunakan file
+Finance - HBA_Upload_2025
+
+**Note
+Data import berdasarkan pengisian yang dilakukan user ke template tersebut. Untuk saat ini cut-off data hanya sampai Oct 2025</t></r></si><si><t>Index Price</t></si><si><r><t xml:space="preserve">Import Data
+</t></r><r><rPr><sz val="11"/><color theme="1"/><rFont val="Calibri"/><family val="2"/><scheme val="minor"/></rPr><t>Di import menggunakan file
+Finance - ICI_Upload_2025
+
+**Note
+Data import berdasarkan pengisian yang dilakukan user ke template tersebut. Untuk saat ini cut-off data hanya sampai Oct 2025</t></r></si><si><t>T-code</t></si><si><t>FAGLL03H</t></si><si><t>Variant</t></si><si><t>REVENUE-SAC</t></si><si><t>F.01</t></si><si><t>GPPROFIT-SAC</t></si><si><t>OPPROFIT-SAC</t></si><si><t>NPPROFIT-SAC</t></si><si><t>EBITDA-SAC</t></si><si><t>-</t></si><si><t>FAGLL03H (untuk detail data)
+atau
+F.01 (untuk hasil report yang lebih sederhana)</t></si><si><t>JG_M_S4HLV_ZCFIGL003 (models)
+ZVCFIGL003 (query)
+ZCFIGL003 (CDS)</t></si><si><t>IDCNAP - AGING AP REPORT
+atau
+ZFIR005</t></si><si><t>IDCNAR - AGING AR REPORT
+atau
+ZFIR006</t></si><si><t>OB08</t></si><si><t>VF05H (Untuk mendapatkan Currency)
+OB08 (Untuk mendapatkan Exchange Rate)</t></si><si><t>Import Data</t></si></sst>

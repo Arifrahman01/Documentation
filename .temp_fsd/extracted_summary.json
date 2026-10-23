@@ -1,0 +1,1898 @@
+{
+  "finance": [
+    {
+      "index": 1,
+      "fileName": "finance-1.png",
+      "heading": "Flat Files (CSV File) which will be loaded to SAP Analytics Cloud",
+      "sizeKB": "11.6"
+    },
+    {
+      "index": 2,
+      "fileName": "finance-2.png",
+      "heading": "Layout",
+      "sizeKB": "92.2"
+    },
+    {
+      "index": 3,
+      "fileName": "finance-3.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "3.9"
+    },
+    {
+      "index": 4,
+      "fileName": "finance-4.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "4.1"
+    },
+    {
+      "index": 5,
+      "fileName": "finance-5.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "4.2"
+    },
+    {
+      "index": 6,
+      "fileName": "finance-6.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "3.9"
+    },
+    {
+      "index": 7,
+      "fileName": "finance-7.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "3.9"
+    },
+    {
+      "index": 8,
+      "fileName": "finance-8.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "20.7"
+    },
+    {
+      "index": 9,
+      "fileName": "finance-9.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "14.4"
+    },
+    {
+      "index": 10,
+      "fileName": "finance-10.png",
+      "heading": "Layout",
+      "sizeKB": "43.1"
+    },
+    {
+      "index": 11,
+      "fileName": "finance-11.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "4.0"
+    },
+    {
+      "index": 12,
+      "fileName": "finance-12.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "5.6"
+    },
+    {
+      "index": 13,
+      "fileName": "finance-13.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "5.8"
+    },
+    {
+      "index": 14,
+      "fileName": "finance-14.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "9.6"
+    },
+    {
+      "index": 15,
+      "fileName": "finance-15.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "13.0"
+    },
+    {
+      "index": 16,
+      "fileName": "finance-16.png",
+      "heading": "Layout",
+      "sizeKB": "65.8"
+    },
+    {
+      "index": 17,
+      "fileName": "finance-17.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "22.7"
+    },
+    {
+      "index": 18,
+      "fileName": "finance-18.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "23.2"
+    },
+    {
+      "index": 19,
+      "fileName": "finance-19.png",
+      "heading": "-381078740",
+      "sizeKB": "139.7"
+    },
+    {
+      "index": 20,
+      "fileName": "finance-20.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "4.4"
+    },
+    {
+      "index": 21,
+      "fileName": "finance-21.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "26.1"
+    },
+    {
+      "index": 22,
+      "fileName": "finance-22.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "24.1"
+    },
+    {
+      "index": 23,
+      "fileName": "finance-23.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "6.9"
+    },
+    {
+      "index": 24,
+      "fileName": "finance-24.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "7.9"
+    },
+    {
+      "index": 25,
+      "fileName": "finance-25.png",
+      "heading": "Layout",
+      "sizeKB": "89.5"
+    },
+    {
+      "index": 26,
+      "fileName": "finance-26.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "23.7"
+    },
+    {
+      "index": 27,
+      "fileName": "finance-27.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "30.7"
+    },
+    {
+      "index": 28,
+      "fileName": "finance-28.png",
+      "heading": "Component Sample/Mock-up:",
+      "sizeKB": "22.6"
+    },
+    {
+      "index": 29,
+      "fileName": "finance-29.emf",
+      "heading": "A sample of the upload file is provided in the attached Excel document.",
+      "sizeKB": "5.5"
+    },
+    {
+      "index": 30,
+      "fileName": "finance-30.emf",
+      "heading": "A sample of the upload file is provided in the attached Excel document.",
+      "sizeKB": "5.5"
+    }
+  ],
+  "marketing": [
+    {
+      "index": 1,
+      "fileName": "marketing-1.png",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "17.1"
+    },
+    {
+      "index": 2,
+      "fileName": "marketing-2.svg",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 3,
+      "fileName": "marketing-3.png",
+      "heading": "Layout",
+      "sizeKB": "194.3"
+    },
+    {
+      "index": 4,
+      "fileName": "marketing-4.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "194.3"
+    },
+    {
+      "index": 5,
+      "fileName": "marketing-5.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "194.3"
+    },
+    {
+      "index": 6,
+      "fileName": "marketing-6.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "194.3"
+    },
+    {
+      "index": 7,
+      "fileName": "marketing-7.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "194.3"
+    },
+    {
+      "index": 8,
+      "fileName": "marketing-8.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "194.3"
+    },
+    {
+      "index": 9,
+      "fileName": "marketing-9.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "194.3"
+    },
+    {
+      "index": 10,
+      "fileName": "marketing-10.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "194.3"
+    },
+    {
+      "index": 11,
+      "fileName": "marketing-11.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "194.3"
+    },
+    {
+      "index": 12,
+      "fileName": "marketing-12.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "194.3"
+    },
+    {
+      "index": 13,
+      "fileName": "marketing-13.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "194.3"
+    },
+    {
+      "index": 14,
+      "fileName": "marketing-14.png",
+      "heading": "Layout",
+      "sizeKB": "94.5"
+    },
+    {
+      "index": 15,
+      "fileName": "marketing-15.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "94.5"
+    },
+    {
+      "index": 16,
+      "fileName": "marketing-16.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "94.5"
+    },
+    {
+      "index": 17,
+      "fileName": "marketing-17.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "94.5"
+    },
+    {
+      "index": 18,
+      "fileName": "marketing-18.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "94.5"
+    },
+    {
+      "index": 19,
+      "fileName": "marketing-19.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "94.5"
+    },
+    {
+      "index": 20,
+      "fileName": "marketing-20.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "94.5"
+    }
+  ],
+  "operation-mining": [
+    {
+      "index": 1,
+      "fileName": "operation-mining-1.png",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "17.1"
+    },
+    {
+      "index": 2,
+      "fileName": "operation-mining-2.svg",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 3,
+      "fileName": "operation-mining-3.png",
+      "heading": "Layout",
+      "sizeKB": "193.5"
+    },
+    {
+      "index": 4,
+      "fileName": "operation-mining-4.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "12.3"
+    },
+    {
+      "index": 5,
+      "fileName": "operation-mining-5.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "11.9"
+    },
+    {
+      "index": 6,
+      "fileName": "operation-mining-6.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "9.5"
+    },
+    {
+      "index": 7,
+      "fileName": "operation-mining-7.png",
+      "heading": "Strip Ratio and Cost per OB and Coal",
+      "sizeKB": "7.7"
+    },
+    {
+      "index": 8,
+      "fileName": "operation-mining-8.png",
+      "heading": "YTD Production – Chart",
+      "sizeKB": "18.9"
+    },
+    {
+      "index": 9,
+      "fileName": "operation-mining-9.png",
+      "heading": "Overburden per Pit (BCM)",
+      "sizeKB": "17.8"
+    },
+    {
+      "index": 10,
+      "fileName": "operation-mining-10.png",
+      "heading": "Coal per Pit (MT)",
+      "sizeKB": "15.5"
+    },
+    {
+      "index": 11,
+      "fileName": "operation-mining-11.png",
+      "heading": "Fuel Consumption for OB per Pit",
+      "sizeKB": "20.8"
+    },
+    {
+      "index": 12,
+      "fileName": "operation-mining-12.png",
+      "heading": "Fuel Consumption for Coal per Pit",
+      "sizeKB": "23.8"
+    },
+    {
+      "index": 13,
+      "fileName": "operation-mining-13.png",
+      "heading": "Strip Ratio per Pit",
+      "sizeKB": "8.7"
+    },
+    {
+      "index": 14,
+      "fileName": "operation-mining-14.png",
+      "heading": "Cost per OB per Pit (IDR)",
+      "sizeKB": "10.3"
+    },
+    {
+      "index": 15,
+      "fileName": "operation-mining-15.png",
+      "heading": "Cost per Coal per Pit (IDR)",
+      "sizeKB": "10.1"
+    },
+    {
+      "index": 16,
+      "fileName": "operation-mining-16.png",
+      "heading": "Layout",
+      "sizeKB": "125.2"
+    },
+    {
+      "index": 17,
+      "fileName": "operation-mining-17.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "4.7"
+    },
+    {
+      "index": 18,
+      "fileName": "operation-mining-18.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "5.3"
+    },
+    {
+      "index": 19,
+      "fileName": "operation-mining-19.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "4.9"
+    },
+    {
+      "index": 20,
+      "fileName": "operation-mining-20.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "3.9"
+    },
+    {
+      "index": 21,
+      "fileName": "operation-mining-21.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "3.9"
+    },
+    {
+      "index": 22,
+      "fileName": "operation-mining-22.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "3.6"
+    },
+    {
+      "index": 23,
+      "fileName": "operation-mining-23.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "13.3"
+    },
+    {
+      "index": 24,
+      "fileName": "operation-mining-24.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "13.6"
+    },
+    {
+      "index": 25,
+      "fileName": "operation-mining-25.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "19.3"
+    },
+    {
+      "index": 26,
+      "fileName": "operation-mining-26.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "13.8"
+    },
+    {
+      "index": 27,
+      "fileName": "operation-mining-27.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "9.6"
+    },
+    {
+      "index": 28,
+      "fileName": "operation-mining-28.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "13.1"
+    },
+    {
+      "index": 29,
+      "fileName": "operation-mining-29.png",
+      "heading": "Layout",
+      "sizeKB": "167.2"
+    },
+    {
+      "index": 30,
+      "fileName": "operation-mining-30.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "8.4"
+    },
+    {
+      "index": 31,
+      "fileName": "operation-mining-31.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "10.3"
+    },
+    {
+      "index": 32,
+      "fileName": "operation-mining-32.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "11.5"
+    },
+    {
+      "index": 33,
+      "fileName": "operation-mining-33.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "34.7"
+    },
+    {
+      "index": 34,
+      "fileName": "operation-mining-34.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "19.8"
+    },
+    {
+      "index": 35,
+      "fileName": "operation-mining-35.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "11.1"
+    },
+    {
+      "index": 36,
+      "fileName": "operation-mining-36.png",
+      "heading": "Contoh / Mock-up Komponen:",
+      "sizeKB": "17.6"
+    },
+    {
+      "index": 37,
+      "fileName": "operation-mining-37.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "9.7"
+    },
+    {
+      "index": 38,
+      "fileName": "operation-mining-38.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "13.0"
+    },
+    {
+      "index": 39,
+      "fileName": "operation-mining-39.png",
+      "heading": "Layout",
+      "sizeKB": "108.0"
+    },
+    {
+      "index": 40,
+      "fileName": "operation-mining-40.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "5.6"
+    },
+    {
+      "index": 41,
+      "fileName": "operation-mining-41.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "4.5"
+    },
+    {
+      "index": 42,
+      "fileName": "operation-mining-42.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "2.2"
+    },
+    {
+      "index": 43,
+      "fileName": "operation-mining-43.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "5.1"
+    },
+    {
+      "index": 44,
+      "fileName": "operation-mining-44.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "5.1"
+    },
+    {
+      "index": 45,
+      "fileName": "operation-mining-45.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "5.1"
+    },
+    {
+      "index": 46,
+      "fileName": "operation-mining-46.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "13.5"
+    },
+    {
+      "index": 47,
+      "fileName": "operation-mining-47.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "15.1"
+    },
+    {
+      "index": 48,
+      "fileName": "operation-mining-48.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "21.6"
+    },
+    {
+      "index": 49,
+      "fileName": "operation-mining-49.png",
+      "heading": "Contoh/ Mock-up Komponen:",
+      "sizeKB": "7.2"
+    }
+  ],
+  "operation-marine": [
+    {
+      "index": 1,
+      "fileName": "operation-marine-1.png",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "17.1"
+    },
+    {
+      "index": 2,
+      "fileName": "operation-marine-2.svg",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 3,
+      "fileName": "operation-marine-3.png",
+      "heading": "Layout",
+      "sizeKB": "124.0"
+    },
+    {
+      "index": 4,
+      "fileName": "operation-marine-4.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "21.3"
+    },
+    {
+      "index": 5,
+      "fileName": "operation-marine-5.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "6.1"
+    },
+    {
+      "index": 6,
+      "fileName": "operation-marine-6.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "8.9"
+    },
+    {
+      "index": 7,
+      "fileName": "operation-marine-7.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "27.2"
+    },
+    {
+      "index": 8,
+      "fileName": "operation-marine-8.png",
+      "heading": "Layout",
+      "sizeKB": "230.1"
+    },
+    {
+      "index": 9,
+      "fileName": "operation-marine-9.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "51.2"
+    },
+    {
+      "index": 10,
+      "fileName": "operation-marine-10.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "85.6"
+    },
+    {
+      "index": 11,
+      "fileName": "operation-marine-11.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "68.9"
+    },
+    {
+      "index": 12,
+      "fileName": "operation-marine-12.png",
+      "heading": "Layout",
+      "sizeKB": "239.0"
+    },
+    {
+      "index": 13,
+      "fileName": "operation-marine-13.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "51.6"
+    },
+    {
+      "index": 14,
+      "fileName": "operation-marine-14.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "85.6"
+    },
+    {
+      "index": 15,
+      "fileName": "operation-marine-15.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "68.9"
+    },
+    {
+      "index": 16,
+      "fileName": "operation-marine-16.png",
+      "heading": "Layout",
+      "sizeKB": "127.9"
+    },
+    {
+      "index": 17,
+      "fileName": "operation-marine-17.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "8.3"
+    },
+    {
+      "index": 18,
+      "fileName": "operation-marine-18.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "5.6"
+    },
+    {
+      "index": 19,
+      "fileName": "operation-marine-19.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "6.0"
+    },
+    {
+      "index": 20,
+      "fileName": "operation-marine-20.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "4.6"
+    },
+    {
+      "index": 21,
+      "fileName": "operation-marine-21.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "13.1"
+    },
+    {
+      "index": 22,
+      "fileName": "operation-marine-22.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "20.2"
+    },
+    {
+      "index": 23,
+      "fileName": "operation-marine-23.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "15.8"
+    },
+    {
+      "index": 24,
+      "fileName": "operation-marine-24.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "12.0"
+    }
+  ],
+  "supply-chain": [
+    {
+      "index": 1,
+      "fileName": "supply-chain-1.png",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "17.1"
+    },
+    {
+      "index": 2,
+      "fileName": "supply-chain-2.svg",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 3,
+      "fileName": "supply-chain-3.png",
+      "heading": "Layout",
+      "sizeKB": "142.5"
+    },
+    {
+      "index": 4,
+      "fileName": "supply-chain-4.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "31.6"
+    },
+    {
+      "index": 5,
+      "fileName": "supply-chain-5.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "28.3"
+    },
+    {
+      "index": 6,
+      "fileName": "supply-chain-6.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "51.1"
+    },
+    {
+      "index": 7,
+      "fileName": "supply-chain-7.png",
+      "heading": "Layout",
+      "sizeKB": "248.4"
+    },
+    {
+      "index": 8,
+      "fileName": "supply-chain-8.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "8.4"
+    },
+    {
+      "index": 9,
+      "fileName": "supply-chain-9.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "16.7"
+    },
+    {
+      "index": 10,
+      "fileName": "supply-chain-10.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "12.3"
+    },
+    {
+      "index": 11,
+      "fileName": "supply-chain-11.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "34.0"
+    },
+    {
+      "index": 12,
+      "fileName": "supply-chain-12.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "25.7"
+    },
+    {
+      "index": 13,
+      "fileName": "supply-chain-13.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "34.7"
+    },
+    {
+      "index": 14,
+      "fileName": "supply-chain-14.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "23.8"
+    },
+    {
+      "index": 15,
+      "fileName": "supply-chain-15.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "41.2"
+    },
+    {
+      "index": 16,
+      "fileName": "supply-chain-16.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "29.3"
+    },
+    {
+      "index": 17,
+      "fileName": "supply-chain-17.png",
+      "heading": "Layout",
+      "sizeKB": "143.7"
+    },
+    {
+      "index": 18,
+      "fileName": "supply-chain-18.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "32.1"
+    },
+    {
+      "index": 19,
+      "fileName": "supply-chain-19.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "25.5"
+    },
+    {
+      "index": 20,
+      "fileName": "supply-chain-20.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "17.6"
+    },
+    {
+      "index": 21,
+      "fileName": "supply-chain-21.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "16.2"
+    },
+    {
+      "index": 22,
+      "fileName": "supply-chain-22.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "15.7"
+    },
+    {
+      "index": 23,
+      "fileName": "supply-chain-23.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "15.2"
+    }
+  ],
+  "pnl-mining": [
+    {
+      "index": 1,
+      "fileName": "pnl-mining-1.png",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "17.1"
+    },
+    {
+      "index": 2,
+      "fileName": "pnl-mining-2.svg",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 3,
+      "fileName": "pnl-mining-3.png",
+      "heading": "Layout",
+      "sizeKB": "166.0"
+    },
+    {
+      "index": 4,
+      "fileName": "pnl-mining-4.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "166.0"
+    },
+    {
+      "index": 5,
+      "fileName": "pnl-mining-5.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "166.0"
+    },
+    {
+      "index": 6,
+      "fileName": "pnl-mining-6.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "166.0"
+    },
+    {
+      "index": 7,
+      "fileName": "pnl-mining-7.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "166.0"
+    },
+    {
+      "index": 8,
+      "fileName": "pnl-mining-8.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "166.0"
+    },
+    {
+      "index": 9,
+      "fileName": "pnl-mining-9.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "166.0"
+    },
+    {
+      "index": 10,
+      "fileName": "pnl-mining-10.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "166.0"
+    },
+    {
+      "index": 11,
+      "fileName": "pnl-mining-11.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "166.0"
+    },
+    {
+      "index": 12,
+      "fileName": "pnl-mining-12.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "166.0"
+    },
+    {
+      "index": 13,
+      "fileName": "pnl-mining-13.png",
+      "heading": "Layout",
+      "sizeKB": "113.7"
+    },
+    {
+      "index": 14,
+      "fileName": "pnl-mining-14.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "113.7"
+    },
+    {
+      "index": 15,
+      "fileName": "pnl-mining-15.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "100.7"
+    },
+    {
+      "index": 16,
+      "fileName": "pnl-mining-16.png",
+      "heading": "Layout",
+      "sizeKB": "167.0"
+    },
+    {
+      "index": 17,
+      "fileName": "pnl-mining-17.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "167.0"
+    },
+    {
+      "index": 18,
+      "fileName": "pnl-mining-18.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "167.0"
+    },
+    {
+      "index": 19,
+      "fileName": "pnl-mining-19.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "167.0"
+    },
+    {
+      "index": 20,
+      "fileName": "pnl-mining-20.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "167.0"
+    },
+    {
+      "index": 21,
+      "fileName": "pnl-mining-21.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "167.0"
+    },
+    {
+      "index": 22,
+      "fileName": "pnl-mining-22.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "167.0"
+    },
+    {
+      "index": 23,
+      "fileName": "pnl-mining-23.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "167.0"
+    },
+    {
+      "index": 24,
+      "fileName": "pnl-mining-24.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "167.0"
+    },
+    {
+      "index": 25,
+      "fileName": "pnl-mining-25.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "167.0"
+    },
+    {
+      "index": 26,
+      "fileName": "pnl-mining-26.png",
+      "heading": "Layout",
+      "sizeKB": "149.1"
+    },
+    {
+      "index": 27,
+      "fileName": "pnl-mining-27.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "149.1"
+    },
+    {
+      "index": 28,
+      "fileName": "pnl-mining-28.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "111.3"
+    },
+    {
+      "index": 29,
+      "fileName": "pnl-mining-29.png",
+      "heading": "Layout",
+      "sizeKB": "171.9"
+    },
+    {
+      "index": 30,
+      "fileName": "pnl-mining-30.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "171.9"
+    },
+    {
+      "index": 31,
+      "fileName": "pnl-mining-31.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "171.9"
+    },
+    {
+      "index": 32,
+      "fileName": "pnl-mining-32.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "171.9"
+    },
+    {
+      "index": 33,
+      "fileName": "pnl-mining-33.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "171.9"
+    },
+    {
+      "index": 34,
+      "fileName": "pnl-mining-34.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "171.9"
+    },
+    {
+      "index": 35,
+      "fileName": "pnl-mining-35.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "171.9"
+    },
+    {
+      "index": 36,
+      "fileName": "pnl-mining-36.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "171.9"
+    },
+    {
+      "index": 37,
+      "fileName": "pnl-mining-37.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "171.9"
+    },
+    {
+      "index": 38,
+      "fileName": "pnl-mining-38.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "171.9"
+    },
+    {
+      "index": 39,
+      "fileName": "pnl-mining-39.png",
+      "heading": "Layout",
+      "sizeKB": "188.0"
+    },
+    {
+      "index": 40,
+      "fileName": "pnl-mining-40.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "188.0"
+    },
+    {
+      "index": 41,
+      "fileName": "pnl-mining-41.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "301.0"
+    },
+    {
+      "index": 42,
+      "fileName": "pnl-mining-42.png",
+      "heading": "Layout",
+      "sizeKB": "168.7"
+    },
+    {
+      "index": 43,
+      "fileName": "pnl-mining-43.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "168.7"
+    },
+    {
+      "index": 44,
+      "fileName": "pnl-mining-44.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "168.7"
+    },
+    {
+      "index": 45,
+      "fileName": "pnl-mining-45.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "168.7"
+    },
+    {
+      "index": 46,
+      "fileName": "pnl-mining-46.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "168.7"
+    },
+    {
+      "index": 47,
+      "fileName": "pnl-mining-47.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "168.7"
+    },
+    {
+      "index": 48,
+      "fileName": "pnl-mining-48.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "168.7"
+    },
+    {
+      "index": 49,
+      "fileName": "pnl-mining-49.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "168.7"
+    },
+    {
+      "index": 50,
+      "fileName": "pnl-mining-50.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "168.7"
+    },
+    {
+      "index": 51,
+      "fileName": "pnl-mining-51.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "168.7"
+    },
+    {
+      "index": 52,
+      "fileName": "pnl-mining-52.png",
+      "heading": "Layout",
+      "sizeKB": "180.9"
+    },
+    {
+      "index": 53,
+      "fileName": "pnl-mining-53.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "180.9"
+    },
+    {
+      "index": 54,
+      "fileName": "pnl-mining-54.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "131.4"
+    }
+  ],
+  "pnl-marine": [
+    {
+      "index": 1,
+      "fileName": "pnl-marine-1.emf",
+      "heading": "Mapping Master data GL, Terlampir pada file berikut:",
+      "sizeKB": "5.5"
+    },
+    {
+      "index": 2,
+      "fileName": "pnl-marine-2.emf",
+      "heading": "ST0224*",
+      "sizeKB": "5.5"
+    },
+    {
+      "index": 3,
+      "fileName": "pnl-marine-3.emf",
+      "heading": "ST0224*",
+      "sizeKB": "5.6"
+    },
+    {
+      "index": 4,
+      "fileName": "pnl-marine-4.png",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "17.1"
+    },
+    {
+      "index": 5,
+      "fileName": "pnl-marine-5.svg",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 6,
+      "fileName": "pnl-marine-6.png",
+      "heading": "Layout",
+      "sizeKB": "74.5"
+    },
+    {
+      "index": 7,
+      "fileName": "pnl-marine-7.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.4"
+    },
+    {
+      "index": 8,
+      "fileName": "pnl-marine-8.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 9,
+      "fileName": "pnl-marine-9.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 10,
+      "fileName": "pnl-marine-10.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 11,
+      "fileName": "pnl-marine-11.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.0"
+    },
+    {
+      "index": 12,
+      "fileName": "pnl-marine-12.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.3"
+    },
+    {
+      "index": 13,
+      "fileName": "pnl-marine-13.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.4"
+    },
+    {
+      "index": 14,
+      "fileName": "pnl-marine-14.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.4"
+    },
+    {
+      "index": 15,
+      "fileName": "pnl-marine-15.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "34.5"
+    },
+    {
+      "index": 16,
+      "fileName": "pnl-marine-16.png",
+      "heading": "Layout",
+      "sizeKB": "135.3"
+    },
+    {
+      "index": 17,
+      "fileName": "pnl-marine-17.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "155.0"
+    },
+    {
+      "index": 18,
+      "fileName": "pnl-marine-18.svg",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "282.0"
+    },
+    {
+      "index": 19,
+      "fileName": "pnl-marine-19.png",
+      "heading": "Layout",
+      "sizeKB": "66.4"
+    },
+    {
+      "index": 20,
+      "fileName": "pnl-marine-20.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "113.6"
+    },
+    {
+      "index": 21,
+      "fileName": "pnl-marine-21.svg",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "265.8"
+    },
+    {
+      "index": 22,
+      "fileName": "pnl-marine-22.png",
+      "heading": "Layout",
+      "sizeKB": "113.1"
+    },
+    {
+      "index": 23,
+      "fileName": "pnl-marine-23.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.5"
+    },
+    {
+      "index": 24,
+      "fileName": "pnl-marine-24.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.5"
+    },
+    {
+      "index": 25,
+      "fileName": "pnl-marine-25.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.4"
+    },
+    {
+      "index": 26,
+      "fileName": "pnl-marine-26.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.7"
+    },
+    {
+      "index": 27,
+      "fileName": "pnl-marine-27.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.5"
+    },
+    {
+      "index": 28,
+      "fileName": "pnl-marine-28.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.7"
+    },
+    {
+      "index": 29,
+      "fileName": "pnl-marine-29.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 30,
+      "fileName": "pnl-marine-30.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "2.0"
+    },
+    {
+      "index": 31,
+      "fileName": "pnl-marine-31.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "402.5"
+    },
+    {
+      "index": 32,
+      "fileName": "pnl-marine-32.svg",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "39.1"
+    },
+    {
+      "index": 33,
+      "fileName": "pnl-marine-33.png",
+      "heading": "Layout",
+      "sizeKB": "153.6"
+    },
+    {
+      "index": 34,
+      "fileName": "pnl-marine-34.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "241.3"
+    },
+    {
+      "index": 35,
+      "fileName": "pnl-marine-35.svg",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "137.8"
+    },
+    {
+      "index": 36,
+      "fileName": "pnl-marine-36.png",
+      "heading": "Layout",
+      "sizeKB": "99.6"
+    },
+    {
+      "index": 37,
+      "fileName": "pnl-marine-37.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "208.0"
+    },
+    {
+      "index": 38,
+      "fileName": "pnl-marine-38.svg",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "104.8"
+    }
+  ],
+  "pm-mining": [
+    {
+      "index": 1,
+      "fileName": "pm-mining-1.png",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "17.1"
+    },
+    {
+      "index": 2,
+      "fileName": "pm-mining-2.svg",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 3,
+      "fileName": "pm-mining-3.png",
+      "heading": "left485775Layout",
+      "sizeKB": "135.2"
+    },
+    {
+      "index": 4,
+      "fileName": "pm-mining-4.png",
+      "heading": "left41094600Contoh/Mock-up Komponen:",
+      "sizeKB": "20.8"
+    },
+    {
+      "index": 5,
+      "fileName": "pm-mining-5.png",
+      "heading": "left450215Contoh/Mock-up Komponen:",
+      "sizeKB": "5.0"
+    },
+    {
+      "index": 6,
+      "fileName": "pm-mining-6.png",
+      "heading": "left43387300Contoh/Mock-up Komponen:",
+      "sizeKB": "17.5"
+    },
+    {
+      "index": 7,
+      "fileName": "pm-mining-7.png",
+      "heading": "left43021900Contoh/Mock-up Komponen:",
+      "sizeKB": "11.8"
+    },
+    {
+      "index": 8,
+      "fileName": "pm-mining-8.png",
+      "heading": "left37846000Contoh/Mock-up Komponen:",
+      "sizeKB": "15.1"
+    },
+    {
+      "index": 9,
+      "fileName": "pm-mining-9.png",
+      "heading": "left421436Contoh/Mock-up Komponen:",
+      "sizeKB": "20.3"
+    },
+    {
+      "index": 10,
+      "fileName": "pm-mining-10.png",
+      "heading": "right411461Contoh/Mock-up Komponen:",
+      "sizeKB": "11.4"
+    },
+    {
+      "index": 11,
+      "fileName": "pm-mining-11.png",
+      "heading": "left416620Contoh/Mock-up Komponen:",
+      "sizeKB": "15.9"
+    },
+    {
+      "index": 12,
+      "fileName": "pm-mining-12.png",
+      "heading": "left322532Layout",
+      "sizeKB": "133.1"
+    },
+    {
+      "index": 13,
+      "fileName": "pm-mining-13.png",
+      "heading": "-444527813000",
+      "sizeKB": "20.8"
+    },
+    {
+      "index": 14,
+      "fileName": "pm-mining-14.png",
+      "heading": "-409875014",
+      "sizeKB": "3.9"
+    },
+    {
+      "index": 15,
+      "fileName": "pm-mining-15.png",
+      "heading": "left390740Contoh/Mock-up Komponen:",
+      "sizeKB": "15.5"
+    },
+    {
+      "index": 16,
+      "fileName": "pm-mining-16.png",
+      "heading": "left38798500Contoh/Mock-up Komponen:",
+      "sizeKB": "17.1"
+    },
+    {
+      "index": 17,
+      "fileName": "pm-mining-17.png",
+      "heading": "left39433500Contoh/Mock-up Komponen:",
+      "sizeKB": "17.8"
+    },
+    {
+      "index": 18,
+      "fileName": "pm-mining-18.png",
+      "heading": "right391160Contoh/Mock-up Komponen:",
+      "sizeKB": "12.9"
+    },
+    {
+      "index": 19,
+      "fileName": "pm-mining-19.png",
+      "heading": "left36131500Contoh/Mock-up Komponen:",
+      "sizeKB": "40.9"
+    },
+    {
+      "index": 20,
+      "fileName": "pm-mining-20.png",
+      "heading": "left43243500Contoh/Mock-up Komponen:",
+      "sizeKB": "12.5"
+    },
+    {
+      "index": 21,
+      "fileName": "pm-mining-21.png",
+      "heading": "right472440Layout",
+      "sizeKB": "152.5"
+    },
+    {
+      "index": 22,
+      "fileName": "pm-mining-22.png",
+      "heading": "left4032250Contoh/Mock-up Komponen:",
+      "sizeKB": "7.3"
+    },
+    {
+      "index": 23,
+      "fileName": "pm-mining-23.png",
+      "heading": "left42862500Contoh/Mock-up Komponen:",
+      "sizeKB": "9.7"
+    },
+    {
+      "index": 24,
+      "fileName": "pm-mining-24.png",
+      "heading": "left36322000Contoh/Mock-up Komponen:",
+      "sizeKB": "7.5"
+    },
+    {
+      "index": 25,
+      "fileName": "pm-mining-25.png",
+      "heading": "left390525Contoh/Mock-up Komponen:",
+      "sizeKB": "6.4"
+    },
+    {
+      "index": 26,
+      "fileName": "pm-mining-26.png",
+      "heading": "left384175Contoh/Mock-up Komponen:",
+      "sizeKB": "6.6"
+    },
+    {
+      "index": 27,
+      "fileName": "pm-mining-27.png",
+      "heading": "left390525Contoh/Mock-up Komponen:",
+      "sizeKB": "6.6"
+    },
+    {
+      "index": 28,
+      "fileName": "pm-mining-28.png",
+      "heading": "left426720Contoh/Mock-up Komponen:",
+      "sizeKB": "14.3"
+    },
+    {
+      "index": 29,
+      "fileName": "pm-mining-29.png",
+      "heading": "left255270",
+      "sizeKB": "10.0"
+    },
+    {
+      "index": 30,
+      "fileName": "pm-mining-30.png",
+      "heading": "left35750500Contoh/Mock-up Komponen:",
+      "sizeKB": "7.2"
+    },
+    {
+      "index": 31,
+      "fileName": "pm-mining-31.png",
+      "heading": "left469265Contoh/Mock-up Komponen:",
+      "sizeKB": "9.7"
+    },
+    {
+      "index": 32,
+      "fileName": "pm-mining-32.png",
+      "heading": "left39306500Contoh/Mock-up Komponen:",
+      "sizeKB": "9.1"
+    },
+    {
+      "index": 33,
+      "fileName": "pm-mining-33.png",
+      "heading": "left403225Contoh/Mock-up Komponen:",
+      "sizeKB": "10.2"
+    },
+    {
+      "index": 34,
+      "fileName": "pm-mining-34.png",
+      "heading": "left43116500Contoh/Mock-up Komponen:",
+      "sizeKB": "10.9"
+    },
+    {
+      "index": 35,
+      "fileName": "pm-mining-35.png",
+      "heading": "left390525Contoh/Mock-up Komponen:",
+      "sizeKB": "9.3"
+    },
+    {
+      "index": 36,
+      "fileName": "pm-mining-36.png",
+      "heading": "left436187Contoh/Mock-up Komponen:",
+      "sizeKB": "8.9"
+    },
+    {
+      "index": 37,
+      "fileName": "pm-mining-37.png",
+      "heading": "left468615Layout",
+      "sizeKB": "141.8"
+    },
+    {
+      "index": 38,
+      "fileName": "pm-mining-38.png",
+      "heading": "left424313Contoh/Mock-up Komponen:",
+      "sizeKB": "7.1"
+    },
+    {
+      "index": 39,
+      "fileName": "pm-mining-39.png",
+      "heading": "left4811970Contoh/Mock-up Komponen:",
+      "sizeKB": "141.8"
+    },
+    {
+      "index": 40,
+      "fileName": "pm-mining-40.png",
+      "heading": "311779548",
+      "sizeKB": "146.7"
+    },
+    {
+      "index": 41,
+      "fileName": "pm-mining-41.png",
+      "heading": "right469468Contoh/Mock-up Komponen:",
+      "sizeKB": "4.9"
+    },
+    {
+      "index": 42,
+      "fileName": "pm-mining-42.png",
+      "heading": "left388035Contoh/Mock-up Komponen:",
+      "sizeKB": "2.5"
+    },
+    {
+      "index": 43,
+      "fileName": "pm-mining-43.png",
+      "heading": "left390740Contoh/Mock-up Komponen:",
+      "sizeKB": "15.5"
+    },
+    {
+      "index": 44,
+      "fileName": "pm-mining-44.png",
+      "heading": "left38798500Contoh/Mock-up Komponen:",
+      "sizeKB": "17.1"
+    },
+    {
+      "index": 45,
+      "fileName": "pm-mining-45.png",
+      "heading": "left39433500Contoh/Mock-up Komponen:",
+      "sizeKB": "17.8"
+    },
+    {
+      "index": 46,
+      "fileName": "pm-mining-46.png",
+      "heading": "right391160Contoh/Mock-up Komponen:",
+      "sizeKB": "12.9"
+    },
+    {
+      "index": 47,
+      "fileName": "pm-mining-47.png",
+      "heading": "left36131500Contoh/Mock-up Komponen:",
+      "sizeKB": "40.9"
+    },
+    {
+      "index": 48,
+      "fileName": "pm-mining-48.png",
+      "heading": "left43243500Contoh/Mock-up Komponen:",
+      "sizeKB": "12.5"
+    }
+  ],
+  "pm-marine": [
+    {
+      "index": 1,
+      "fileName": "pm-marine-1.png",
+      "heading": "Perhitungan, Physical Availabilith (PA)",
+      "sizeKB": "5.4"
+    },
+    {
+      "index": 2,
+      "fileName": "pm-marine-2.wdp",
+      "heading": "Perhitungan, Physical Availabilith (PA)",
+      "sizeKB": "7.6"
+    },
+    {
+      "index": 3,
+      "fileName": "pm-marine-3.png",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "17.1"
+    },
+    {
+      "index": 4,
+      "fileName": "pm-marine-4.svg",
+      "heading": "SAP Analytics Cloud SAC Model dan SAC Stories terkait akan dikembangkan.",
+      "sizeKB": "1.6"
+    },
+    {
+      "index": 5,
+      "fileName": "pm-marine-5.png",
+      "heading": "3238560198000Layout",
+      "sizeKB": "113.4"
+    },
+    {
+      "index": 6,
+      "fileName": "pm-marine-6.png",
+      "heading": "right42291000Contoh/Mock-up Komponen:",
+      "sizeKB": "4.4"
+    },
+    {
+      "index": 7,
+      "fileName": "pm-marine-7.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "23.0"
+    },
+    {
+      "index": 8,
+      "fileName": "pm-marine-8.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "10.0"
+    },
+    {
+      "index": 9,
+      "fileName": "pm-marine-9.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "15.0"
+    },
+    {
+      "index": 10,
+      "fileName": "pm-marine-10.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "13.1"
+    },
+    {
+      "index": 11,
+      "fileName": "pm-marine-11.png",
+      "heading": "3238538354000Layout",
+      "sizeKB": "81.3"
+    },
+    {
+      "index": 12,
+      "fileName": "pm-marine-12.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "2.6"
+    },
+    {
+      "index": 13,
+      "fileName": "pm-marine-13.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "4.5"
+    },
+    {
+      "index": 14,
+      "fileName": "pm-marine-14.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "3.5"
+    },
+    {
+      "index": 15,
+      "fileName": "pm-marine-15.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "12.6"
+    },
+    {
+      "index": 16,
+      "fileName": "pm-marine-16.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "11.4"
+    },
+    {
+      "index": 17,
+      "fileName": "pm-marine-17.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "6.5"
+    },
+    {
+      "index": 18,
+      "fileName": "pm-marine-18.png",
+      "heading": "10858521907500",
+      "sizeKB": "134.0"
+    },
+    {
+      "index": 19,
+      "fileName": "pm-marine-19.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "2.7"
+    },
+    {
+      "index": 20,
+      "fileName": "pm-marine-20.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "38.3"
+    },
+    {
+      "index": 21,
+      "fileName": "pm-marine-21.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "12.4"
+    },
+    {
+      "index": 22,
+      "fileName": "pm-marine-22.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "12.7"
+    },
+    {
+      "index": 23,
+      "fileName": "pm-marine-23.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "11.2"
+    },
+    {
+      "index": 24,
+      "fileName": "pm-marine-24.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "11.5"
+    },
+    {
+      "index": 25,
+      "fileName": "pm-marine-25.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "12.6"
+    },
+    {
+      "index": 26,
+      "fileName": "pm-marine-26.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "11.2"
+    },
+    {
+      "index": 27,
+      "fileName": "pm-marine-27.png",
+      "heading": "Contoh/Mock-up Komponen:",
+      "sizeKB": "9.8"
+    }
+  ]
+}
