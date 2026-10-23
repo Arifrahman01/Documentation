@@ -1,0 +1,27 @@
+import tailwindcss from '@tailwindcss/vite';
+import adapter from '@sveltejs/adapter-node';
+import { sveltekit } from '@sveltejs/kit/vite';
+import { defineConfig } from 'vite';
+import path from 'node:path';
+
+export default defineConfig({
+	plugins: [
+		tailwindcss(),
+		sveltekit({
+			adapter: adapter({ out: 'build' }),
+			alias: {
+				$lib: path.resolve('./src/lib'),
+				'$lib/*': path.resolve('./src/lib/*')
+			}
+		})
+	],
+	resolve: {
+		alias: {
+			$lib: path.resolve('./src/lib')
+		}
+	},
+	server: {
+		port: 8088,
+		host: '0.0.0.0'
+	}
+});

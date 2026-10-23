@@ -1,0 +1,1226 @@
+{
+  "sections": [
+    "SAP",
+    "SAC",
+    "WEB"
+  ],
+  "sectionStats": {
+    "SAP": 3,
+    "SAC": 27,
+    "WEB": 5,
+    "all": 35
+  },
+  "stats": {
+    "all": 35,
+    "Core Architecture": 1,
+    "Integration & Development": 1,
+    "Gateway Services": 1,
+    "Overview & BI": 1,
+    "Finance": 5,
+    "Marketing": 2,
+    "PnL by Segment": 4,
+    "PM Mining": 2,
+    "PM Marine": 1,
+    "PnL by Trip": 2,
+    "Web Stack": 1,
+    "API & Backend": 1,
+    "Security": 1,
+    "Frontend Essentials": 1,
+    "Quality Assurance": 1,
+    "Operation Mining": 5,
+    "Operation Marine": 5
+  },
+  "sectionTree": [
+    {
+      "section": "SAP",
+      "title": "SAP",
+      "total": 3,
+      "categories": [
+        {
+          "title": "Core Architecture",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sap/overview",
+              "title": "Arsitektur SAP ERP & S/4HANA Enterprise",
+              "path": "sap/overview",
+              "slug": "sap/overview",
+              "section": "SAP",
+              "category": "Core Architecture",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "Integration & Development",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sap/abap-integration",
+              "title": "Integrasi ABAP, RFC & BAPI Enterprise",
+              "path": "sap/abap-integration",
+              "slug": "sap/abap-integration",
+              "section": "SAP",
+              "category": "Integration & Development",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "Gateway Services",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sap/odata-services",
+              "title": "SAP Gateway & OData Services",
+              "path": "sap/odata-services",
+              "slug": "sap/odata-services",
+              "section": "SAP",
+              "category": "Gateway Services",
+              "icon": "FileText"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section": "SAC",
+      "title": "SAC",
+      "total": 27,
+      "categories": [
+        {
+          "title": "Overview & BI",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sac/overview",
+              "title": "SAP Analytics Cloud (SAC) Enterprise Overview",
+              "path": "sac/overview",
+              "slug": "sac/overview",
+              "section": "SAC",
+              "category": "Overview & BI",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "Finance",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sac/finance-financial-performance",
+              "title": "Financial Performance",
+              "path": "sac/finance-financial-performance",
+              "slug": "sac/finance-financial-performance",
+              "section": "SAC",
+              "category": "Finance",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/finance-position-covenant",
+              "title": "Financial Position & Coverage Ratios",
+              "path": "sac/finance-position-covenant",
+              "slug": "sac/finance-position-covenant",
+              "section": "SAC",
+              "category": "Finance",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/finance-ap-ar-highlight",
+              "title": "AP & AR Highlight",
+              "path": "sac/finance-ap-ar-highlight",
+              "slug": "sac/finance-ap-ar-highlight",
+              "section": "SAC",
+              "category": "Finance",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/finance-cash-position",
+              "title": "Cash Position",
+              "path": "sac/finance-cash-position",
+              "slug": "sac/finance-cash-position",
+              "section": "SAC",
+              "category": "Finance",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/finance-coal-price-benchmark",
+              "title": "Coal Price & Actual Benchmark",
+              "path": "sac/finance-coal-price-benchmark",
+              "slug": "sac/finance-coal-price-benchmark",
+              "section": "SAC",
+              "category": "Finance",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "Marketing",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sac/marketing-price-quantity-benchmark",
+              "title": "Price & Quantity Benchmark",
+              "path": "sac/marketing-price-quantity-benchmark",
+              "slug": "sac/marketing-price-quantity-benchmark",
+              "section": "SAC",
+              "category": "Marketing",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/marketing-inventory-stock",
+              "title": "Inventory Stock & Transit Position",
+              "path": "sac/marketing-inventory-stock",
+              "slug": "sac/marketing-inventory-stock",
+              "section": "SAC",
+              "category": "Marketing",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "PnL by Segment",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sac/pnl-segment-jg",
+              "title": "PnL Segment - Jhonlin Group (JG) Konsolidasi",
+              "path": "sac/pnl-segment-jg",
+              "slug": "sac/pnl-segment-jg",
+              "section": "SAC",
+              "category": "PnL by Segment",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/pnl-segment-jb",
+              "title": "PnL Segment - Jhonlin Baratama (JB)",
+              "path": "sac/pnl-segment-jb",
+              "slug": "sac/pnl-segment-jb",
+              "section": "SAC",
+              "category": "PnL by Segment",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/pnl-segment-dsp",
+              "title": "PnL Segment - Dua Samudera Perkasa (DSP)",
+              "path": "sac/pnl-segment-dsp",
+              "slug": "sac/pnl-segment-dsp",
+              "section": "SAC",
+              "category": "PnL by Segment",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/pnl-segment-jml",
+              "title": "PnL Segment - Jhonlin Marine Lines (JML)",
+              "path": "sac/pnl-segment-jml",
+              "slug": "sac/pnl-segment-jml",
+              "section": "SAC",
+              "category": "PnL by Segment",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "PM Mining",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sac/pm-mining-fleet",
+              "title": "PM Mining - Plant Maintenance Armada Gabungan (JB, DSP & JML)",
+              "path": "sac/pm-mining-fleet",
+              "slug": "sac/pm-mining-fleet",
+              "section": "SAC",
+              "category": "PM Mining",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/pm-mining-jml-page1",
+              "title": "PM Mining - JML Detail Unit Breakdown",
+              "path": "sac/pm-mining-jml-page1",
+              "slug": "sac/pm-mining-jml-page1",
+              "section": "SAC",
+              "category": "PM Mining",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "PM Marine",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sac/pm-marine-fleet",
+              "title": "PM Marine - Fleet Docking & Machinery Maintenance (JMT, STM & JML)",
+              "path": "sac/pm-marine-fleet",
+              "slug": "sac/pm-marine-fleet",
+              "section": "SAC",
+              "category": "PM Marine",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "PnL by Trip",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sac/pnl-trip-jmt",
+              "title": "PnL by Trip - Jhonlin Marine Trans (JMT)",
+              "path": "sac/pnl-trip-jmt",
+              "slug": "sac/pnl-trip-jmt",
+              "section": "SAC",
+              "category": "PnL by Trip",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/pnl-trip-stm",
+              "title": "PnL by Trip - Samudera Tiga Mandiri (STM)",
+              "path": "sac/pnl-trip-stm",
+              "slug": "sac/pnl-trip-stm",
+              "section": "SAC",
+              "category": "PnL by Trip",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "Operation Mining",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sac/operation-mining-overview",
+              "title": "Operation Mining - Overview & Arsitektur Solusi",
+              "path": "sac/operation-mining-overview",
+              "slug": "sac/operation-mining-overview",
+              "section": "SAC",
+              "category": "Operation Mining",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/op-mining-operational-overview",
+              "title": "Sheet 1: Operational Overview (JB) - Produksi, OB, Coal & Fuel",
+              "path": "sac/op-mining-operational-overview",
+              "slug": "sac/op-mining-operational-overview",
+              "section": "SAC",
+              "category": "Operation Mining",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/op-mining-equipment-status",
+              "title": "Sheet 2: Equipment Status & Availability (JB) - Fleet Readiness",
+              "path": "sac/op-mining-equipment-status",
+              "slug": "sac/op-mining-equipment-status",
+              "section": "SAC",
+              "category": "Operation Mining",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/op-mining-production-logistics",
+              "title": "Sheet 3: Production & Logistics Performance (DSP) - Hauling & Barging",
+              "path": "sac/op-mining-production-logistics",
+              "slug": "sac/op-mining-production-logistics",
+              "section": "SAC",
+              "category": "Operation Mining",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/op-mining-cost-asset-utilization",
+              "title": "Sheet 4: Cost Control & Asset Utilization (DSP) - Efisiensi Port",
+              "path": "sac/op-mining-cost-asset-utilization",
+              "slug": "sac/op-mining-cost-asset-utilization",
+              "section": "SAC",
+              "category": "Operation Mining",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "Operation Marine",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "sac/operation-marine-overview",
+              "title": "Operation Marine - Overview & Arsitektur Solusi",
+              "path": "sac/operation-marine-overview",
+              "slug": "sac/operation-marine-overview",
+              "section": "SAC",
+              "category": "Operation Marine",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/op-marine-activity-available-unit",
+              "title": "Sheet 1: Activity & Available Unit - Kesiapan Armada & Timesheet",
+              "path": "sac/op-marine-activity-available-unit",
+              "slug": "sac/op-marine-activity-available-unit",
+              "section": "SAC",
+              "category": "Operation Marine",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/op-marine-cost-sales-period",
+              "title": "Sheet 2: Cost & Sales Period - Pendapatan & Biaya Bulanan Kapal",
+              "path": "sac/op-marine-cost-sales-period",
+              "slug": "sac/op-marine-cost-sales-period",
+              "section": "SAC",
+              "category": "Operation Marine",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/op-marine-cost-sales-date",
+              "title": "Sheet 3: Cost & Sales Date - Pelacakan Harian Operasional Kapal",
+              "path": "sac/op-marine-cost-sales-date",
+              "slug": "sac/op-marine-cost-sales-date",
+              "section": "SAC",
+              "category": "Operation Marine",
+              "icon": "FileText"
+            },
+            {
+              "id": "sac/op-marine-stevedoring-activity",
+              "title": "Sheet 4: Stevedoring Activity (JML) - Kinerja Floating Crane",
+              "path": "sac/op-marine-stevedoring-activity",
+              "slug": "sac/op-marine-stevedoring-activity",
+              "section": "SAC",
+              "category": "Operation Marine",
+              "icon": "FileText"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "section": "WEB",
+      "title": "WEB",
+      "total": 5,
+      "categories": [
+        {
+          "title": "Web Stack",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "web/architecture",
+              "title": "Arsitektur Web Portal & SvelteKit 5",
+              "path": "web/architecture",
+              "slug": "web/architecture",
+              "section": "WEB",
+              "category": "Web Stack",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "API & Backend",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "web/api-reference",
+              "title": "REST API & AI Copilot Engine",
+              "path": "web/api-reference",
+              "slug": "web/api-reference",
+              "section": "WEB",
+              "category": "API & Backend",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "Security",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "web/security",
+              "title": "Keamanan Web Enterprise & Autentikasi",
+              "path": "web/security",
+              "slug": "web/security",
+              "section": "WEB",
+              "category": "Security",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "Frontend Essentials",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "web/data-binding",
+              "title": "Data Binding & State Management",
+              "path": "web/data-binding",
+              "slug": "web/data-binding",
+              "section": "WEB",
+              "category": "Frontend Essentials",
+              "icon": "FileText"
+            }
+          ]
+        },
+        {
+          "title": "Quality Assurance",
+          "icon": "Folder",
+          "nodes": [
+            {
+              "id": "web/unit-testing",
+              "title": "Pengujian Sistem & Automated Testing",
+              "path": "web/unit-testing",
+              "slug": "web/unit-testing",
+              "section": "WEB",
+              "category": "Quality Assurance",
+              "icon": "FileText"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "treeData": [
+    {
+      "title": "Core Architecture",
+      "icon": "Folder",
+      "section": "SAP",
+      "nodes": [
+        {
+          "id": "sap/overview",
+          "title": "Arsitektur SAP ERP & S/4HANA Enterprise",
+          "path": "sap/overview",
+          "slug": "sap/overview",
+          "section": "SAP",
+          "category": "Core Architecture",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "Integration & Development",
+      "icon": "Folder",
+      "section": "SAP",
+      "nodes": [
+        {
+          "id": "sap/abap-integration",
+          "title": "Integrasi ABAP, RFC & BAPI Enterprise",
+          "path": "sap/abap-integration",
+          "slug": "sap/abap-integration",
+          "section": "SAP",
+          "category": "Integration & Development",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "Gateway Services",
+      "icon": "Folder",
+      "section": "SAP",
+      "nodes": [
+        {
+          "id": "sap/odata-services",
+          "title": "SAP Gateway & OData Services",
+          "path": "sap/odata-services",
+          "slug": "sap/odata-services",
+          "section": "SAP",
+          "category": "Gateway Services",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "Overview & BI",
+      "icon": "Folder",
+      "section": "SAC",
+      "nodes": [
+        {
+          "id": "sac/overview",
+          "title": "SAP Analytics Cloud (SAC) Enterprise Overview",
+          "path": "sac/overview",
+          "slug": "sac/overview",
+          "section": "SAC",
+          "category": "Overview & BI",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "Finance",
+      "icon": "Folder",
+      "section": "SAC",
+      "nodes": [
+        {
+          "id": "sac/finance-financial-performance",
+          "title": "Financial Performance",
+          "path": "sac/finance-financial-performance",
+          "slug": "sac/finance-financial-performance",
+          "section": "SAC",
+          "category": "Finance",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/finance-position-covenant",
+          "title": "Financial Position & Coverage Ratios",
+          "path": "sac/finance-position-covenant",
+          "slug": "sac/finance-position-covenant",
+          "section": "SAC",
+          "category": "Finance",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/finance-ap-ar-highlight",
+          "title": "AP & AR Highlight",
+          "path": "sac/finance-ap-ar-highlight",
+          "slug": "sac/finance-ap-ar-highlight",
+          "section": "SAC",
+          "category": "Finance",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/finance-cash-position",
+          "title": "Cash Position",
+          "path": "sac/finance-cash-position",
+          "slug": "sac/finance-cash-position",
+          "section": "SAC",
+          "category": "Finance",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/finance-coal-price-benchmark",
+          "title": "Coal Price & Actual Benchmark",
+          "path": "sac/finance-coal-price-benchmark",
+          "slug": "sac/finance-coal-price-benchmark",
+          "section": "SAC",
+          "category": "Finance",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "Marketing",
+      "icon": "Folder",
+      "section": "SAC",
+      "nodes": [
+        {
+          "id": "sac/marketing-price-quantity-benchmark",
+          "title": "Price & Quantity Benchmark",
+          "path": "sac/marketing-price-quantity-benchmark",
+          "slug": "sac/marketing-price-quantity-benchmark",
+          "section": "SAC",
+          "category": "Marketing",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/marketing-inventory-stock",
+          "title": "Inventory Stock & Transit Position",
+          "path": "sac/marketing-inventory-stock",
+          "slug": "sac/marketing-inventory-stock",
+          "section": "SAC",
+          "category": "Marketing",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "PnL by Segment",
+      "icon": "Folder",
+      "section": "SAC",
+      "nodes": [
+        {
+          "id": "sac/pnl-segment-jg",
+          "title": "PnL Segment - Jhonlin Group (JG) Konsolidasi",
+          "path": "sac/pnl-segment-jg",
+          "slug": "sac/pnl-segment-jg",
+          "section": "SAC",
+          "category": "PnL by Segment",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/pnl-segment-jb",
+          "title": "PnL Segment - Jhonlin Baratama (JB)",
+          "path": "sac/pnl-segment-jb",
+          "slug": "sac/pnl-segment-jb",
+          "section": "SAC",
+          "category": "PnL by Segment",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/pnl-segment-dsp",
+          "title": "PnL Segment - Dua Samudera Perkasa (DSP)",
+          "path": "sac/pnl-segment-dsp",
+          "slug": "sac/pnl-segment-dsp",
+          "section": "SAC",
+          "category": "PnL by Segment",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/pnl-segment-jml",
+          "title": "PnL Segment - Jhonlin Marine Lines (JML)",
+          "path": "sac/pnl-segment-jml",
+          "slug": "sac/pnl-segment-jml",
+          "section": "SAC",
+          "category": "PnL by Segment",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "PM Mining",
+      "icon": "Folder",
+      "section": "SAC",
+      "nodes": [
+        {
+          "id": "sac/pm-mining-fleet",
+          "title": "PM Mining - Plant Maintenance Armada Gabungan (JB, DSP & JML)",
+          "path": "sac/pm-mining-fleet",
+          "slug": "sac/pm-mining-fleet",
+          "section": "SAC",
+          "category": "PM Mining",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/pm-mining-jml-page1",
+          "title": "PM Mining - JML Detail Unit Breakdown",
+          "path": "sac/pm-mining-jml-page1",
+          "slug": "sac/pm-mining-jml-page1",
+          "section": "SAC",
+          "category": "PM Mining",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "PM Marine",
+      "icon": "Folder",
+      "section": "SAC",
+      "nodes": [
+        {
+          "id": "sac/pm-marine-fleet",
+          "title": "PM Marine - Fleet Docking & Machinery Maintenance (JMT, STM & JML)",
+          "path": "sac/pm-marine-fleet",
+          "slug": "sac/pm-marine-fleet",
+          "section": "SAC",
+          "category": "PM Marine",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "PnL by Trip",
+      "icon": "Folder",
+      "section": "SAC",
+      "nodes": [
+        {
+          "id": "sac/pnl-trip-jmt",
+          "title": "PnL by Trip - Jhonlin Marine Trans (JMT)",
+          "path": "sac/pnl-trip-jmt",
+          "slug": "sac/pnl-trip-jmt",
+          "section": "SAC",
+          "category": "PnL by Trip",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/pnl-trip-stm",
+          "title": "PnL by Trip - Samudera Tiga Mandiri (STM)",
+          "path": "sac/pnl-trip-stm",
+          "slug": "sac/pnl-trip-stm",
+          "section": "SAC",
+          "category": "PnL by Trip",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "Web Stack",
+      "icon": "Folder",
+      "section": "WEB",
+      "nodes": [
+        {
+          "id": "web/architecture",
+          "title": "Arsitektur Web Portal & SvelteKit 5",
+          "path": "web/architecture",
+          "slug": "web/architecture",
+          "section": "WEB",
+          "category": "Web Stack",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "API & Backend",
+      "icon": "Folder",
+      "section": "WEB",
+      "nodes": [
+        {
+          "id": "web/api-reference",
+          "title": "REST API & AI Copilot Engine",
+          "path": "web/api-reference",
+          "slug": "web/api-reference",
+          "section": "WEB",
+          "category": "API & Backend",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "Security",
+      "icon": "Folder",
+      "section": "WEB",
+      "nodes": [
+        {
+          "id": "web/security",
+          "title": "Keamanan Web Enterprise & Autentikasi",
+          "path": "web/security",
+          "slug": "web/security",
+          "section": "WEB",
+          "category": "Security",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "Frontend Essentials",
+      "icon": "Folder",
+      "section": "WEB",
+      "nodes": [
+        {
+          "id": "web/data-binding",
+          "title": "Data Binding & State Management",
+          "path": "web/data-binding",
+          "slug": "web/data-binding",
+          "section": "WEB",
+          "category": "Frontend Essentials",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "Quality Assurance",
+      "icon": "Folder",
+      "section": "WEB",
+      "nodes": [
+        {
+          "id": "web/unit-testing",
+          "title": "Pengujian Sistem & Automated Testing",
+          "path": "web/unit-testing",
+          "slug": "web/unit-testing",
+          "section": "WEB",
+          "category": "Quality Assurance",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "Operation Mining",
+      "icon": "Folder",
+      "section": "SAC",
+      "nodes": [
+        {
+          "id": "sac/operation-mining-overview",
+          "title": "Operation Mining - Overview & Arsitektur Solusi",
+          "path": "sac/operation-mining-overview",
+          "slug": "sac/operation-mining-overview",
+          "section": "SAC",
+          "category": "Operation Mining",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/op-mining-operational-overview",
+          "title": "Sheet 1: Operational Overview (JB) - Produksi, OB, Coal & Fuel",
+          "path": "sac/op-mining-operational-overview",
+          "slug": "sac/op-mining-operational-overview",
+          "section": "SAC",
+          "category": "Operation Mining",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/op-mining-equipment-status",
+          "title": "Sheet 2: Equipment Status & Availability (JB) - Fleet Readiness",
+          "path": "sac/op-mining-equipment-status",
+          "slug": "sac/op-mining-equipment-status",
+          "section": "SAC",
+          "category": "Operation Mining",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/op-mining-production-logistics",
+          "title": "Sheet 3: Production & Logistics Performance (DSP) - Hauling & Barging",
+          "path": "sac/op-mining-production-logistics",
+          "slug": "sac/op-mining-production-logistics",
+          "section": "SAC",
+          "category": "Operation Mining",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/op-mining-cost-asset-utilization",
+          "title": "Sheet 4: Cost Control & Asset Utilization (DSP) - Efisiensi Port",
+          "path": "sac/op-mining-cost-asset-utilization",
+          "slug": "sac/op-mining-cost-asset-utilization",
+          "section": "SAC",
+          "category": "Operation Mining",
+          "icon": "FileText"
+        }
+      ]
+    },
+    {
+      "title": "Operation Marine",
+      "icon": "Folder",
+      "section": "SAC",
+      "nodes": [
+        {
+          "id": "sac/operation-marine-overview",
+          "title": "Operation Marine - Overview & Arsitektur Solusi",
+          "path": "sac/operation-marine-overview",
+          "slug": "sac/operation-marine-overview",
+          "section": "SAC",
+          "category": "Operation Marine",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/op-marine-activity-available-unit",
+          "title": "Sheet 1: Activity & Available Unit - Kesiapan Armada & Timesheet",
+          "path": "sac/op-marine-activity-available-unit",
+          "slug": "sac/op-marine-activity-available-unit",
+          "section": "SAC",
+          "category": "Operation Marine",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/op-marine-cost-sales-period",
+          "title": "Sheet 2: Cost & Sales Period - Pendapatan & Biaya Bulanan Kapal",
+          "path": "sac/op-marine-cost-sales-period",
+          "slug": "sac/op-marine-cost-sales-period",
+          "section": "SAC",
+          "category": "Operation Marine",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/op-marine-cost-sales-date",
+          "title": "Sheet 3: Cost & Sales Date - Pelacakan Harian Operasional Kapal",
+          "path": "sac/op-marine-cost-sales-date",
+          "slug": "sac/op-marine-cost-sales-date",
+          "section": "SAC",
+          "category": "Operation Marine",
+          "icon": "FileText"
+        },
+        {
+          "id": "sac/op-marine-stevedoring-activity",
+          "title": "Sheet 4: Stevedoring Activity (JML) - Kinerja Floating Crane",
+          "path": "sac/op-marine-stevedoring-activity",
+          "slug": "sac/op-marine-stevedoring-activity",
+          "section": "SAC",
+          "category": "Operation Marine",
+          "icon": "FileText"
+        }
+      ]
+    }
+  ],
+  "articles": [
+    {
+      "id": "sap/overview",
+      "title": "Arsitektur SAP ERP & S/4HANA Enterprise",
+      "path": "sap/overview",
+      "slug": "sap/overview",
+      "section": "SAP",
+      "category": "Core Architecture",
+      "snippet": "Panduan arsitektur sistem SAP ERP dan S/4HANA enterprise: fondasi in-memory database, modul inti bisnis, struktur tabel, dan landscape sistem."
+    },
+    {
+      "id": "sap/abap-integration",
+      "title": "Integrasi ABAP, RFC & BAPI Enterprise",
+      "path": "sap/abap-integration",
+      "slug": "sap/abap-integration",
+      "section": "SAP",
+      "category": "Integration & Development",
+      "snippet": "Panduan integrasi backend SAP menggunakan Business Application Programming Interfaces (BAPI) dan Remote Function Call (RFC) untuk pertukaran data."
+    },
+    {
+      "id": "sap/odata-services",
+      "title": "SAP Gateway & OData Services",
+      "path": "sap/odata-services",
+      "slug": "sap/odata-services",
+      "section": "SAP",
+      "category": "Gateway Services",
+      "snippet": "Pengembangan dan publikasi RESTful OData Services (V2 & V4) berbasis Core Data Services (CDS) Views dan SAP Gateway Service Builder."
+    },
+    {
+      "id": "sac/overview",
+      "title": "SAP Analytics Cloud (SAC) Enterprise Overview",
+      "path": "sac/overview",
+      "slug": "sac/overview",
+      "section": "SAC",
+      "category": "Overview & BI",
+      "snippet": "Arsitektur terintegrasi SAP Analytics Cloud: Business Intelligence (BI), Augmented Analytics, Smart Insights, dan Corporate Planning."
+    },
+    {
+      "id": "sac/finance-financial-performance",
+      "title": "Financial Performance",
+      "path": "sac/finance-financial-performance",
+      "slug": "sac/finance-financial-performance",
+      "section": "SAC",
+      "category": "Finance",
+      "snippet": "Dokumentasi Story Finance Sheet 1: Financial Performance Summary (Revenue, Gross Profit, Operating Profit, Net Profit, EBITDA), Monthly Performance chart, dan Income Statement variance table."
+    },
+    {
+      "id": "sac/finance-position-covenant",
+      "title": "Financial Position & Coverage Ratios",
+      "path": "sac/finance-position-covenant",
+      "slug": "sac/finance-position-covenant",
+      "section": "SAC",
+      "category": "Finance",
+      "snippet": "Dokumentasi Story Finance Sheet 2: Analisis neraca (Balance Sheet - Asset, Liabilities & Equity), Rasio Perjanjian Kredit (Covenant Ratios: DER, DSCR, Current Ratio, Debt to EBITDA), Pinjaman (Loan Pie Chart), dan Jatuh Tempo Utang (Debt Maturities)."
+    },
+    {
+      "id": "sac/finance-ap-ar-highlight",
+      "title": "AP & AR Highlight",
+      "path": "sac/finance-ap-ar-highlight",
+      "slug": "sac/finance-ap-ar-highlight",
+      "section": "SAC",
+      "category": "Finance",
+      "snippet": "Dokumentasi Story Finance Sheet 3: Monitoring kewajiban utang dagang (Accounts Payable) dan saldo piutang pelanggan (Accounts Receivable) berdasarkan klasifikasi mitra, afiliasi, dan aging schedule."
+    },
+    {
+      "id": "sac/finance-cash-position",
+      "title": "Cash Position",
+      "path": "sac/finance-cash-position",
+      "slug": "sac/finance-cash-position",
+      "section": "SAC",
+      "category": "Finance",
+      "snippet": "Dokumentasi Story Finance Sheet 4: Posisi likuiditas kas harian & bulanan (Cash/Bank Position), running sum ending balance kas, arus kas masuk/keluar (Cash In & Out), distribusi kas per bank, dan kurs valuta asing (Exchange Rate KMK & Closing)."
+    },
+    {
+      "id": "sac/finance-coal-price-benchmark",
+      "title": "Coal Price & Actual Benchmark",
+      "path": "sac/finance-coal-price-benchmark",
+      "slug": "sac/finance-coal-price-benchmark",
+      "section": "SAC",
+      "category": "Finance",
+      "snippet": "Dokumentasi Story Finance Sheet 5: Komparasi harga realisasi penjualan batubara (Actual Price) terhadap benchmark pasar Harga Batubara Acuan (HBA) dan Indonesia Coal Index (ICI)."
+    },
+    {
+      "id": "sac/marketing-price-quantity-benchmark",
+      "title": "Price & Quantity Benchmark",
+      "path": "sac/marketing-price-quantity-benchmark",
+      "slug": "sac/marketing-price-quantity-benchmark",
+      "section": "SAC",
+      "category": "Marketing",
+      "snippet": "Dokumentasi Story Marketing Sheet 1: Analisis komparasi volume penjualan batubara (Sales Quantity MT), nilai faktur (Invoice Value USD), harga kontrak rata-rata (Average Contract Price), serta benchmarking bulanan terhadap indeks pasar HPB dan ICI."
+    },
+    {
+      "id": "sac/marketing-inventory-stock",
+      "title": "Inventory Stock & Transit Position",
+      "path": "sac/marketing-inventory-stock",
+      "slug": "sac/marketing-inventory-stock",
+      "section": "SAC",
+      "category": "Marketing",
+      "snippet": "Dokumentasi Story Marketing Sheet 2: Monitoring stok fisik batubara di stockpile DSP (Raw Coal vs Crushed Coal), kapasitas lokasi stockpile, serta posisi persediaan batubara dalam transit (In-Transit by Port of Loading)."
+    },
+    {
+      "id": "sac/pnl-segment-jg",
+      "title": "PnL Segment - Jhonlin Group (JG) Konsolidasi",
+      "path": "sac/pnl-segment-jg",
+      "slug": "sac/pnl-segment-jg",
+      "section": "SAC",
+      "category": "PnL by Segment",
+      "snippet": "Laporan laba rugi konsolidasi holding Jhonlin Group (JG): kontribusi pendapatan dan laba bersih antar sub-holding dan unit usaha."
+    },
+    {
+      "id": "sac/pnl-segment-jb",
+      "title": "PnL Segment - Jhonlin Baratama (JB)",
+      "path": "sac/pnl-segment-jb",
+      "slug": "sac/pnl-segment-jb",
+      "section": "SAC",
+      "category": "PnL by Segment",
+      "snippet": "Laporan laba rugi operasional penambangan batubara PT Jhonlin Baratama (JB): cost per ton, struktur biaya operasional tambang, dan gross margin."
+    },
+    {
+      "id": "sac/pnl-segment-dsp",
+      "title": "PnL Segment - Dua Samudera Perkasa (DSP)",
+      "path": "sac/pnl-segment-dsp",
+      "slug": "sac/pnl-segment-dsp",
+      "section": "SAC",
+      "category": "PnL by Segment",
+      "snippet": "Laporan laba rugi segmen pelabuhan dan terminal batubara PT Dua Samudera Perkasa (DSP): jasa stockpile, crushing, conveyor, dan jetty loading."
+    },
+    {
+      "id": "sac/pnl-segment-jml",
+      "title": "PnL Segment - Jhonlin Marine Lines (JML)",
+      "path": "sac/pnl-segment-jml",
+      "slug": "sac/pnl-segment-jml",
+      "section": "SAC",
+      "category": "PnL by Segment",
+      "snippet": "Laporan laba rugi segmen pelayaran dan logistik laut PT Jhonlin Marine Lines (JML): pendapatan uang tambang (freight), biaya bunker, dan net margin pelayaran."
+    },
+    {
+      "id": "sac/pm-mining-fleet",
+      "title": "PM Mining - Plant Maintenance Armada Gabungan (JB, DSP & JML)",
+      "path": "sac/pm-mining-fleet",
+      "slug": "sac/pm-mining-fleet",
+      "section": "SAC",
+      "category": "PM Mining",
+      "snippet": "Dashboard pemeliharaan alat berat penambangan armada gabungan: ketersediaan fisik (PA), rasio perawatan preventif vs korektif, dan MTBF/MTTR."
+    },
+    {
+      "id": "sac/pm-mining-jml-page1",
+      "title": "PM Mining - JML Detail Unit Breakdown",
+      "path": "sac/pm-mining-jml-page1",
+      "slug": "sac/pm-mining-jml-page1",
+      "section": "SAC",
+      "category": "PM Mining",
+      "snippet": "Monitoring detail pemeliharaan alat berat khusus unit kerja PT Jhonlin Marine Lines: inventaris unit individual, status komponen kritis, dan backlog perbaikan."
+    },
+    {
+      "id": "sac/pm-marine-fleet",
+      "title": "PM Marine - Fleet Docking & Machinery Maintenance (JMT, STM & JML)",
+      "path": "sac/pm-marine-fleet",
+      "slug": "sac/pm-marine-fleet",
+      "section": "SAC",
+      "category": "PM Marine",
+      "snippet": "Dashboard pemeliharaan armada kapal laut: jadwal docking berkala, survei sertifikasi BKI, running hours mesin induk/genset, dan suku cadang galangan."
+    },
+    {
+      "id": "sac/pnl-trip-jmt",
+      "title": "PnL by Trip - Jhonlin Marine Trans (JMT)",
+      "path": "sac/pnl-trip-jmt",
+      "slug": "sac/pnl-trip-jmt",
+      "section": "SAC",
+      "category": "PnL by Trip",
+      "snippet": "Laporan laba rugi per pelayaran kapal (voyage PnL) PT Jhonlin Marine Trans: pendapatan sewa kargo, efisiensi konsumsi BBM solar per trip, dan port charges."
+    },
+    {
+      "id": "sac/pnl-trip-stm",
+      "title": "PnL by Trip - Samudera Tiga Mandiri (STM)",
+      "path": "sac/pnl-trip-stm",
+      "slug": "sac/pnl-trip-stm",
+      "section": "SAC",
+      "category": "PnL by Trip",
+      "snippet": "Laporan profitabilitas per nomor pelayaran (voyage PnL) armada PT Samudera Tiga Mandiri (STM): pendapatan angkut kargo, efisiensi rute, dan margin bersih."
+    },
+    {
+      "id": "web/architecture",
+      "title": "Arsitektur Web Portal & SvelteKit 5",
+      "path": "web/architecture",
+      "slug": "web/architecture",
+      "section": "WEB",
+      "category": "Web Stack",
+      "snippet": "Arsitektur portal web modern berbasis SvelteKit 5 runes, Tailwind CSS v4, Shadcn UI, dan single Node.js runtime terpadu."
+    },
+    {
+      "id": "web/api-reference",
+      "title": "REST API & AI Copilot Engine",
+      "path": "web/api-reference",
+      "slug": "web/api-reference",
+      "section": "WEB",
+      "category": "API & Backend",
+      "snippet": "Dokumentasi REST API portal, endpoint AI Copilot terverifikasi, semantic search RAG tanpa halusinasi, dan CRUD dokumen."
+    },
+    {
+      "id": "web/security",
+      "title": "Keamanan Web Enterprise & Autentikasi",
+      "path": "web/security",
+      "slug": "web/security",
+      "section": "WEB",
+      "category": "Security",
+      "snippet": "Standar keamanan aplikasi web: perlindungan XSS, mitigasi CSRF, Content Security Policy (CSP), dan validasi sanitasi input."
+    },
+    {
+      "id": "web/data-binding",
+      "title": "Data Binding & State Management",
+      "path": "web/data-binding",
+      "slug": "web/data-binding",
+      "section": "WEB",
+      "category": "Frontend Essentials",
+      "snippet": "Konsep data binding satu arah dan dua arah, sinkronisasi state aplikasi, dan reactive stores."
+    },
+    {
+      "id": "web/unit-testing",
+      "title": "Pengujian Sistem & Automated Testing",
+      "path": "web/unit-testing",
+      "slug": "web/unit-testing",
+      "section": "WEB",
+      "category": "Quality Assurance",
+      "snippet": "Strategi pengujian menyeluruh: Unit test dengan Vitest, pengujian komponen antarmuka, dan pengujian integrasi endpoint API."
+    },
+    {
+      "id": "sac/operation-mining-overview",
+      "title": "Operation Mining - Overview & Arsitektur Solusi",
+      "path": "sac/operation-mining-overview",
+      "slug": "sac/operation-mining-overview",
+      "section": "SAC",
+      "category": "Operation Mining",
+      "snippet": "Arsitektur data flow, live CDS view, model analitik, dan spesifikasi fungsional Story SAC Operation Mining PT Jhonlin Baratama (JB) dan PT Dua Samudera Perkasa (DSP)."
+    },
+    {
+      "id": "sac/op-mining-operational-overview",
+      "title": "Sheet 1: Operational Overview (JB) - Produksi, OB, Coal & Fuel",
+      "path": "sac/op-mining-operational-overview",
+      "slug": "sac/op-mining-operational-overview",
+      "section": "SAC",
+      "category": "Operation Mining",
+      "snippet": "Spesifikasi detail Sheet 1 Operation Mining: metrik produksi MTD Overburden, Coal Mining, konsumsi solar, Fuel Ratio, dan Strip Ratio PT Jhonlin Baratama."
+    },
+    {
+      "id": "sac/op-mining-equipment-status",
+      "title": "Sheet 2: Equipment Status & Availability (JB) - Fleet Readiness",
+      "path": "sac/op-mining-equipment-status",
+      "slug": "sac/op-mining-equipment-status",
+      "section": "SAC",
+      "category": "Operation Mining",
+      "snippet": "Spesifikasi Sheet 2 Operation Mining: metrik ketersediaan armada tambang, Physical Availability (PA), Mechanical Availability (MA), dan downtime breakdown."
+    },
+    {
+      "id": "sac/op-mining-production-logistics",
+      "title": "Sheet 3: Production & Logistics Performance (DSP) - Hauling & Barging",
+      "path": "sac/op-mining-production-logistics",
+      "slug": "sac/op-mining-production-logistics",
+      "section": "SAC",
+      "category": "Operation Mining",
+      "snippet": "Spesifikasi Sheet 3 Operation Mining: kinerja logistik pengangkutan batubara (Hauling), pergerakan material, stok stockpile, dan pemuatan tongkang (Barging) PT DSP."
+    },
+    {
+      "id": "sac/op-mining-cost-asset-utilization",
+      "title": "Sheet 4: Cost Control & Asset Utilization (DSP) - Efisiensi Port",
+      "path": "sac/op-mining-cost-asset-utilization",
+      "slug": "sac/op-mining-cost-asset-utilization",
+      "section": "SAC",
+      "category": "Operation Mining",
+      "snippet": "Spesifikasi Sheet 4 Operation Mining: pengendalian biaya operasional penanganan batubara, indeks bahan bakar, dan utilisasi aset pelabuhan DSP."
+    },
+    {
+      "id": "sac/operation-marine-overview",
+      "title": "Operation Marine - Overview & Arsitektur Solusi",
+      "path": "sac/operation-marine-overview",
+      "slug": "sac/operation-marine-overview",
+      "section": "SAC",
+      "category": "Operation Marine",
+      "snippet": "Arsitektur data flow, live CDS view, model analitik, dan spesifikasi fungsional Story SAC Operation Marine armada kapal PT Jhonlin Marine Trans (JMT) dan PT Jhonlin Marine Lines (JML)."
+    },
+    {
+      "id": "sac/op-marine-activity-available-unit",
+      "title": "Sheet 1: Activity & Available Unit - Kesiapan Armada & Timesheet",
+      "path": "sac/op-marine-activity-available-unit",
+      "slug": "sac/op-marine-activity-available-unit",
+      "section": "SAC",
+      "category": "Operation Marine",
+      "snippet": "Spesifikasi Sheet 1 Operation Marine: status kesiapan armada kapal (Tugboat, Barge, SPOB, Tanker), status operasi, standby, perbaikan, dan timesheet pelayaran."
+    },
+    {
+      "id": "sac/op-marine-cost-sales-period",
+      "title": "Sheet 2: Cost & Sales Period - Pendapatan & Biaya Bulanan Kapal",
+      "path": "sac/op-marine-cost-sales-period",
+      "slug": "sac/op-marine-cost-sales-period",
+      "section": "SAC",
+      "category": "Operation Marine",
+      "snippet": "Spesifikasi Sheet 2 Operation Marine: analisa kinerja keuangan komparatif bulanan, pendapatan freight, biaya bahan bakar bunker, biaya kepelabuhanan, dan margin laba kotor."
+    },
+    {
+      "id": "sac/op-marine-cost-sales-date",
+      "title": "Sheet 3: Cost & Sales Date - Pelacakan Harian Operasional Kapal",
+      "path": "sac/op-marine-cost-sales-date",
+      "slug": "sac/op-marine-cost-sales-date",
+      "section": "SAC",
+      "category": "Operation Marine",
+      "snippet": "Spesifikasi Sheet 3 Operation Marine: pemantauan harian transaksi pengiriman kargo laut, estimasi realisasi harian pendapatan, dan konsumsi harian bunker kapal."
+    },
+    {
+      "id": "sac/op-marine-stevedoring-activity",
+      "title": "Sheet 4: Stevedoring Activity (JML) - Kinerja Floating Crane",
+      "path": "sac/op-marine-stevedoring-activity",
+      "slug": "sac/op-marine-stevedoring-activity",
+      "section": "SAC",
+      "category": "Operation Marine",
+      "snippet": "Spesifikasi Sheet 4 Operation Marine: kegiatan bongkar muat batubara PT JML, kesiapan Floating Crane (FC), throughput pemuatan kapal ekspor/domestik, dan shipper cargo."
+    }
+  ]
+}
