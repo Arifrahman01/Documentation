@@ -33,7 +33,7 @@
 				<span>•</span>
 				<span>Powered by SvelteKit & Shadcn UI</span>
 				<span>•</span>
-				<span>AI Copilot (Gemini 3.8 Flash Medium)</span>
+				<span>AI Copilot Enterprise</span>
 			</div>
 			<div class="flex items-center gap-4 text-xs text-zinc-500 dark:text-zinc-400">
 				<a href="/docs/get-started/quick-start" class="hover:underline">Documentation</a>

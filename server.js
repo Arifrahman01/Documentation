@@ -2,10 +2,13 @@ const express = require('express');
 const path = require('path');
 const http = require('http');
 const crypto = require('crypto');
+const fs = require('fs');
+const url = require('url');
+const Fuse = require('fuse.js');
 
 const app = express();
 const PORT = process.env.PORT || 8088;
-const WEBAPP_DIR = path.join(__dirname, 'webapp');
+const FRONTEND_STATIC = path.join(__dirname, 'frontend', 'static');
 
 // Local AI Endpoint Configuration (supports env variables or defaults)
 const AI_CONFIG = {
@@ -57,13 +60,13 @@ app.use((req, res, next) => {
 
 // Explicit Favicon handling
 app.get('/favicon.ico', (req, res) => {
-  res.sendFile(path.join(WEBAPP_DIR, 'favicon.ico'));
+  const favPath = path.join(FRONTEND_STATIC, 'favicon.ico');
+  if (fs.existsSync(favPath)) {
+    return res.sendFile(favPath);
+  }
+  res.status(204).end();
 });
 
-// Serve index.html for root path
-app.get('/', (req, res) => {
-  res.sendFile(path.join(WEBAPP_DIR, 'index.html'));
-});
 
 // ==========================================
 // AI COPILOT & ASSISTANT APIS
@@ -87,12 +90,11 @@ app.get('/api/ai/status', (req, res) => {
         const models = (json.data || []).map(m => m.id);
         res.json({
           status: 'online',
-          model: AI_CONFIG.defaultModel,
-          cachedEntries: aiResponseCache.size,
-          availableModels: models.slice(0, 10)
+          service: 'AI Copilot Engine',
+          cachedEntries: aiResponseCache.size
         });
       } catch (e) {
-        res.json({ status: 'online', model: AI_CONFIG.defaultModel, cachedEntries: aiResponseCache.size });
+        res.json({ status: 'online', service: 'AI Copilot Engine', cachedEntries: aiResponseCache.size });
       }
     });
   });
@@ -109,14 +111,14 @@ app.get('/api/ai/status', (req, res) => {
   reqCheck.end();
 });
 
-// Helper for AI Chat completion with fallback
-function callAiChat(messages, model, maxTokens = 1500) {
+// Helper for AI Chat completion with fallback (Default Low Temperature for Strict Factual Grounding)
+function callAiChat(messages, model, maxTokens = 1500, temperature = 0.1) {
   return new Promise((resolve, reject) => {
     const postData = JSON.stringify({
       model: model || AI_CONFIG.defaultModel,
       messages: messages,
       max_tokens: maxTokens,
-      temperature: 0.6
+      temperature: typeof temperature === 'number' ? temperature : 0.1
     });
 
     const request = http.request({
@@ -164,46 +166,186 @@ function callAiChat(messages, model, maxTokens = 1500) {
   });
 }
 
+// ==========================================
+// DOCUMENTATION REPOSITORY & KNOWLEDGE RETRIEVAL (RAG)
+// ==========================================
+
+const DATA_DIR = path.join(__dirname, 'data');
+const DOCS_FILE = path.join(DATA_DIR, 'documents.json');
+const FRONTEND_DOCS_FILE = path.join(__dirname, 'frontend', 'src', 'lib', 'data', 'documents.json');
+const APPS_FILE = path.join(__dirname, 'frontend', 'src', 'lib', 'data', 'apps.json');
+
+function loadDocuments() {
+  try {
+    if (fs.existsSync(DOCS_FILE)) {
+      return JSON.parse(fs.readFileSync(DOCS_FILE, 'utf8'));
+    }
+    if (fs.existsSync(FRONTEND_DOCS_FILE)) {
+      return JSON.parse(fs.readFileSync(FRONTEND_DOCS_FILE, 'utf8'));
+    }
+  } catch (e) {
+    console.error('Error reading documents database:', e.message);
+  }
+  return [];
+}
+
+function inferSection(doc) {
+  if (doc && doc.section && ['SAP', 'SAC', 'WEB'].includes(doc.section.toUpperCase())) {
+    return doc.section.toUpperCase();
+  }
+  const slug = ((doc && (doc.slug || doc.id)) || '').toLowerCase();
+  const title = ((doc && doc.title) || '').toLowerCase();
+  const category = ((doc && doc.category) || '').toLowerCase();
+  const combined = `${slug} ${title} ${category}`;
+  if (combined.startsWith('sac/') || combined.includes('sac') || combined.includes('analytic') || combined.includes('story') || combined.includes('stories')) {
+    return 'SAC';
+  }
+  if (combined.startsWith('sap/') || combined.includes('sap') || combined.includes('abap') || combined.includes('bapi') || combined.includes('odata') || combined.includes('fiori')) {
+    return 'SAP';
+  }
+  return 'WEB';
+}
+
+function saveDocuments(docs) {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  fs.writeFileSync(DOCS_FILE, JSON.stringify(docs, null, 2), 'utf8');
+  if (fs.existsSync(path.dirname(FRONTEND_DOCS_FILE))) {
+    fs.writeFileSync(FRONTEND_DOCS_FILE, JSON.stringify(docs, null, 2), 'utf8');
+  }
+}
+
+// Semantic & keyword-based knowledge retriever to ground AI answers
+function retrieveRelevantKnowledge(query) {
+  if (!query || typeof query !== 'string' || query.trim().length < 2) return '';
+
+  const cleanQuery = query.trim();
+  const docs = loadDocuments();
+  let apps = [];
+  try {
+    if (fs.existsSync(APPS_FILE)) {
+      const appsData = JSON.parse(fs.readFileSync(APPS_FILE, 'utf8'));
+      apps = appsData.programs || [];
+    }
+  } catch (e) {}
+
+  const docFuse = new Fuse(docs, {
+    keys: [
+      { name: 'title', weight: 0.35 },
+      { name: 'section', weight: 0.25 },
+      { name: 'category', weight: 0.2 },
+      { name: 'tags', weight: 0.2 },
+      { name: 'snippet', weight: 0.15 },
+      { name: 'content', weight: 0.1 }
+    ],
+    threshold: 0.45,
+    ignoreLocation: true
+  });
+
+  const appFuse = new Fuse(apps, {
+    keys: [
+      { name: 'title', weight: 0.4 },
+      { name: 'subtitle', weight: 0.3 },
+      { name: 'description', weight: 0.2 },
+      { name: 'tags', weight: 0.1 }
+    ],
+    threshold: 0.4,
+    ignoreLocation: true
+  });
+
+  const matchedDocs = docFuse.search(cleanQuery).slice(0, 2).map(r => r.item);
+  const matchedApps = appFuse.search(cleanQuery).slice(0, 2).map(r => r.item);
+
+  let knowledge = '';
+
+  if (matchedApps.length > 0) {
+    knowledge += `\n[DATA APLIKASI ENTERPRISE TERVERIFIKASI]:\n`;
+    for (const app of matchedApps) {
+      knowledge += `- Sistem: ${app.title} (${app.subtitle || ''})\n  URL Resmi: ${app.url}\n  Deskripsi: ${app.description}\n  Kategori: ${app.categoryName || app.category}\n  Tags: ${(app.tags || []).join(', ')}\n\n`;
+    }
+  }
+
+  if (matchedDocs.length > 0) {
+    knowledge += `\n[SUMBER DOKUMEN RESMI PORTAL]:\n`;
+    for (const doc of matchedDocs) {
+      knowledge += `--- Dokumen Resmi: "${doc.title}" (Kategori: ${doc.category}, Path: /docs/${doc.slug}) ---\n${doc.content.slice(0, 1600)}\n\n`;
+    }
+  }
+
+  return knowledge.trim();
+}
+
 const SYSTEM_PROMPT_BASE = `Anda adalah "AI Copilot", asisten kecerdasan buatan resmi untuk Documentation Portal & Program Navigator Enterprise.
-Karakter & Kemampuan Anda:
-1. Menguasai seluruh ekosistem aplikasi enterprise & operasional:
-   - Fuel Management System (FMS) (http://jgfuel.id) - Pemantauan & analisis konsumsi bahan bakar alat berat & armada, sensor telemetry, rekonsiliasi fuel.
-   - SAP Analytics Cloud (SAC) Dev & SAC Prod - Pelaporan analitik bisnis eksekutif, integrasi live CDS views, story building, role & permission.
-   - Enterprise Marketing System (http://marketing.jhonlingroup.id) - Persetujuan kontrak komersial, sales pipeline, meeting notes, customer relationship management.
-   - KPI Safety (SHE) (http://she.jhonlingroup.id/login) - K3 (Keselamatan & Kesehatan Kerja), kepatuhan lingkungan hidup, pelaporan & investigasi insiden, safety audit.
-   - PPPN (http://38.47.92.151:5000) - Payment Plant Payment Notification, otomasi validasi penagihan vendor & operasional pabrik.
-   - File Manager (http://file.jhonlingroup.id/login) - Penyimpanan berkas enterprise terpusat & cloud internal.
-2. Menguasai arsitektur pengembangan perangkat lunak modern:
-   - SAPUI5 / OpenUI5, SAP Horizon Evening Dark Design, XML Views, Controllers, Data Binding, Component Lifecycle.
-   - SAP CDS Views, ABAP RESTful Application Programming (RAP), OData v2/v4.
-   - REST API, Express.js, Nginx reverse proxy, CORS, dan SSL/TLS hardening.
-3. Selalu siap memberikan kode implementasi, panduan pemecahan masalah (troubleshooting), dan arahan link sistem.
+
+==================================================
+PRINSIP KETAT ANTI-HALUSINASI (STRICT ZERO-HALLUCINATION):
+==================================================
+1. SINGLE SOURCE OF TRUTH (HANYA BERDASARKAN SUMBER RESMI):
+   - Jawab pertanyaan HANYA berdasarkan fakta yang tertulis dalam [SUMBER DOKUMEN RESMI PORTAL], [DATA APLIKASI ENTERPRISE TERVERIFIKASI], dan [KONTEKS DOKUMEN AKTIF] di bawah.
+2. DILARANG MENGARANG (ZERO FABRICATION):
+   - JANGAN PERNAH mengarang URL fiktif, endpoint palsu, nama tabel/database rekaan, kode palsu, atau fitur yang tidak tercantum dalam sumber data resmi.
+   - JANGAN membuat asumsi atau menebak konfigurasi di luar dokumentasi resmi yang disediakan.
+3. KEJUJURAN KETIKA INFORMASI TIDAK DITEMUKAN:
+   - Jika pengguna bertanya tentang sesuatu yang TIDAK TERDAPAT dalam korpus sumber data, nyatakan dengan jujur, ramah, dan tegas:
+     "Mohon maaf, informasi mengenai hal tersebut tidak tercatat di dalam basis data dokumentasi portal saat ini."
+   - Jangan mencoba berspekulasi atau mengarang jawaban alternatif yang tidak ada dasarnya.
+4. SITASI SUMBER:
+   - Di akhir jawaban, sebutkan dokumen atau sistem enterprise resmi yang Anda jadikan rujukan (misal: "Rujukan: Dokumen Quick Start (/docs/get-started/quick-start)").
+5. IDENTITAS & KERAHASIAAN MODEL (STRICT ANONYMITY):
+   - JANGAN PERNAH memberi tahu atau menyebutkan model AI teknis apa yang digunakan (seperti Gemini, GPT, Claude, Llama, DeepSeek, OpenAI, Anthropic, Google, dll), baik secara langsung maupun tersirat.
+   - Jika pengguna bertanya model apa yang Anda gunakan, siapa Anda, atau teknologi model di balik sistem ini, JAWAB DENGAN KONSISTEN:
+     "Saya adalah AI Copilot resmi yang dikembangkan secara terintegrasi untuk Portal Dokumentasi & Program Navigator Enterprise."
+
+Ekosistem Aplikasi Resmi Terdaftar:
+1. 7 Aplikasi Enterprise:
+   - Fuel Management System (FMS) (http://jgfuel.id) - Pemantauan konsumsi BBM armada & telemetry.
+   - SAP Analytics Cloud (SAC) Dev & Prod - Pelaporan analitik bisnis eksekutif & live CDS views.
+   - Enterprise Marketing System (http://marketing.jhonlingroup.id) - Persetujuan kontrak komersial & CRM.
+   - KPI Safety (SHE) (http://she.jhonlingroup.id/login) - K3 & keselamatan kerja, investigasi insiden.
+   - PPPN (http://38.47.92.151:5000) - Notifikasi penagihan vendor & operasional pabrik.
+   - File Manager (http://file.jhonlingroup.id/login) - Penyimpanan berkas enterprise terpusat.
+2. Arsitektur Portal:
+   - SvelteKit, Tailwind CSS, Shadcn UI, REST API backend Express.js.
 
 Pedoman Format:
-- Gunakan Bahasa Indonesia yang profesional, ramah, dan teknis namun mudah dipahami.
-- Gunakan formatting Markdown kaya (bullet points, bold, inline code, dan code block dengan bahasa seperti \`\`\`xml, \`\`\`javascript, \`\`\`abap).
-- Jika menyebutkan aplikasi, sertakan tautan URL-nya jika relevan.`;
+- Gunakan Bahasa Indonesia yang profesional, padat, dan teknis.
+- Gunakan Markdown kaya (bullet points, bold, code block).`;
 
 // 2. Chat API (with intelligent caching & fallback)
 app.post('/api/ai/chat', async (req, res) => {
   try {
-    const { messages, documentContext, model, currentRoute } = req.body;
+    const { messages, documentContext, model, currentRoute, query, context, history } = req.body;
 
-    if (!messages || !Array.isArray(messages) || messages.length === 0) {
-      return res.status(400).json({ error: 'Messages array diperlukan' });
+    let messageList = messages;
+    if (!messageList && (query || history)) {
+      messageList = [
+        ...(Array.isArray(history) ? history : []),
+        ...(query ? [{ role: 'user', content: query }] : [])
+      ];
     }
+
+    if (!messageList || !Array.isArray(messageList) || messageList.length === 0) {
+      return res.status(400).json({ error: 'Messages array atau parameter query diperlukan' });
+    }
+
+    // Extract user query for RAG semantic knowledge retrieval
+    const lastUserQuery = query || (messageList.filter(m => m.role === 'user').pop()?.content || '');
+    const relevantKnowledge = retrieveRelevantKnowledge(lastUserQuery);
 
     let contextualPrompt = SYSTEM_PROMPT_BASE;
     if (currentRoute) {
       contextualPrompt += `\nLOKASI PENGGUNA SAAT INI DI PORTAL: ${currentRoute}`;
     }
-    if (documentContext && documentContext.trim()) {
-      contextualPrompt += `\n\nKONTEKS DOKUMEN AKTIF SAAT INI:\n"""\n${documentContext.substring(0, 3500)}\n"""\nGunakan isi dokumen aktif ini untuk menjawab pertanyaan dengan presisi tinggi jika pertanyaan berkaitan.`;
+    const docCtx = documentContext || context;
+    if (docCtx && docCtx.trim()) {
+      contextualPrompt += `\n\n[KONTEKS DOKUMEN AKTIF SAAT INI]:\n"""\n${docCtx.substring(0, 3500)}\n"""`;
+    }
+    if (relevantKnowledge) {
+      contextualPrompt += `\n\n${relevantKnowledge}\n\nIngat: Jawab HANYA berdasarkan fakta di atas. Dilarang mengarang fakta di luar dokumen!`;
     }
 
     const fullMessages = [
       { role: 'system', content: contextualPrompt },
-      ...messages
+      ...messageList
     ];
 
     // Check cache for identical message thread
@@ -224,7 +366,11 @@ app.post('/api/ai/chat', async (req, res) => {
     }
 
     setCache(cacheKey, result);
-    res.json(result);
+    res.json({
+      message: result.message,
+      reply: result.message,
+      usage: result.usage
+    });
   } catch (err) {
     console.error('AI Chat Error:', err.message);
     res.status(500).json({ error: err.message || 'Gagal menghubungi server AI' });
@@ -258,7 +404,11 @@ app.post('/api/ai/summarize', async (req, res) => {
 
     const result = await callAiChat(messages, AI_CONFIG.defaultModel, 600);
     setCache(cacheKey, result);
-    res.json(result);
+    res.json({
+      message: result.message,
+      reply: result.message,
+      usage: result.usage
+    });
   } catch (err) {
     console.error('AI Summarize Error:', err.message);
     res.status(500).json({ error: err.message });
@@ -299,19 +449,331 @@ app.get('/api/ai/quick-search', async (req, res) => {
 });
 
 // ==========================================
-// STATIC FILES & SPA FALLBACK
+// DOCUMENTATION MANAGEMENT & CRUD APIS (NO .MD REQUIRED)
 // ==========================================
 
-// Serve static resources from webapp directory
-app.use(express.static(WEBAPP_DIR));
+// 5. Get All Documents, Sections & Categories
+app.get('/api/docs', (req, res) => {
+  const docs = loadDocuments();
+  const sections = ['SAP', 'SAC', 'WEB'];
+  const sectionStats = { SAP: 0, SAC: 0, WEB: 0, all: docs.length };
 
-// Fallback for SPA routing - only for HTML route navigations (no file extension)
-app.use((req, res) => {
-  if (path.extname(req.path)) {
-    return res.status(404).send('Not Found');
+  // Section-first grouping
+  const sectionMap = {
+    SAP: new Map(),
+    SAC: new Map(),
+    WEB: new Map()
+  };
+
+  // Flat category map (for backward compatibility)
+  const categoryMap = new Map();
+
+  for (const doc of docs) {
+    const sec = inferSection(doc);
+    doc.section = sec;
+    const cat = doc.category || 'General';
+
+    sectionStats[sec] = (sectionStats[sec] || 0) + 1;
+
+    const node = {
+      id: doc.id,
+      slug: doc.slug,
+      title: doc.title,
+      path: doc.slug,
+      section: sec,
+      category: cat,
+      icon: 'FileText'
+    };
+
+    // Flat categories
+    if (!categoryMap.has(cat)) {
+      categoryMap.set(cat, []);
+    }
+    categoryMap.get(cat).push(node);
+
+    // Section grouping
+    if (!sectionMap[sec]) sectionMap[sec] = new Map();
+    if (!sectionMap[sec].has(cat)) {
+      sectionMap[sec].set(cat, []);
+    }
+    sectionMap[sec].get(cat).push(node);
   }
-  res.sendFile(path.join(WEBAPP_DIR, 'index.html'));
+
+  const treeData = Array.from(categoryMap.entries()).map(([title, nodes]) => ({
+    title,
+    section: nodes[0]?.section || 'WEB',
+    icon: 'Folder',
+    nodes
+  }));
+
+  const sectionTree = sections.map((sec) => {
+    const catEntries = Array.from((sectionMap[sec] || new Map()).entries());
+    return {
+      section: sec,
+      title: sec,
+      total: sectionStats[sec] || 0,
+      categories: catEntries.map(([catTitle, nodes]) => ({
+        title: catTitle,
+        icon: 'Folder',
+        nodes
+      }))
+    };
+  });
+
+  res.json({
+    documents: docs,
+    sections,
+    sectionStats,
+    sectionTree,
+    treeData,
+    total: docs.length
+  });
 });
+
+// 6. Get Single Document by ID / Slug
+app.get('/api/docs/:id(*)', (req, res) => {
+  const docs = loadDocuments();
+  const id = req.params.id;
+  const doc = docs.find(d => d.id === id || d.slug === id);
+  if (!doc) {
+    return res.status(404).json({ error: 'Dokumentasi tidak ditemukan' });
+  }
+  doc.section = inferSection(doc);
+  res.json(doc);
+});
+
+// 7. Create New Document
+app.post('/api/docs', (req, res) => {
+  const { title, category, content, description, tags, slug, section } = req.body;
+  if (!title || !content) {
+    return res.status(400).json({ error: 'Judul dan konten dokumentasi wajib diisi' });
+  }
+  const docs = loadDocuments();
+  const sec = section && ['SAP', 'SAC', 'WEB'].includes(section.toUpperCase()) 
+    ? section.toUpperCase() 
+    : inferSection({ title, category, slug });
+
+  const cat = (category || 'General').trim();
+  const catSlug = cat.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const titleSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const finalSlug = slug || `${sec.toLowerCase()}/${titleSlug}`;
+
+  const cleanDesc = description || content.slice(0, 160).replace(/[#*`\n]/g, ' ').trim();
+
+  const newDoc = {
+    id: finalSlug,
+    slug: finalSlug,
+    section: sec,
+    title: title.trim(),
+    category: cat,
+    description: cleanDesc,
+    snippet: cleanDesc,
+    content: content.trim(),
+    tags: Array.isArray(tags) && tags.length > 0 ? tags : [sec, cat, 'Dokumentasi'],
+    updatedAt: new Date().toISOString()
+  };
+
+  const existingIndex = docs.findIndex(d => d.id === finalSlug || d.slug === finalSlug);
+  if (existingIndex >= 0) {
+    docs[existingIndex] = newDoc;
+  } else {
+    docs.push(newDoc);
+  }
+
+  saveDocuments(docs);
+  res.json({ success: true, document: newDoc });
+});
+
+// 8. Update Existing Document
+app.put('/api/docs/:id(*)', (req, res) => {
+  const id = req.params.id;
+  const docs = loadDocuments();
+  const index = docs.findIndex(d => d.id === id || d.slug === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Dokumen tidak ditemukan untuk diubah' });
+  }
+
+  const { title, category, content, description, tags, section } = req.body;
+  const doc = docs[index];
+
+  if (section && ['SAP', 'SAC', 'WEB'].includes(section.toUpperCase())) {
+    doc.section = section.toUpperCase();
+  }
+  if (title) doc.title = title.trim();
+  if (category) doc.category = category.trim();
+  if (content) doc.content = content.trim();
+  if (description) {
+    doc.description = description.trim();
+    doc.snippet = description.trim();
+  } else if (content) {
+    doc.description = content.slice(0, 160).replace(/[#*`\n]/g, ' ').trim();
+    doc.snippet = doc.description;
+  }
+  if (tags && Array.isArray(tags)) doc.tags = tags;
+  doc.updatedAt = new Date().toISOString();
+
+  saveDocuments(docs);
+  res.json({ success: true, document: doc });
+});
+
+// 9. Delete Document
+app.delete('/api/docs/:id(*)', (req, res) => {
+  const id = req.params.id;
+  let docs = loadDocuments();
+  const initialLen = docs.length;
+  docs = docs.filter(d => d.id !== id && d.slug !== id);
+  if (docs.length === initialLen) {
+    return res.status(404).json({ error: 'Dokumen tidak ditemukan' });
+  }
+  saveDocuments(docs);
+  res.json({ success: true, message: 'Dokumen berhasil dihapus' });
+});
+
+// 10. AI Document Assistant (Generate, Improve, Code, Summarize)
+app.post('/api/ai/doc-assist', async (req, res) => {
+  try {
+    const { action, prompt, currentDoc, section } = req.body;
+    if (!action) {
+      return res.status(400).json({ error: 'Parameter action diperlukan' });
+    }
+
+    const targetSection = (section || (currentDoc ? inferSection(currentDoc) : 'SAP')).toUpperCase();
+    let sectionContext = '';
+    if (targetSection === 'SAP') {
+      sectionContext = 'Fokuskan panduan pada ekosistem SAP (ERP, S/4HANA, modul FI/CO/MM/SD/PM, ABAP, RFC, BAPI, SAP Gateway, CDS Views).';
+    } else if (targetSection === 'SAC') {
+      sectionContext = 'Fokuskan panduan pada SAP Analytics Cloud (Stories, Responsive/Canvas Pages, Charts, Live Data Connections, Cloud Connector, Data Access Control DAC, Planning).';
+    } else {
+      sectionContext = 'Fokuskan panduan pada Modern Web Stack (SvelteKit, Tailwind CSS, REST APIs, Microservices, Security, Node.js Express).';
+    }
+
+    let messages = [];
+
+    if (action === 'generate') {
+      messages = [
+        {
+          role: 'system',
+          content: `Anda adalah Enterprise Technical Writer & Solutions Architect AI spesialis bidang ${targetSection}.
+${sectionContext}
+Tugas Anda adalah membuat dokumentasi teknis baru yang sangat terstruktur, rapi, dan komprehensif dalam Bahasa Indonesia.
+Balas HANYA dalam format JSON valid (tanpa markdown fences di luar JSON) dengan struktur persis berikut:
+{
+  "section": "${targetSection}",
+  "title": "Judul Dokumentasi yang Jelas dan Informatif",
+  "category": "Kategori Sub-Topik (misal untuk SAP: Core Architecture / Integration / Gateway; untuk SAC: Stories & Visuals / Data Modeling / BI; untuk WEB: Web Stack / Security / API)",
+  "description": "Ringkasan eksekutif 1-2 kalimat tentang dokumen ini",
+  "tags": ["${targetSection}", "Tag2", "Tag3"],
+  "content": "Isi lengkap dokumentasi terstruktur rapi dalam Markdown kaya. Gunakan Heading H2 (##) dan H3 (###), poin-poin penjelasan, tabel jika relevan, peringatan [!NOTE] atau [!TIP], serta blok kode implementasi konkret dengan penjelasannya."
+}`
+        },
+        {
+          role: 'user',
+          content: `Buatkan dokumentasi teknis baru bagian [${targetSection}] untuk topik berikut:\n"${prompt || `Panduan Praktis Implementasi & Arsitektur ${targetSection}`}"`
+        }
+      ];
+    } else if (action === 'improve') {
+      messages = [
+        {
+          role: 'system',
+          content: `Anda adalah Senior Technical Editor spesialis sistem ${targetSection}. Perbaiki, rapikan, dan sempurnakan konten dokumentasi berikut agar memiliki alur logis yang jelas, tata bahasa profesional Bahasa Indonesia, format heading konsisten, dan alert ([!NOTE], [!TIP]) yang tepat.
+Balas HANYA teks konten hasil perbaikan.`
+        },
+        {
+          role: 'user',
+          content: `Instruksi Khusus: ${prompt || 'Tingkatkan kualitas, struktur, dan keterbacaan teknis'}\n\nKonten Saat Ini:\n${currentDoc?.content || ''}`
+        }
+      ];
+    } else if (action === 'code') {
+      messages = [
+        {
+          role: 'system',
+          content: `Anda adalah Lead Software Engineer & Enterprise Architect spesialis ${targetSection}. Buatkan contoh kode implementasi nyata dan best practices (dengan komentar penjelasan) untuk memperkaya dokumentasi ini.
+Balas HANYA dalam format blok kode Markdown dengan sedikit penjelasan.`
+        },
+        {
+          role: 'user',
+          content: `Kebutuhan Kode: ${prompt || `Contoh implementasi teknis lengkap ${targetSection}`}\n\nKonteks Dokumen: ${currentDoc?.title || ''}\n${(currentDoc?.content || '').slice(0, 1200)}`
+        }
+      ];
+    } else if (action === 'summarize') {
+      messages = [
+        {
+          role: 'system',
+          content: `Anda adalah Asisten Perangkum Teknis Enterprise. Buat ringkasan eksekutif 3-4 butir poin kunci yang padat, aplikatif, dan jelas dalam Bahasa Indonesia.`
+        },
+        {
+          role: 'user',
+          content: `Judul: ${currentDoc?.title || ''}\n\nIsi Dokumen:\n${(currentDoc?.content || '').slice(0, 4500)}`
+        }
+      ];
+    } else {
+      return res.status(400).json({ error: `Aksi '${action}' tidak dikenali` });
+    }
+
+    const aiRes = await callAiChat(messages, AI_CONFIG.defaultModel, 1800);
+    let output = aiRes.message;
+
+    if (action === 'generate') {
+      try {
+        const cleaned = output.replace(/^```json\s*/i, '').replace(/\s*```$/i, '').trim();
+        const parsed = JSON.parse(cleaned);
+        return res.json({ success: true, result: parsed });
+      } catch (err) {
+        return res.json({
+          success: true,
+          result: {
+            title: prompt || 'Dokumentasi Baru',
+            category: 'Architecture',
+            description: 'Dokumentasi teknis dibuat otomatis oleh AI Copilot',
+            tags: ['AI Generated'],
+            content: output
+          }
+        });
+      }
+    }
+
+    res.json({ success: true, result: output });
+  } catch (err) {
+    console.error('AI Doc Assist Error:', err.message);
+    res.status(500).json({ error: err.message || 'Gagal menjalankan bantuan AI' });
+  }
+});
+
+// ==========================================
+// SVELTEKIT FRONTEND INTEGRATION (MAIN DISPLAY)
+// ==========================================
+
+const BUILD_HANDLER_PATH = path.join(__dirname, 'frontend', 'build', 'handler.js');
+
+async function attachFrontendHandler() {
+  if (fs.existsSync(BUILD_HANDLER_PATH)) {
+    try {
+      const handlerUrl = url.pathToFileURL(BUILD_HANDLER_PATH).href;
+      const { handler } = await import(handlerUrl);
+      app.use(handler);
+      console.log(' SvelteKit Frontend: Active & Serving as Main Display');
+    } catch (err) {
+      console.error('Failed to load SvelteKit build handler:', err.message);
+      setupDevFallback();
+    }
+  } else {
+    setupDevFallback();
+  }
+}
+
+function setupDevFallback() {
+  if (fs.existsSync(FRONTEND_STATIC)) {
+    app.use(express.static(FRONTEND_STATIC));
+  }
+  app.use((req, res) => {
+    if (path.extname(req.path)) {
+      return res.status(404).send('Not Found');
+    }
+    res.redirect(`http://localhost:5173${req.originalUrl}`);
+  });
+}
+
+attachFrontendHandler();
 
 // Graceful server startup
 const server = app.listen(PORT, () => {

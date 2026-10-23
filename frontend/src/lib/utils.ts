@@ -4,3 +4,6 @@ import { twMerge } from "tailwind-merge";
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
+
+export type WithElementRef<T, E = HTMLElement> = T & { ref?: E | null };
+

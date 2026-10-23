@@ -161,7 +161,7 @@
 									<Sparkles class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
 									<span>Tanyakan AI Copilot tentang <strong>"{searchQuery}"</strong></span>
 								</div>
-								<Badge class="bg-indigo-600 text-white text-[10px]">Gemini 3.8</Badge>
+								<Badge class="bg-indigo-600 text-white text-[10px]">AI Copilot</Badge>
 							</button>
 						</div>
 					{/if}

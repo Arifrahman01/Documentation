@@ -24,18 +24,17 @@
 			method: 'POST',
 			path: '/api/ai/chat',
 			title: 'AI Copilot Query & Chat Completion',
-			description: 'Mengirim prompt ke model Gemini 3.8 Flash Medium dengan dukungan konteks percakapan dan in-memory LRU cache.',
+			description: 'Mengirim prompt ke AI Copilot dengan dukungan pencarian semantik RAG, proteksi anti-halusinasi, dan in-memory cache.',
 			request: `{
-  "query": "Jelaskan arsitektur MVC di SAPUI5",
-  "context": "Konteks pengguna: Halaman Model View Controller",
+  "query": "Jelaskan konsep Model View Controller",
+  "context": "Konteks opsional halaman aktif",
   "history": [
     { "role": "user", "content": "Halo" },
     { "role": "assistant", "content": "Halo! Ada yang bisa saya bantu?" }
   ]
 }`,
 			response: `{
-  "reply": "Model View Controller (MVC) di SAPUI5 memisahkan data bisnis (Model)...",
-  "model": "gemini-3.8-flash-medium",
+  "reply": "Model View Controller (MVC) memisahkan data bisnis (Model)...",
   "cached": false,
   "executionTimeMs": 240
 }`
@@ -45,13 +44,12 @@
 			method: 'GET',
 			path: '/api/ai/status',
 			title: 'Healthcheck & Cache Status',
-			description: 'Memeriksa status koneksi ke model AI lokal serta jumlah cache jawaban aktif.',
+			description: 'Memeriksa status gateway AI Copilot serta jumlah cache jawaban aktif.',
 			request: null,
 			response: `{
   "status": "online",
-  "model": "gemini-3.8-flash-medium",
-  "cachedEntries": 14,
-  "availableModels": ["gemini-3.8-flash-medium", "gemini-3.8-flash"]
+  "service": "AI Copilot Engine",
+  "cachedEntries": 14
 }`
 		},
 		{

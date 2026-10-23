@@ -9,7 +9,9 @@ lerna-debug.log*
 # Build and Distribution
 dist/
 build/
-.ui5/
+.svelte-kit/
+frontend/.svelte-kit/
+frontend/build/
 
 # Environment Variables & Secrets
 .env

@@ -26,7 +26,7 @@
 	let messages = $state<Message[]>([
 		{
 			role: 'assistant',
-			content: 'Halo! Saya adalah **AI Copilot** (berbasis Gemini 3.8 Flash Medium).\n\nSaya siap membantu Anda memahami arsitektur sistem, navigasi 7 aplikasi enterprise, implementasi kode SAPUI5/CDS Views/ABAP RAP, maupun merangkum dokumen teknis yang sedang dibuka.\n\nSilakan pilih salah satu pertanyaan cepat di bawah atau ketik pertanyaan Anda!'
+			content: 'Halo! Saya adalah **AI Copilot**, asisten resmi untuk Portal Dokumentasi & Program Navigator Enterprise.\n\nSaya siap membantu Anda memahami arsitektur sistem, navigasi 7 aplikasi enterprise, implementasi kode teknis, maupun merangkum dokumen yang sedang dibuka.\n\nSilakan pilih salah satu pertanyaan cepat di bawah atau ketik pertanyaan Anda!'
 		}
 	]);
 
@@ -104,6 +104,8 @@
 				body: JSON.stringify({
 					query: query,
 					context: systemContext,
+					documentContext: ui.currentContext.snippet || '',
+					currentRoute: ui.currentContext.title || '',
 					history: messages.slice(-6).map((m) => ({ role: m.role, content: m.content }))
 				})
 			});
@@ -202,7 +204,7 @@
 						<div class="flex items-center gap-2">
 							<h3 class="text-sm font-semibold text-foreground">AI Copilot</h3>
 							<Badge class="bg-indigo-600 text-white text-[10px]">
-								Gemini 3.8 Flash
+								Enterprise
 							</Badge>
 						</div>
 						<p class="text-xs text-muted-foreground">Asisten teknis dokumentasi & sistem enterprise</p>

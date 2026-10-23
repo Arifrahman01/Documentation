@@ -88,8 +88,8 @@
 					<div class="text-xs text-zinc-500 dark:text-zinc-400">Arsitektur & Kode Lengkap</div>
 				</div>
 				<div>
-					<div class="text-2xl font-bold text-zinc-900 dark:text-white">Gemini 3.8</div>
-					<div class="text-xs text-zinc-500 dark:text-zinc-400">AI Copilot Cerdas & Cepat</div>
+					<div class="text-2xl font-bold text-zinc-900 dark:text-white">AI Copilot</div>
+					<div class="text-xs text-zinc-500 dark:text-zinc-400">Asisten Cerdas & Cepat</div>
 				</div>
 				<div>
 					<div class="text-2xl font-bold text-zinc-900 dark:text-white">&lt; 10 ms</div>
@@ -141,7 +141,7 @@
 						<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-400">
 							<Sparkles class="h-5 w-5" />
 						</div>
-						<Badge class="bg-indigo-600 text-white">Gemini 3.8</Badge>
+						<Badge class="bg-indigo-600 text-white">Enterprise</Badge>
 					</div>
 					<CardTitle class="mt-4 text-lg">AI Copilot Pintar</CardTitle>
 					<CardDescription>
