@@ -23,11 +23,11 @@
           tooltip="Toggle Navigation"
           class="sdkHeaderIconBtn" />
 
-        <!-- Jhonlin Group Brand Emblem & Title -->
+        <!-- Brand Emblem & Title -->
         <HBox alignItems="Center" class="sdkBrandWrapper">
-          <Image src="img/jhonlin_emblem.png" width="30px" height="30px" class="sdkJhonlinLogoImg" press=".onNavHome" />
-          <Link text="PT JHONLIN GROUP" class="sdkBrandTitle" press=".onNavHome" />
-          <ObjectStatus text="DOCS" state="Information" inverted="true" class="sdkBrandDocsPill sapUiTinyMarginBegin" />
+          <Image src="img/jhonlin_emblem.png" width="30px" height="30px" densityAware="false" class="sdkBrandLogoImg" press=".onNavHome" />
+          <Link text="DOCUMENTATION" class="sdkBrandTitle" press=".onNavHome" />
+          <ObjectStatus text="DOCS" state="Information" inverted="true" class="sdkBrandDocsPill" />
         </HBox>
 
         <!-- Version / Division Selector Pill Button -->
@@ -43,7 +43,7 @@
       <HBox alignItems="Center" class="sdkTopShellCenter">
         <SearchField
           id="globalSearchField"
-          placeholder="Cari dokumentasi, aplikasi &amp; sistem Jhonlin..."
+          placeholder="Cari dokumentasi, aplikasi &amp; sistem..."
           width="480px"
           search=".onGlobalSearch"
           class="sdkSearchAnythingField" />
@@ -56,7 +56,7 @@
           icon="sap-icon://learning-assistant"
           text="AI Copilot"
           type="Emphasized"
-          tooltip="Jhonlin AI Copilot (Claude Sonnet)"
+          tooltip="AI Copilot (Gemini 3.8 Flash)"
           class="sdkAiCopilotBtn sapUiTinyMarginEnd"
           press=".onOpenAiCopilot" />
 
@@ -152,7 +152,7 @@
       icon="sap-icon://learning-assistant"
       text="Tanya AI"
       type="Emphasized"
-      tooltip="Buka Jhonlin AI Copilot"
+      tooltip="Buka AI Copilot"
       class="sdkFloatingAiBtn"
       press=".onOpenAiCopilot" />
 

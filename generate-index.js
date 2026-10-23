@@ -8,6 +8,7 @@ const CATEGORY_ICONS = {
   'get-started': 'sap-icon://begin',
   'essentials': 'sap-icon://course-book',
   'developing-apps': 'sap-icon://developer-settings',
+  'api-reference': 'sap-icon://syntax',
   'testing': 'sap-icon://lab',
   'sac': 'sap-icon://pie-chart',
   'sap': 'sap-icon://database',

@@ -70,7 +70,7 @@
                 <Breadcrumbs id="topicBreadcrumbs" separatorStyle="Slash">
                   <Link text="Documentation" press=".onNavDocumentationRoot" />
                 </Breadcrumbs>
-                <HBox alignItems="Center">
+                <HBox alignItems="Center" class="sdkTopicActionsBar">
                   <Button
                     id="btnSummarizeTopic"
                     icon="sap-icon://learning-assistant"
@@ -78,20 +78,22 @@
                     type="Transparent"
                     tooltip="Buat ringkasan eksekutif dokumen ini menggunakan AI Copilot"
                     press=".onSummarizeTopic"
-                    class="sdkAiSummarizeBtn sapUiTinyMarginEnd" />
+                    class="sdkAiSummarizeBtn" />
                   <Button
                     id="btnAskAiTopic"
                     icon="sap-icon://comment"
                     text="Tanya AI"
                     type="Transparent"
-                    tooltip="Tanyakan dokumen ini ke Jhonlin AI Copilot"
+                    tooltip="Tanyakan dokumen ini ke AI Copilot"
                     press=".onAskAiAboutTopic"
-                    class="sdkAiSummarizeBtn sapUiTinyMarginEnd" />
+                    class="sdkAiSummarizeBtn" />
                   <Button
+                    id="btnCopyTopicLink"
                     icon="sap-icon://copy"
                     type="Transparent"
                     tooltip="Copy link"
-                    press=".onCopyTopicLink" />
+                    press=".onCopyTopicLink"
+                    class="sdkCopyLinkBtn" />
                 </HBox>
               </HBox>
 
@@ -105,7 +107,7 @@
                 <HBox justifyContent="SpaceBetween" alignItems="Center" class="sdkAiSummaryHeader">
                   <HBox alignItems="Center">
                     <core:Icon src="sap-icon://learning-assistant" class="sdkAiSummaryIcon" />
-                    <Title text="Ringkasan Eksekutif AI (Jhonlin Copilot)" level="H4" class="sdkAiSummaryTitle sapUiTinyMarginBegin" />
+                    <Title text="Ringkasan Eksekutif AI" level="H4" class="sdkAiSummaryTitle sapUiTinyMarginBegin" />
                   </HBox>
                   <Button icon="sap-icon://decline" type="Transparent" press=".onCloseAiSummary" tooltip="Tutup Ringkasan" />
                 </HBox>

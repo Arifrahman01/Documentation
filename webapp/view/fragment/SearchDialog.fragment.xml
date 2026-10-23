@@ -1,0 +1,38 @@
+<core:FragmentDefinition
+  xmlns="sap.m"
+  xmlns:core="sap.ui.core">
+
+  <Dialog
+    id="globalSearchDialog"
+    title="Search Documentation &amp; Systems"
+    contentWidth="580px"
+    contentHeight="440px"
+    class="sdkSearchDialog">
+
+    <subHeader>
+      <Toolbar>
+        <SearchField
+          id="shellSearchField"
+          placeholder="Search documentation, apps, or ask AI... (Ctrl+K)"
+          width="100%"
+          search=".onExecuteSearch"
+          liveChange=".onExecuteSearchLive" />
+      </Toolbar>
+    </subHeader>
+
+    <content>
+      <List
+        id="shellSearchList"
+        mode="None"
+        itemPress=".onSelectSearchResult" />
+    </content>
+
+    <endButton>
+      <Button
+        text="Close"
+        press=".onCloseSearchDialog" />
+    </endButton>
+
+  </Dialog>
+
+</core:FragmentDefinition>

@@ -15,7 +15,7 @@
     <content>
       <VBox class="sdkAppsWrapper" width="100%">
 
-        <!-- ====== HEADER HERO (JHONLIN GROUP PROGRAM NAVIGATOR) ====== -->
+        <!-- ====== HEADER HERO (PROGRAM NAVIGATOR) ====== -->
         <VBox class="sdkAppsHero">
           <HBox alignItems="Center" class="sdkAppsHeroBreadcrumbs sapUiTinyMarginBottom">
             <Link text="Home" press=".onNavHome" class="sdkHeroBreadcrumbLink" />
@@ -27,10 +27,10 @@
             <VBox class="sdkAppsHeroTitleGroup">
               <HBox alignItems="Center">
                 <Title text="Program Navigator" level="H1" titleStyle="H1" class="sdkAppsHeroTitle" />
-                <ObjectStatus text="PT Jhonlin Group" state="Information" inverted="true" class="sdkHeroCompanyPill sapUiSmallMarginBegin" />
+                <ObjectStatus text="Enterprise Systems" state="Information" inverted="true" class="sdkHeroCompanyPill sapUiSmallMarginBegin" />
               </HBox>
               <Text
-                text="Akses sentral seluruh aplikasi &amp; sistem operasional PT Jhonlin Group. Pantau operasional tambang &amp; logistik, dashboard analitik SAC, keselamatan kerja K3, serta transaksi komersial secara real-time."
+                text="Akses sentral seluruh aplikasi &amp; sistem operasional. Pantau operasional tambang &amp; logistik, dashboard analitik SAC, keselamatan kerja K3, serta transaksi komersial secara real-time."
                 class="sdkAppsHeroSubtitle sapUiSmallMarginTop" />
             </VBox>
 
@@ -46,7 +46,7 @@
               </VBox>
               <VBox class="sdkHeroStatBox">
                 <Text text="ICT" class="sdkHeroStatNumber sdkTextBlue" />
-                <Text text="Jhonlin Group" class="sdkHeroStatLabel" />
+                <Text text="Enterprise" class="sdkHeroStatLabel" />
               </VBox>
             </HBox>
           </HBox>
@@ -93,8 +93,8 @@
         <!-- ====== FOOTER ====== -->
         <HBox justifyContent="Center" alignItems="Center" class="sdkAppsFooter">
           <Text text="© 2025 Program Navigator — " class="sdkAppsFooterText" />
-          <Text text="ICT Jhonlin Group" class="sdkAppsFooterAccent" />
-          <Text text=" • PT Jhonlin Group Enterprise Portal" class="sdkAppsFooterText" />
+          <Text text="ICT Division" class="sdkAppsFooterAccent" />
+          <Text text=" • Documentation &amp; App Portal" class="sdkAppsFooterText" />
         </HBox>
 
       </VBox>

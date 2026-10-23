@@ -4,8 +4,8 @@
     "id": "doc.portal",
     "type": "application",
     "i18n": "i18n/i18n.properties",
-    "title": "SAPUI5 SDK — Demo Kit",
-    "description": "SAPUI5 SDK Demo Kit Style Documentation Portal",
+    "title": "Documentation",
+    "description": "Technical Documentation and Program Navigator Portal",
     "applicationVersion": {
       "version": "1.0.0"
     }
@@ -52,13 +52,6 @@
         "type": "sap.ui.model.json.JSONModel",
         "uri": "model/apps.json"
       }
-    },
-    "resources": {
-      "css": [
-        {
-          "uri": "css/style.css"
-        }
-      ]
     },
     "routing": {
       "config": {
@@ -125,10 +118,6 @@
           "viewName": "Apps",
           "viewLevel": 1,
           "id": "apps"
-        },
-        "demoapps": {
-          "viewName": "Apps",
-          "viewLevel": 1
         },
         "resources": {
           "viewName": "Resources",

@@ -1,10 +1,40 @@
 {
   "stats": {
-    "all": 8,
+    "all": 9,
+    "api-reference": 1,
+    "developing-apps": 2,
     "essentials": 4,
-    "get-started": 1
+    "get-started": 1,
+    "testing": 1
   },
   "treeData": [
+    {
+      "title": "Api Reference",
+      "icon": "sap-icon://syntax",
+      "nodes": [
+        {
+          "title": "API Reference Overview",
+          "path": "api-reference/api-overview",
+          "icon": "sap-icon://document-text"
+        }
+      ]
+    },
+    {
+      "title": "Developing Apps",
+      "icon": "sap-icon://developer-settings",
+      "nodes": [
+        {
+          "title": "Component Configuration",
+          "path": "developing-apps/component-configuration",
+          "icon": "sap-icon://document-text"
+        },
+        {
+          "title": "Security Concepts",
+          "path": "developing-apps/security-concepts",
+          "icon": "sap-icon://document-text"
+        }
+      ]
+    },
     {
       "title": "Essentials",
       "icon": "sap-icon://course-book",
@@ -43,22 +73,6 @@
       ]
     },
     {
-      "title": "Developing Apps",
-      "icon": "sap-icon://developer-settings",
-      "nodes": [
-        {
-          "title": "Component Configuration",
-          "path": "developing-apps/component-configuration",
-          "icon": "sap-icon://document-text"
-        },
-        {
-          "title": "Security Concepts",
-          "path": "developing-apps/security-concepts",
-          "icon": "sap-icon://document-text"
-        }
-      ]
-    },
-    {
       "title": "Testing",
       "icon": "sap-icon://lab",
       "nodes": [
@@ -71,6 +85,27 @@
     }
   ],
   "articles": [
+    {
+      "id": "api-reference/api-overview",
+      "title": "API Reference Overview",
+      "path": "api-reference/api-overview",
+      "category": "Api Reference",
+      "snippet": "API Reference Overview Dokumentasi lengkap REST API, endpoint AI Copilot, layanan pencarian semantik, dan arsitektur integrasi sistem. --- 1. REST API Endpoints Portal dokumentasi "
+    },
+    {
+      "id": "developing-apps/component-configuration",
+      "title": "Component Configuration",
+      "path": "developing-apps/component-configuration",
+      "category": "Developing Apps",
+      "snippet": "Component Configuration Guide on manifest.json configuration, routing targets, models, and dependencies in SAPUI5. --- Overview In SAPUI5, the application descriptor file () serves"
+    },
+    {
+      "id": "developing-apps/security-concepts",
+      "title": "Security Concepts",
+      "path": "developing-apps/security-concepts",
+      "category": "Developing Apps",
+      "snippet": "Security Concepts Enterprise security guidelines: XSS protection, CSRF token handling, and secure data binding. --- Overview Security is a foundational pillar for enterprise web ap"
+    },
     {
       "id": "essentials/data-binding",
       "title": "Data Binding Overview",
@@ -107,25 +142,11 @@
       "snippet": "Quick Start Get started building modern, enterprise-ready web applications using the SAPUI5 framework. --- What is SAPUI5? SAPUI5 is a JavaScript UI framework built to create cross"
     },
     {
-      "id": "developing-apps/component-configuration",
-      "title": "Component Configuration",
-      "path": "developing-apps/component-configuration",
-      "category": "Developing Apps",
-      "snippet": "Guide on manifest.json configuration, routing targets, models, and dependencies in SAPUI5."
-    },
-    {
-      "id": "developing-apps/security-concepts",
-      "title": "Security Concepts",
-      "path": "developing-apps/security-concepts",
-      "category": "Developing Apps",
-      "snippet": "Enterprise security guidelines: XSS protection, CSRF token handling, and secure data binding."
-    },
-    {
       "id": "testing/unit-testing",
       "title": "Unit Testing with QUnit",
       "path": "testing/unit-testing",
       "category": "Testing",
-      "snippet": "Setting up automated unit tests and integration tests using QUnit and OPA5 in SAPUI5."
+      "snippet": "Unit Testing with QUnit Setting up automated unit tests and integration tests using QUnit and OPA5 in SAPUI5. --- Testing Strategy in SAPUI5 SAPUI5 provides official support for co"
     }
   ]
 }

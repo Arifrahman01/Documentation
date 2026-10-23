@@ -1,9 +1,10 @@
 sap.ui.define([
-  "sap/ui/core/Control"
-], function (Control) {
+  "sap/ui/core/Control",
+  "doc/portal/util/Utils"
+], function (Control, Utils) {
   "use strict";
 
-  // Setup global clipboard copy function if not already present
+  // Setup global code block copy button click handler
   if (!window._portalCopyCode) {
     window._portalCopyCode = function (sCodeId, oBtn) {
       var oCodeElem = document.getElementById(sCodeId);
@@ -11,7 +12,7 @@ sap.ui.define([
         return;
       }
       var sText = oCodeElem.innerText || oCodeElem.textContent;
-      navigator.clipboard.writeText(sText).then(function () {
+      Utils.copyToClipboard(sText).then(function () {
         var sOriginal = oBtn.innerText;
         oBtn.innerText = "✓ Copied!";
         oBtn.style.background = "#107e3e";
@@ -24,7 +25,7 @@ sap.ui.define([
           oBtn.style.borderColor = "";
         }, 2000);
       }).catch(function (err) {
-        console.error("Failed to copy text: ", err);
+        console.warn("Failed to copy code block: ", err);
       });
     };
   }
@@ -92,12 +93,13 @@ sap.ui.define([
 
     setSrc: function (sSrc) {
       this.setProperty("src", sSrc, true);
-      if (sSrc) {
+      if (sSrc && sSrc !== this._sLoadedSrc) {
         this._fetchMarkdown(sSrc);
       }
     },
 
     setRawContent: function (sContent) {
+      this._sLoadedSrc = null;
       this.setProperty("rawContent", sContent, true);
       this._renderContent(sContent);
     },
@@ -117,10 +119,12 @@ sap.ui.define([
           return res.text();
         })
         .then(function (sMarkdown) {
+          that._sLoadedSrc = sUrl;
           that._renderContent(sMarkdown);
           that.fireContentLoaded({ headings: that._headings });
         })
         .catch(function (err) {
+          that._sLoadedSrc = null;
           console.error("Markdown load error:", err);
           if (that.getDomRef()) {
             that.getDomRef().innerHTML = '<div class="portalCallout portalCallout-caution">' +
@@ -212,23 +216,26 @@ sap.ui.define([
       }
     },
 
-    renderer: function (oRm, oControl) {
-      oRm.openStart("div", oControl);
-      oRm.class("portalMarkdownViewerRoot");
-      oRm.openEnd();
+    renderer: {
+      apiVersion: 2,
+      render: function (oRm, oControl) {
+        oRm.openStart("div", oControl);
+        oRm.class("portalMarkdownViewerRoot");
+        oRm.openEnd();
 
-      if (oControl._pendingHtml) {
-        oRm.unsafeHtml('<div class="portalReaderContainer">' + oControl._pendingHtml + '</div>');
-        oControl._pendingHtml = null;
-      } else if (oControl.getSrc()) {
-        oRm.unsafeHtml('<div class="sapUiMediumMargin" style="color: var(--sapContent_LabelColor);">Loading...</div>');
+        if (oControl._pendingHtml) {
+          oRm.unsafeHtml('<div class="portalReaderContainer">' + oControl._pendingHtml + '</div>');
+          oControl._pendingHtml = null;
+        } else if (oControl.getSrc()) {
+          oRm.unsafeHtml('<div class="sapUiMediumMargin" style="color: var(--sapContent_LabelColor);"><span class="sapUiSmallMarginEnd">⏳</span> Loading...</div>');
+        }
+
+        oRm.close("div");
       }
-
-      oRm.close("div");
     },
 
     onAfterRendering: function () {
-      if (this.getSrc() && !this._pendingHtml) {
+      if (this.getSrc() && !this._pendingHtml && this.getSrc() !== this._sLoadedSrc) {
         this._fetchMarkdown(this.getSrc());
       }
     }

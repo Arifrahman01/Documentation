@@ -12,8 +12,8 @@ const AI_CONFIG = {
   host: process.env.AI_HOST || '127.0.0.1',
   port: parseInt(process.env.AI_PORT, 10) || 8045,
   apiKey: process.env.AI_API_KEY || 'sk-33246260e7334a429cde6487acca5479',
-  defaultModel: process.env.AI_MODEL || 'claude-sonnet-4-6',
-  fallbackModel: 'claude-opus-4-6-thinking'
+  defaultModel: process.env.AI_MODEL || 'gemini-3.8-flash-medium',
+  fallbackModel: 'gemini-3.8-flash'
 };
 
 // In-Memory Response Cache for high performance (TTL: 2 hours)
@@ -164,13 +164,13 @@ function callAiChat(messages, model, maxTokens = 1500) {
   });
 }
 
-const SYSTEM_PROMPT_BASE = `Anda adalah "Jhonlin AI Copilot", asisten kecerdasan buatan resmi untuk Portal Dokumentasi & Program Navigator PT JHONLIN GROUP.
+const SYSTEM_PROMPT_BASE = `Anda adalah "AI Copilot", asisten kecerdasan buatan resmi untuk Documentation Portal & Program Navigator Enterprise.
 Karakter & Kemampuan Anda:
-1. Menguasai seluruh ekosistem aplikasi enterprise PT Jhonlin Group:
-   - Fuel Management System (FMS) (http://jgfuel.id) - Pemantauan & analisis konsumsi bahan bakar alat berat & armada tambang/logistik, sensor telemetry, rekonsiliasi fuel.
-   - SAP Analytics Cloud (SAC) Dev (https://eclectic-q.ap11.analytics.cloud.sap/) & SAC Prod (https://sacprod-jhonlin.ap11.analytics.cloud.sap) - Pelaporan analitik bisnis eksekutif, integrasi live CDS views, story building, role & permission.
-   - Jhonlin Marketing System (JMS) (http://marketing.jhonlingroup.id) - Persetujuan kontrak komersial, sales pipeline, meeting notes, customer relationship management.
-   - KPI Safety (SHE) (http://she.jhonlingroup.id/login) - K3 (Keselamatan & Kesehatan Kerja), kepatuhan lingkungan hidup, pelaporan & investigasi insiden tambang/pabrik, safety audit.
+1. Menguasai seluruh ekosistem aplikasi enterprise & operasional:
+   - Fuel Management System (FMS) (http://jgfuel.id) - Pemantauan & analisis konsumsi bahan bakar alat berat & armada, sensor telemetry, rekonsiliasi fuel.
+   - SAP Analytics Cloud (SAC) Dev & SAC Prod - Pelaporan analitik bisnis eksekutif, integrasi live CDS views, story building, role & permission.
+   - Enterprise Marketing System (http://marketing.jhonlingroup.id) - Persetujuan kontrak komersial, sales pipeline, meeting notes, customer relationship management.
+   - KPI Safety (SHE) (http://she.jhonlingroup.id/login) - K3 (Keselamatan & Kesehatan Kerja), kepatuhan lingkungan hidup, pelaporan & investigasi insiden, safety audit.
    - PPPN (http://38.47.92.151:5000) - Payment Plant Payment Notification, otomasi validasi penagihan vendor & operasional pabrik.
    - File Manager (http://file.jhonlingroup.id/login) - Penyimpanan berkas enterprise terpusat & cloud internal.
 2. Menguasai arsitektur pengembangan perangkat lunak modern:
@@ -248,7 +248,7 @@ app.post('/api/ai/summarize', async (req, res) => {
     const messages = [
       {
         role: 'system',
-        content: 'Anda adalah asisten perangkum teknis untuk PT Jhonlin Group. Buatlah ringkasan eksekutif dokumen teknis ini dalam 3-4 butir poin kunci yang padat, terstruktur rapi, dan aplikatif dalam Bahasa Indonesia. Format tiap butir dengan judul bold diawali tanda strip.'
+        content: 'Anda adalah asisten perangkum teknis untuk Documentation Portal. Buatlah ringkasan eksekutif dokumen teknis ini dalam 3-4 butir poin kunci yang padat, terstruktur rapi, dan aplikatif dalam Bahasa Indonesia. Format tiap butir dengan judul bold diawali tanda strip.'
       },
       {
         role: 'user',
@@ -281,7 +281,7 @@ app.get('/api/ai/quick-search', async (req, res) => {
   const messages = [
     {
       role: 'system',
-      content: 'Anda adalah navigator pintar untuk PT Jhonlin Group Portal. Berikan rekomendasi singkat 1-2 kalimat kepada pengguna untuk query mereka, sebutkan aplikasi atau topik dokumentasi yang relevan.'
+      content: 'Anda adalah navigator pintar untuk Documentation Portal. Berikan rekomendasi singkat 1-2 kalimat kepada pengguna untuk query mereka, sebutkan aplikasi atau topik dokumentasi yang relevan.'
     },
     {
       role: 'user',
@@ -316,7 +316,7 @@ app.use((req, res) => {
 // Graceful server startup
 const server = app.listen(PORT, () => {
   console.log(`====================================================`);
-  console.log(` PT Jhonlin Group - Documentation & App Portal      `);
+  console.log(` Documentation & App Portal                         `);
   console.log(` URL: http://localhost:${PORT}                      `);
   console.log(` AI Copilot: Active (Proxying 127.0.0.1:${AI_CONFIG.port}) `);
   console.log(` Cache: In-Memory LRU Active (TTL 2 Hours)          `);

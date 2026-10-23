@@ -19,9 +19,9 @@
 
         <!-- Hero Section -->
         <VBox class="sdkLandingHero" alignItems="Center">
-          <Image src="img/jhonlin_emblem.png" width="72px" height="72px" class="sapUiSmallMarginBottom" densityAware="false" />
-          <Title text="PT JHONLIN GROUP — Documentation Portal" level="H1" titleStyle="H1" class="sdkLandingTitle" />
-          <Text text="Pusat Dokumentasi Resmi Arsitektur Sistem, Integrasi SAP/SAC, Standar IT, dan Program Navigator Seluruh Aplikasi Bisnis PT Jhonlin Group." class="sdkLandingSubtitle" />
+          <Image src="img/jhonlin_emblem.png" width="76px" height="76px" class="sdkHeroLogoImg sapUiSmallMarginBottom" densityAware="false" />
+          <Title text="Documentation Portal" level="H1" titleStyle="H1" class="sdkLandingTitle" />
+          <Text text="Pusat Dokumentasi Resmi Arsitektur Sistem, Integrasi SAP/SAC, Standar IT, dan Program Navigator Seluruh Aplikasi Bisnis." class="sdkLandingSubtitle" />
           
           <SearchField
             placeholder="Search the Documentation &amp; Apps... (Ctrl+K)"
@@ -33,7 +33,7 @@
           <HBox class="sapUiMediumMarginTop sdkHeroActions" wrap="Wrap" justifyContent="Center">
             <Button
               text="Explore Documentation"
-              icon="sap-icon://learning-assistant"
+              icon="sap-icon://course-book"
               type="Emphasized"
               class="sapUiTinyMarginEnd sapUiTinyMarginBottom sdkHeroActionBtn"
               press=".onNavDocumentation" />

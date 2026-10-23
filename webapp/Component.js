@@ -47,19 +47,29 @@ sap.ui.define([
       });
       this.setModel(oDocsModel, "docs");
 
-      // Setup apps model
-      var oAppsModel = new JSONModel();
-      oAppsModel.loadData("./model/apps.json");
-      this.setModel(oAppsModel, "apps");
+      // Ensure apps model is loaded
+      var oAppsModel = this.getModel("apps");
+      if (!oAppsModel) {
+        oAppsModel = new JSONModel();
+        oAppsModel.loadData("./model/apps.json");
+        this.setModel(oAppsModel, "apps");
+      }
 
-      // Initialize router with helper for wildcard routes
+      // Initialize router with helper for wildcard routes and getURL interpolation
       var oRouter = this.getRouter();
+
+      var fnOrigGetUrl = oRouter.getURL.bind(oRouter);
+      oRouter.getURL = function (sName, oParameters) {
+        if (sName === "topic" && oParameters && oParameters.path && !oParameters["path*"]) {
+          oParameters["path*"] = oParameters.path;
+        }
+        return fnOrigGetUrl(sName, oParameters);
+      };
+
       var fnOrigNavTo = oRouter.navTo.bind(oRouter);
       oRouter.navTo = function (sName, oParameters, bReplace) {
-        if (sName === "topic" && oParameters) {
-          if (oParameters.path && !oParameters["path*"]) {
-            oParameters["path*"] = oParameters.path;
-          }
+        if (sName === "topic" && oParameters && oParameters.path && !oParameters["path*"]) {
+          oParameters["path*"] = oParameters.path;
         }
         return fnOrigNavTo(sName, oParameters, bReplace);
       };

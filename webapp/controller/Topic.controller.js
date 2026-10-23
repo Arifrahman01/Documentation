@@ -4,8 +4,9 @@ sap.ui.define([
   "sap/ui/model/Filter",
   "sap/ui/model/FilterOperator",
   "sap/m/Link",
-  "sap/m/MessageToast"
-], function (Controller, JSONModel, Filter, FilterOperator, Link, MessageToast) {
+  "sap/m/MessageToast",
+  "doc/portal/util/Utils"
+], function (Controller, JSONModel, Filter, FilterOperator, Link, MessageToast, Utils) {
   "use strict";
 
   return Controller.extend("doc.portal.controller.Topic", {
@@ -31,15 +32,6 @@ sap.ui.define([
 
       var oRouter = this.getOwnerComponent().getRouter();
       oRouter.getRoute("topic").attachPatternMatched(this._onTopicMatched, this);
-
-      // Handle direct initial load deep-links where route matched before view onInit
-      var sCurrentHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
-      if (sCurrentHash && sCurrentHash.indexOf("topic/") === 0) {
-        var sInitialPath = sCurrentHash.replace(/^topic\//, "");
-        if (sInitialPath) {
-          this._loadTopicByPath(sInitialPath);
-        }
-      }
     },
 
     _onTopicMatched: function (oEvent) {
@@ -189,6 +181,12 @@ sap.ui.define([
       var oCtx = oItem.getBindingContext("docs");
       if (oCtx) {
         var sPath = oCtx.getProperty("path");
+        if (!sPath) {
+          var aNodes = oCtx.getProperty("nodes");
+          if (aNodes && aNodes.length > 0 && aNodes[0].path) {
+            sPath = aNodes[0].path;
+          }
+        }
         if (sPath) {
           this.getOwnerComponent().getRouter().navTo("topic", {
             path: sPath
@@ -223,16 +221,22 @@ sap.ui.define([
       var sTitle = oTopicView.getProperty("/title") || "Initialization Process";
       var sPath = this._currentPath;
       if (!sPath) {
-        var sHash = sap.ui.core.routing.HashChanger.getInstance().getHash();
+        var oRouter = this.getOwnerComponent().getRouter();
+        var sHash = oRouter && oRouter.getHashChanger ? oRouter.getHashChanger().getHash() : "";
         sPath = (sHash && sHash.indexOf("topic/") === 0) ? sHash.replace(/^topic\//, "") : "essentials/initialization-process";
       }
 
-      MessageToast.show("Menghubungi Jhonlin AI Copilot...");
+      MessageToast.show("Menghubungi AI Copilot...");
       oTopicView.setProperty("/hasAiSummary", true);
-      oTopicView.setProperty("/aiSummaryHtml", "<div class='sdkAiSummaryBody' style='color: #38bdf8; padding: 0.5rem 0;'><em>⏳ Jhonlin AI Copilot sedang menganalisis dokumen dan menyusun ringkasan eksekutif...</em></div>");
+      oTopicView.setProperty("/aiSummaryHtml", "<div class='sdkAiSummaryBody' style='color: #38bdf8; padding: 0.5rem 0;'><em>⏳ AI Copilot sedang menganalisis dokumen dan menyusun ringkasan eksekutif...</em></div>");
 
       fetch("./docs/" + sPath + ".md")
-        .then(function (res) { return res.text(); })
+        .then(function (res) {
+          if (!res.ok) {
+            throw new Error("Gagal membaca dokumen (" + res.status + " " + res.statusText + ")");
+          }
+          return res.text();
+        })
         .then(function (sMarkdown) {
           return fetch("/api/ai/summarize", {
             method: "POST",
@@ -314,8 +318,10 @@ sap.ui.define([
 
     onCopyTopicLink: function () {
       var sUrl = window.location.href;
-      navigator.clipboard.writeText(sUrl).then(function () {
+      Utils.copyToClipboard(sUrl).then(function () {
         MessageToast.show("Link copied to clipboard!");
+      }).catch(function (err) {
+        MessageToast.show("Gagal menyalin link: " + (err.message || err));
       });
     },
 

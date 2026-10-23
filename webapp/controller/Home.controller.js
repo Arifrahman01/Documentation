@@ -42,7 +42,9 @@ sap.ui.define([
 
     onHeroSearch: function (oEvent) {
       var sQuery = oEvent.getParameter("query");
-      var oAppController = this.getView().getParent().getParent().getController();
+      var oComponent = this.getOwnerComponent();
+      var oRootControl = oComponent ? oComponent.getRootControl() : null;
+      var oAppController = oRootControl ? oRootControl.getController() : null;
       if (oAppController && oAppController.onShellSearchPressed) {
         oAppController.onShellSearchPressed();
         if (sQuery && sQuery.trim().length >= 2) {

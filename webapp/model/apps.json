@@ -9,8 +9,8 @@
     {
       "id": "fms",
       "title": "Fuel Management System",
-      "subtitle": "PT Jhonlin Group Logistics & Fuel Tracking",
-      "description": "Monitor and analyze fuel usage in real time for efficient management across all heavy equipment, fleets, and mining operations.",
+      "subtitle": "Logistics & Fuel Tracking System",
+      "description": "Monitor and analyze fuel usage in real time for efficient management across all heavy equipment, fleets, and operations.",
       "url": "http://jgfuel.id",
       "category": "operations",
       "categoryName": "Operations & Logistics",
@@ -50,7 +50,7 @@
     },
     {
       "id": "jms",
-      "title": "Jhonlin Marketing System",
+      "title": "Enterprise Marketing System",
       "subtitle": "Commercial, CRM & Sales Management",
       "description": "Manage sales approvals, meeting notes, customer interactions, and sales activities efficiently across all commercial business units.",
       "url": "http://marketing.jhonlingroup.id",

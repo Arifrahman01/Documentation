@@ -9,8 +9,9 @@ sap.ui.define([
   "sap/m/Text",
   "sap/m/Button",
   "sap/m/ObjectStatus",
-  "sap/ui/core/Icon"
-], function (Controller, Filter, FilterOperator, MessageToast, VBox, HBox, Title, Text, Button, ObjectStatus, Icon) {
+  "sap/ui/core/Icon",
+  "doc/portal/util/Utils"
+], function (Controller, Filter, FilterOperator, MessageToast, VBox, HBox, Title, Text, Button, ObjectStatus, Icon, Utils) {
   "use strict";
 
   return Controller.extend("doc.portal.controller.Apps", {
@@ -20,7 +21,9 @@ sap.ui.define([
     },
 
     _createAppCard: function (sId, oContext) {
+      if (!oContext) return new VBox();
       var oData = oContext.getObject();
+      if (!oData) return new VBox();
       var that = this;
 
       // 1. Icon in Container
@@ -108,11 +111,11 @@ sap.ui.define([
         tooltip: "Salin Link Program (" + oData.url + ")",
         press: function (e) {
           e.cancelBubble = true;
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(oData.url).then(function () {
-              MessageToast.show("URL disalin: " + oData.url);
-            });
-          }
+          Utils.copyToClipboard(oData.url).then(function () {
+            MessageToast.show("URL disalin: " + oData.url);
+          }).catch(function (err) {
+            MessageToast.show("Gagal menyalin URL: " + (err.message || err));
+          });
         }
       }).addStyleClass("sdkAppCopyBtn sapUiTinyMarginBegin");
 

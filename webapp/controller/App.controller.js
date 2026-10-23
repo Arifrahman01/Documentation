@@ -1,50 +1,54 @@
 sap.ui.define([
   "sap/ui/core/mvc/Controller",
+  "sap/ui/core/Fragment",
   "sap/ui/core/Theming",
   "sap/m/MessageToast",
-  "sap/m/Dialog",
-  "sap/m/List",
   "sap/m/StandardListItem",
-  "sap/m/SearchField",
-  "sap/m/Toolbar",
-  "sap/m/ToolbarSpacer",
   "sap/m/Button",
-  "sap/m/Input",
-  "sap/m/FormattedText",
-  "sap/m/ScrollContainer",
-  "sap/m/VBox",
-  "sap/m/HBox",
-  "sap/m/Title",
-  "sap/m/Text",
-  "sap/m/ObjectStatus",
-  "sap/ui/core/Icon"
-], function (Controller, Theming, MessageToast, Dialog, List, StandardListItem, SearchField, Toolbar, ToolbarSpacer, Button, Input, FormattedText, ScrollContainer, VBox, HBox, Title, Text, ObjectStatus, Icon) {
+  "sap/m/FormattedText"
+], function (Controller, Fragment, Theming, MessageToast, StandardListItem, Button, FormattedText) {
   "use strict";
 
   return Controller.extend("doc.portal.controller.App", {
+
+    /* =========================================================== */
+    /* Lifecycle Methods                                           */
+    /* =========================================================== */
+
     onInit: function () {
-      var oComponent = this.getOwnerComponent();
-      var oRouter = oComponent.getRouter();
-      this._lastTopicPath = "essentials/initialization-process";
+      var oRouter = this.getOwnerComponent().getRouter();
+      this._lastTopicPath = "get-started/quick-start";
+      this._aAiMessages = [];
 
       // Track router matches
       oRouter.attachRouteMatched(this._onRouteMatched, this);
 
-      // Apply saved theme to prism
+      // Apply saved theme to prism syntax highlighter
       var sSavedTheme = localStorage.getItem("portal_theme") || "sap_horizon";
       this._updatePrismTheme(sSavedTheme);
 
-      // Register global Ctrl+K shortcut for search and Ctrl+J for AI Copilot
+      // Register global keyboard shortcuts (Ctrl+K for search, Ctrl+J for AI Copilot)
+      this._registerKeyboardShortcuts();
+    },
+
+    _registerKeyboardShortcuts: function () {
       document.addEventListener("keydown", function (e) {
-        if ((e.ctrlKey || e.metaKey) && (e.key === "k" || e.key === "K")) {
+        var bModifier = e.ctrlKey || e.metaKey;
+        if (!bModifier) return;
+
+        if (e.key === "k" || e.key === "K") {
           e.preventDefault();
           this.onShellSearchPressed();
-        } else if ((e.ctrlKey || e.metaKey) && (e.key === "j" || e.key === "J")) {
+        } else if (e.key === "j" || e.key === "J") {
           e.preventDefault();
           this.onOpenAiCopilot();
         }
       }.bind(this));
     },
+
+    /* =========================================================== */
+    /* Routing & Navigation Handlers                               */
+    /* =========================================================== */
 
     _onRouteMatched: function (oEvent) {
       var sRouteName = oEvent.getParameter("name");
@@ -56,19 +60,21 @@ sap.ui.define([
         oAppView.setProperty("/isSideExpanded", false);
         oAppView.setProperty("/selectedTopicKey", "");
       } else if (sRouteName === "topic" || sRouteName === "topicRoot") {
-        oAppView.setProperty("/selectedTab", "documentation");
-        oAppView.setProperty("/isSideExpanded", true);
-
         var oArgs = oEvent.getParameter("arguments") || {};
         var sPath = oArgs.path || oArgs["path*"] || "";
+
         if (sPath) {
           this._lastTopicPath = sPath;
           oAppView.setProperty("/selectedTopicKey", sPath);
         } else if (sRouteName === "topicRoot" || !sPath) {
           this.getOwnerComponent().getRouter().navTo("topic", {
-            path: this._lastTopicPath || "essentials/initialization-process"
+            path: this._lastTopicPath || "get-started/quick-start"
           }, true);
         }
+
+        var isApi = (this._lastTopicPath && this._lastTopicPath.indexOf("api-reference") === 0);
+        oAppView.setProperty("/selectedTab", isApi ? "api" : "documentation");
+        oAppView.setProperty("/isSideExpanded", true);
       } else if (sRouteName === "apps" || sRouteName === "demoapps") {
         oAppView.setProperty("/selectedTab", "apps");
         oAppView.setProperty("/isSideExpanded", false);
@@ -87,13 +93,20 @@ sap.ui.define([
       var mTabMap = {
         "home": "navTabHome",
         "homeDirect": "navTabHome",
-        "topic": "navTabDocumentation",
-        "topicRoot": "navTabDocumentation",
         "apps": "navTabApps",
         "demoapps": "navTabApps",
         "resources": "navTabResources"
       };
-      var sTargetId = mTabMap[sRouteName] || "navTabHome";
+
+      var sTargetId = mTabMap[sRouteName];
+      if (!sTargetId) {
+        if (sRouteName === "topic" || sRouteName === "topicRoot") {
+          var isApi = (this._lastTopicPath && this._lastTopicPath.indexOf("api-reference") === 0);
+          sTargetId = isApi ? "navTabApi" : "navTabDocumentation";
+        } else {
+          sTargetId = "navTabHome";
+        }
+      }
 
       aTabs.forEach(function (sId) {
         var oBtn = this.byId(sId);
@@ -112,15 +125,15 @@ sap.ui.define([
     },
 
     onNavDocumentation: function () {
-      this.getOwnerComponent().getRouter().navTo("topic", {
-        path: this._lastTopicPath || "essentials/initialization-process"
-      });
+      var sPath = this._lastTopicPath;
+      if (!sPath || sPath.indexOf("api-reference") === 0) {
+        sPath = "get-started/quick-start";
+      }
+      this.getOwnerComponent().getRouter().navTo("topic", { path: sPath });
     },
 
     onNavApiReference: function () {
-      this.getOwnerComponent().getRouter().navTo("topic", {
-        path: "essentials/model-view-controller"
-      });
+      this.getOwnerComponent().getRouter().navTo("topic", { path: "api-reference/api-overview" });
     },
 
     onNavApps: function () {
@@ -141,12 +154,16 @@ sap.ui.define([
       oAppView.setProperty("/isSideExpanded", !bCurrent);
     },
 
+    /* =========================================================== */
+    /* Theme & Shell Bar Controls                                  */
+    /* =========================================================== */
+
     onShowVersionDialog: function () {
-      MessageToast.show("OpenUI5 Version 1.120.0 (LTS)");
+      MessageToast.show("Documentation Portal v2025 (OpenUI5 1.120 LTS)");
     },
 
     onHeaderAction: function () {
-      MessageToast.show("UI5 Demo Kit Standard Action");
+      MessageToast.show("Portal Action");
     },
 
     onToggleTheme: function () {
@@ -169,63 +186,42 @@ sap.ui.define([
       }
     },
 
+    /* =========================================================== */
+    /* Global Search Dialog                                        */
+    /* =========================================================== */
+
     onShellSearchPressed: function () {
+      var that = this;
       if (!this._oSearchDialog) {
-        var that = this;
-        this._oSearchInput = new SearchField({
-          placeholder: "Search documentation, apps, or ask AI... (Ctrl+K)",
-          width: "100%",
-          search: function (oEvt) {
-            that._doSearch(oEvt.getParameter("query"));
-          },
-          liveChange: function (oEvt) {
-            that._doSearch(oEvt.getParameter("newValue"));
-          }
+        return Fragment.load({
+          id: this.getView().getId(),
+          name: "doc.portal.view.fragment.SearchDialog",
+          controller: this
+        }).then(function (oDialog) {
+          that._oSearchDialog = oDialog;
+          that.getView().addDependent(oDialog);
+          that._oSearchDialog.open();
+          that._focusSearchInput();
+          return oDialog;
         });
-
-        this._oSearchList = new List({
-          mode: "None",
-          itemPress: function (oEvt) {
-            var oItem = oEvt.getParameter("listItem");
-            if (oItem.data("isAiPrompt")) {
-              var sPrompt = oItem.data("query");
-              that._oSearchDialog.close();
-              that.onOpenAiCopilot(sPrompt);
-              return;
-            }
-            var sPath = oItem.data("path");
-            if (sPath) {
-              that.getOwnerComponent().getRouter().navTo("topic", { path: sPath });
-            }
-            that._oSearchDialog.close();
-          }
-        });
-
-        this._oSearchDialog = new Dialog({
-          title: "Search Documentation & System",
-          contentWidth: "580px",
-          contentHeight: "440px",
-          subHeader: new Toolbar({
-            content: [this._oSearchInput]
-          }),
-          content: [this._oSearchList],
-          endButton: new Button({
-            text: "Close",
-            press: function () {
-              that._oSearchDialog.close();
-            }
-          })
-        });
-
-        this.getView().addDependent(this._oSearchDialog);
+      } else {
+        this._oSearchDialog.open();
+        this._focusSearchInput();
+        return Promise.resolve(this._oSearchDialog);
       }
+    },
 
-      this._oSearchDialog.open();
+    _focusSearchInput: function () {
       setTimeout(function () {
-        if (this._oSearchInput) {
-          this._oSearchInput.focus();
-        }
+        var oInput = this.byId("shellSearchField");
+        if (oInput) oInput.focus();
       }.bind(this), 300);
+    },
+
+    onCloseSearchDialog: function () {
+      if (this._oSearchDialog) {
+        this._oSearchDialog.close();
+      }
     },
 
     onGlobalSearch: function (oEvent) {
@@ -233,20 +229,50 @@ sap.ui.define([
       this.onShellSearchPressed();
       if (sQuery && sQuery.trim().length >= 2) {
         setTimeout(function () {
-          if (this._oSearchInput) {
-            this._oSearchInput.setValue(sQuery);
+          var oInput = this.byId("shellSearchField");
+          if (oInput) {
+            oInput.setValue(sQuery);
             this._doSearch(sQuery);
           }
         }.bind(this), 350);
       }
     },
 
+    onExecuteSearch: function (oEvent) {
+      this._doSearch(oEvent.getParameter("query"));
+    },
+
+    onExecuteSearchLive: function (oEvent) {
+      this._doSearch(oEvent.getParameter("newValue"));
+    },
+
+    onSelectSearchResult: function (oEvent) {
+      var oItem = oEvent.getParameter("listItem");
+      if (!oItem) return;
+
+      if (oItem.data("isAiPrompt")) {
+        var sPrompt = oItem.data("query");
+        this.onCloseSearchDialog();
+        this.onOpenAiCopilot(sPrompt);
+        return;
+      }
+
+      var sPath = oItem.data("path");
+      if (sPath) {
+        this.getOwnerComponent().getRouter().navTo("topic", { path: sPath });
+      }
+      this.onCloseSearchDialog();
+    },
+
     _doSearch: function (sQuery) {
+      var oSearchList = this.byId("shellSearchList");
+      if (!oSearchList) return;
+
       var oDocsModel = this.getModel("docs");
       var aAllArticles = (oDocsModel.getData() && oDocsModel.getData().articles) || [];
 
       if (!sQuery || sQuery.trim().length < 2) {
-        if (this._oSearchList) this._oSearchList.destroyItems();
+        oSearchList.destroyItems();
         return;
       }
 
@@ -257,24 +283,24 @@ sap.ui.define([
                (art.snippet && art.snippet.toLowerCase().indexOf(sQ) >= 0);
       }).slice(0, 7);
 
-      this._oSearchList.destroyItems();
+      oSearchList.destroyItems();
 
-      // 1. Proactive AI Option for every search query
+      // Proactive AI Search Recommendation
       var oAiSearchItem = new StandardListItem({
-        title: "✨ Tanya Jhonlin AI: \"" + sQuery + "\"",
-        description: "Dapatkan analisis komprehensif langsung dari AI Copilot",
+        title: "✨ Tanya AI: \"" + sQuery + "\"",
+        description: "Dapatkan analisis cerdas langsung dari AI Copilot",
         icon: "sap-icon://learning-assistant",
         type: "Active"
       }).addStyleClass("sdkSearchAiItem");
       oAiSearchItem.data("isAiPrompt", true);
       oAiSearchItem.data("query", sQuery);
-      this._oSearchList.addItem(oAiSearchItem);
+      oSearchList.addItem(oAiSearchItem);
 
-      // 2. Direct Documentation matches
+      // Direct Documentation Matches
       if (aResults.length === 0) {
-        this._oSearchList.addItem(new StandardListItem({
+        oSearchList.addItem(new StandardListItem({
           title: "Tidak ada halaman yang cocok persis",
-          description: "Klik pilihan AI di atas untuk mendapatkan panduan otomatis.",
+          description: "Gunakan pilihan AI di atas untuk mendapatkan panduan otomatis.",
           type: "Inactive"
         }));
       } else {
@@ -286,38 +312,100 @@ sap.ui.define([
             type: "Active"
           });
           oItem.data("path", res.path);
-          this._oSearchList.addItem(oItem);
-        }.bind(this));
+          oSearchList.addItem(oItem);
+        });
       }
     },
 
-    onOpenAiCopilot: function (sInitialPrompt) {
-      if (!this._oAiDialog) {
-        this._initAiDialog();
-      }
+    /* =========================================================== */
+    /* AI Copilot Dialog                                           */
+    /* =========================================================== */
 
+    onOpenAiCopilot: function (sInitialPrompt) {
+      var that = this;
+      if (!this._oAiDialog) {
+        return Fragment.load({
+          id: this.getView().getId(),
+          name: "doc.portal.view.fragment.AiCopilotDialog",
+          controller: this
+        }).then(function (oDialog) {
+          that._oAiDialog = oDialog;
+          that.getView().addDependent(oDialog);
+          that._setupAiDialogInitialState();
+          that._openAiDialog(sInitialPrompt);
+          return oDialog;
+        });
+      } else {
+        this._openAiDialog(sInitialPrompt);
+        return Promise.resolve(this._oAiDialog);
+      }
+    },
+
+    _setupAiDialogInitialState: function () {
+      // Append initial assistant greeting
+      this._appendChatBubble(
+        "assistant",
+        "Halo! Saya adalah **AI Copilot** (Gemini 3.8 Flash Medium). Saya siap membantu Anda mengenai:\n" +
+        "* Panduan teknis & navigasi sistem aplikasi enterprise\n" +
+        "* Arsitektur integrasi **SAPUI5, CDS Views, ABAP RAP & Nginx**\n" +
+        "* Tanya jawab & ringkasan dokumen yang sedang dibuka.\n\n" +
+        "Silakan klik salah satu pertanyaan cepat di bawah atau ketik pertanyaan Anda!"
+      );
+    },
+
+    _openAiDialog: function (sInitialPrompt) {
       this._updateAiContextLabel();
       this._oAiDialog.open();
 
+      var oInput = this.byId("aiInput");
       if (sInitialPrompt && typeof sInitialPrompt === "string") {
-        this._oAiInput.setValue(sInitialPrompt);
+        if (oInput) oInput.setValue(sInitialPrompt);
         this._sendAiQuestion(sInitialPrompt);
       } else {
         setTimeout(function () {
-          if (this._oAiInput) this._oAiInput.focus();
-        }.bind(this), 300);
+          if (oInput) oInput.focus();
+        }, 300);
+      }
+    },
+
+    onCloseAiDialog: function () {
+      if (this._oAiDialog) {
+        this._oAiDialog.close();
+      }
+    },
+
+    onClearAiChat: function () {
+      this._aAiMessages = [];
+      var oMessagesBox = this.byId("aiMessagesBox");
+      if (oMessagesBox) {
+        oMessagesBox.destroyItems();
+      }
+      this._appendChatBubble("assistant", "Riwayat percakapan telah dibersihkan. Silakan tanyakan hal baru seputar program dan dokumentasi.");
+      MessageToast.show("Riwayat percakapan dibersihkan");
+    },
+
+    onSendAiQuestionFromInput: function (oEvt) {
+      this._sendAiQuestion(oEvt.getParameter("value"));
+    },
+
+    onSendAiQuestionFromButton: function () {
+      var oInput = this.byId("aiInput");
+      if (oInput) {
+        this._sendAiQuestion(oInput.getValue());
       }
     },
 
     _updateAiContextLabel: function () {
-      if (!this._oAiContextText) return;
+      var oContextText = this.byId("aiContextText");
+      if (!oContextText) return;
+
       var oAppView = this.getModel("appView");
       var sTab = oAppView ? oAppView.getProperty("/selectedTab") : "home";
       var sTopicKey = oAppView ? oAppView.getProperty("/selectedTopicKey") : "";
 
       var aPrompts = [];
       if (sTab === "documentation" && sTopicKey) {
-        this._oAiContextText.setText("📄 Konteks Dokumen: " + sTopicKey);
+        oContextText.setText("📄 Konteks Dokumen: " + sTopicKey);
         aPrompts = [
           "⚡ Rangkum konsep utama dokumen ini",
           "💻 Buatkan contoh kode implementasi",
@@ -325,16 +413,16 @@ sap.ui.define([
           "🔍 Best practices enterprise"
         ];
       } else if (sTab === "apps") {
-        this._oAiContextText.setText("🚀 Konteks: Jhonlin Program Navigator (7 Apps Aktif)");
+        oContextText.setText("🚀 Konteks: Program Navigator (7 Apps Aktif)");
         aPrompts = [
           "🚗 Alur kerja Fuel Management System (FMS)",
           "📊 Integrasi CDS Views ke SAC Dev & Prod",
-          "💼 Alur approval di Jhonlin Marketing",
+          "💼 Alur approval di Marketing System",
           "🛡️ Modul K3 di KPI Safety (SHE)",
           "💳 Mekanisme validasi penagihan PPPN"
         ];
       } else if (sTab === "resources") {
-        this._oAiContextText.setText("🛠️ Konteks: Developer Resources & SDK");
+        oContextText.setText("🛠️ Konteks: Developer Resources & SDK");
         aPrompts = [
           "📖 Arsitektur SAPUI5 Evening Horizon",
           "🔧 Panduan CLI & tooling deployment",
@@ -342,13 +430,13 @@ sap.ui.define([
           "💡 Security guidelines & CSRF protection"
         ];
       } else {
-        this._oAiContextText.setText("🏢 Konteks: Portal Dokumentasi & Sistem PT Jhonlin Group");
+        oContextText.setText("🏢 Konteks: Portal Dokumentasi & Sistem Enterprise");
         aPrompts = [
           "🚗 Apa fungsi FMS & linknya?",
           "📊 Cara integrasi CDS ke SAC?",
           "🛡️ Modul K3 di KPI Safety (SHE)",
           "💳 Apa fungsi PPPN?",
-          "📁 Akses File Manager Jhonlin"
+          "📁 Akses File Manager Enterprise"
         ];
       }
 
@@ -356,135 +444,51 @@ sap.ui.define([
     },
 
     _renderPromptChips: function (aPrompts) {
-      if (!this._oPromptChipsBar) return;
-      this._oPromptChipsBar.destroyItems();
+      var oChipsBar = this.byId("aiPromptChipsBar");
+      if (!oChipsBar) return;
+
+      oChipsBar.destroyItems();
       var that = this;
+
       aPrompts.forEach(function (sP) {
         var oBtn = new Button({
           text: sP,
           type: "Transparent",
           press: function () {
-            that._oAiInput.setValue(sP);
+            var oInput = that.byId("aiInput");
+            if (oInput) oInput.setValue(sP);
             that._sendAiQuestion(sP);
           }
         }).addStyleClass("sdkAiChipBtn");
-        that._oPromptChipsBar.addItem(oBtn);
+
+        oChipsBar.addItem(oBtn);
       });
-    },
-
-    _initAiDialog: function () {
-      var that = this;
-      this._aAiMessages = [];
-
-      // 1. Header Toolbar
-      var oTitle = new Title({ text: "Jhonlin AI Copilot", level: "H3" });
-      var oStatus = new ObjectStatus({ text: "● Claude Sonnet (Online)", state: "Success" }).addStyleClass("sdkAiOnlineBadge sapUiSmallMarginBegin");
-      var oBtnClear = new Button({
-        icon: "sap-icon://delete",
-        tooltip: "Bersihkan Riwayat Percakapan",
-        type: "Transparent",
-        press: function () { that._clearAiChat(); }
-      });
-      var oBtnClose = new Button({
-        icon: "sap-icon://decline",
-        tooltip: "Tutup AI Copilot",
-        type: "Transparent",
-        press: function () { that._oAiDialog.close(); }
-      });
-
-      var oHeaderBar = new Toolbar({
-        content: [
-          new Icon({ src: "sap-icon://learning-assistant", size: "1.2rem", color: "#38bdf8" }),
-          oTitle,
-          oStatus,
-          new ToolbarSpacer(),
-          oBtnClear,
-          oBtnClose
-        ]
-      }).addStyleClass("sdkAiHeaderBar");
-
-      // 2. Context Indicator Bar
-      this._oAiContextText = new Text({ text: "🏢 Konteks: Portal Dokumentasi PT Jhonlin Group" });
-      this._oAiContextBar = new HBox({
-        alignItems: "Center",
-        items: [this._oAiContextText]
-      }).addStyleClass("sdkAiContextBar");
-
-      // 3. Messages Container inside ScrollContainer
-      this._oAiMessagesBox = new VBox({}).addStyleClass("sdkAiMessagesBox");
-      this._oAiScroll = new ScrollContainer("aiChatScroll", {
-        height: "380px",
-        vertical: true,
-        horizontal: false,
-        content: [this._oAiMessagesBox]
-      }).addStyleClass("sdkAiChatScroll");
-
-      // 4. Initial Greeting Bubble
-      this._appendChatBubble("assistant", "Halo! Saya adalah **Jhonlin AI Copilot** (Claude 4.6). Saya siap membantu Anda mengenai:\n* Panduan teknis & link sistem **FMS, SAC, JMS, SHE, PPPN, & File Manager**\n* Arsitektur integrasi **SAPUI5, CDS Views, ABAP RAP & Nginx**\n* Tanya jawab & ringkasan dokumen yang sedang dibuka.\n\nSilakan klik salah satu pertanyaan cepat di bawah atau ketik pertanyaan Anda!");
-
-      // 5. Prompt Chips Container (populated dynamically)
-      this._oPromptChipsBar = new HBox({
-        wrap: "Wrap"
-      }).addStyleClass("sdkAiPromptChips");
-
-      // 6. Input Bar
-      this._oAiInput = new Input({
-        placeholder: "Tanya AI Copilot tentang sistem atau dokumentasi... (Enter untuk kirim)",
-        width: "100%",
-        submit: function (oEvt) {
-          that._sendAiQuestion(oEvt.getParameter("value"));
-        }
-      }).addStyleClass("sdkAiInput");
-
-      var oBtnSend = new Button({
-        icon: "sap-icon://paper-plane",
-        type: "Emphasized",
-        tooltip: "Kirim Pertanyaan",
-        press: function () {
-          that._sendAiQuestion(that._oAiInput.getValue());
-        }
-      }).addStyleClass("sdkAiSendBtn");
-
-      var oInputBar = new HBox({
-        alignItems: "Center",
-        width: "100%",
-        items: [this._oAiInput, oBtnSend]
-      }).addStyleClass("sdkAiInputBar");
-
-      // 7. Full Dialog
-      this._oAiDialog = new Dialog({
-        showHeader: false,
-        contentWidth: "680px",
-        stretch: sap.ui.Device.system.phone,
-        content: [
-          new VBox({
-            items: [oHeaderBar, this._oAiContextBar, this._oAiScroll, this._oPromptChipsBar, oInputBar]
-          })
-        ]
-      }).addStyleClass("sdkAiDialog");
-
-      this.getView().addDependent(this._oAiDialog);
     },
 
     _appendChatBubble: function (sRole, sText) {
+      var oMessagesBox = this.byId("aiMessagesBox");
+      if (!oMessagesBox) return null;
+
       var isUser = (sRole === "user");
-      var sHtml = isUser ? ("<strong>Anda:</strong><br>" + sText) : (window.markdownit ? window.markdownit().render(sText) : sText);
+      var sHtml = isUser
+        ? ("<strong>Anda:</strong><br>" + sText)
+        : (window.markdownit ? window.markdownit().render(sText) : sText);
 
       var oBubble = new FormattedText({
         htmlText: sHtml
       }).addStyleClass(isUser ? "sdkAiMsgUser" : "sdkAiMsgAssistant");
 
-      this._oAiMessagesBox.addItem(oBubble);
+      oMessagesBox.addItem(oBubble);
 
       setTimeout(function () {
-        var oDom = document.getElementById("aiChatScroll");
+        var oDom = document.getElementById(this.byId("aiChatScroll").getId());
         if (oDom) {
           if (window.Prism) {
             window.Prism.highlightAllUnder(oDom);
           }
           oDom.scrollTop = oDom.scrollHeight;
         }
-      }, 60);
+      }.bind(this), 60);
 
       return oBubble;
     },
@@ -493,16 +497,15 @@ sap.ui.define([
       if (!sText || !sText.trim()) return;
 
       var sClean = sText.trim();
-      this._oAiInput.setValue("");
+      var oInput = this.byId("aiInput");
+      if (oInput) oInput.setValue("");
 
-      // Append user bubble
+      // Append user bubble and record in thread history
       this._appendChatBubble("user", sClean);
-
-      // Add to conversation history
       this._aAiMessages.push({ role: "user", content: sClean });
 
       // Append thinking bubble
-      var oThinkingBubble = this._appendChatBubble("assistant", "<em>⏳ Jhonlin AI sedang menyusun jawaban...</em>");
+      var oThinkingBubble = this._appendChatBubble("assistant", "<em>⏳ AI Copilot sedang menyusun jawaban...</em>");
 
       var that = this;
       var oAppView = this.getModel("appView");
@@ -517,7 +520,7 @@ sap.ui.define([
             messages: that._aAiMessages,
             documentContext: sDocContext || "",
             currentRoute: sTab + (sTopicKey ? (" / " + sTopicKey) : ""),
-            model: "claude-sonnet-4-6"
+            model: "gemini-3.8-flash-medium"
           })
         })
         .then(function (res) {
@@ -532,12 +535,12 @@ sap.ui.define([
           oThinkingBubble.setHtmlText(sHtml);
 
           setTimeout(function () {
-            var oDom = document.getElementById("aiChatScroll");
-            if (oDom) {
+            var oScroll = that.byId("aiChatScroll");
+            if (oScroll && oScroll.getDomRef()) {
               if (window.Prism) {
-                window.Prism.highlightAllUnder(oDom);
+                window.Prism.highlightAllUnder(oScroll.getDomRef());
               }
-              oDom.scrollTop = oDom.scrollHeight;
+              oScroll.getDomRef().scrollTop = oScroll.getDomRef().scrollHeight;
             }
           }, 80);
         })
@@ -556,60 +559,9 @@ sap.ui.define([
       }
     },
 
-      // Append thinking bubble
-      var oThinkingBubble = this._appendChatBubble("assistant", "<em>⏳ Jhonlin AI sedang menyusun jawaban...</em>");
-
-      var that = this;
-      var oAppView = this.getModel("appView");
-      var sTopicKey = oAppView ? oAppView.getProperty("/selectedTopicKey") : "";
-
-      var fnFetchAi = function (sDocContext) {
-        fetch("/api/ai/chat", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            messages: that._aAiMessages,
-            documentContext: sDocContext || "",
-            model: "claude-sonnet-4-6"
-          })
-        })
-        .then(function (res) {
-          if (!res.ok) throw new Error("HTTP " + res.status);
-          return res.json();
-        })
-        .then(function (data) {
-          var sReply = data.message || "Maaf, tidak menerima jawaban dari AI.";
-          that._aAiMessages.push({ role: "assistant", content: sReply });
-
-          var sHtml = window.markdownit ? window.markdownit().render(sReply) : sReply;
-          oThinkingBubble.setHtmlText(sHtml);
-
-          setTimeout(function () {
-            var oDom = document.getElementById("aiChatScroll");
-            if (oDom) oDom.scrollTop = oDom.scrollHeight;
-          }, 80);
-        })
-        .catch(function (err) {
-          oThinkingBubble.setHtmlText("<span style='color: #ef4444;'>⚠️ Gagal menghubungi server AI: " + err.message + "</span>");
-        });
-      };
-
-      if (sTopicKey) {
-        fetch("./docs/" + sTopicKey + ".md")
-          .then(function (r) { return r.text(); })
-          .then(function (text) { fnFetchAi(text); })
-          .catch(function () { fnFetchAi(""); });
-      } else {
-        fnFetchAi("");
-      }
-    },
-
-    _clearAiChat: function () {
-      this._aAiMessages = [];
-      this._oAiMessagesBox.destroyItems();
-      this._appendChatBubble("assistant", "Riwayat percakapan telah dibersihkan. Silakan tanyakan hal baru seputar program dan dokumentasi PT Jhonlin Group.");
-      MessageToast.show("Riwayat percakapan dibersihkan");
-    },
+    /* =========================================================== */
+    /* Utilities & Model Access                                    */
+    /* =========================================================== */
 
     getModel: function (sName) {
       return this.getView().getModel(sName) || this.getOwnerComponent().getModel(sName);

@@ -1,0 +1,108 @@
+{
+  "stats": {
+    "total": 7,
+    "production": 5,
+    "development": 1,
+    "active": 6
+  },
+  "programs": [
+    {
+      "id": "fms",
+      "title": "Fuel Management System",
+      "subtitle": "Logistics & Fuel Tracking System",
+      "description": "Monitor and analyze fuel usage in real time for efficient management across all heavy equipment, fleets, and operations.",
+      "url": "http://jgfuel.id",
+      "category": "operations",
+      "categoryName": "Operations & Logistics",
+      "status": "Production",
+      "statusState": "Success",
+      "icon": "sap-icon://fuel-station",
+      "iconColor": "sdkIconOrange",
+      "tags": ["FMS", "Fuel Tracking", "Real-Time", "Fleet Logistics"]
+    },
+    {
+      "id": "sac-dev",
+      "title": "SAC Development",
+      "subtitle": "SAP Analytics Cloud Development Environment",
+      "description": "Analyze SAP data, generate insightful reports, and visualize business metrics for better decision making. Skenario pengembangan dashboard analitik.",
+      "url": "https://eclectic-q.ap11.analytics.cloud.sap/",
+      "category": "analytics",
+      "categoryName": "Analytics & BI",
+      "status": "Development",
+      "statusState": "Warning",
+      "icon": "sap-icon://line-chart",
+      "iconColor": "sdkIconBlue",
+      "tags": ["SAC", "SAP Analytics", "Dashboard", "Dev Tenant"]
+    },
+    {
+      "id": "sac-prod",
+      "title": "SAC Production",
+      "subtitle": "SAP Analytics Cloud Production Environment",
+      "description": "Analyze SAP data, generate insightful reports, and visualize business metrics for better decision making. Lingkungan analitik utama enterprise.",
+      "url": "https://sacprod-jhonlin.ap11.analytics.cloud.sap",
+      "category": "analytics",
+      "categoryName": "Analytics & BI",
+      "status": "Production",
+      "statusState": "Success",
+      "icon": "sap-icon://business-objects-experience",
+      "iconColor": "sdkIconGreen",
+      "tags": ["SAC Live", "Executive BI", "Production", "Live Reporting"]
+    },
+    {
+      "id": "jms",
+      "title": "Enterprise Marketing System",
+      "subtitle": "Commercial, CRM & Sales Management",
+      "description": "Manage sales approvals, meeting notes, customer interactions, and sales activities efficiently across all commercial business units.",
+      "url": "http://marketing.jhonlingroup.id",
+      "category": "commercial",
+      "categoryName": "Marketing & CRM",
+      "status": "Production",
+      "statusState": "Success",
+      "icon": "sap-icon://lead",
+      "iconColor": "sdkIconPurple",
+      "tags": ["JMS", "CRM", "Sales Approvals", "Commercial"]
+    },
+    {
+      "id": "she",
+      "title": "KPI Safety (SHE)",
+      "subtitle": "Safety, Health & Environment Portal",
+      "description": "Brief explanation of program capabilities and potential use cases. Monitoring keselamatan kerja (K3), kepatuhan lingkungan, dan pelaporan insiden.",
+      "url": "http://she.jhonlingroup.id/login",
+      "category": "safety",
+      "categoryName": "Safety & SHE",
+      "status": "Active",
+      "statusState": "Success",
+      "icon": "sap-icon://shield",
+      "iconColor": "sdkIconGreen",
+      "tags": ["K3 SHE", "Safety Incident", "Compliance", "Governance"]
+    },
+    {
+      "id": "pppn",
+      "title": "PPPN",
+      "subtitle": "Payment Plant Payment Notification",
+      "description": "Payment Plant Payment Notification. Otomasi sistem notifikasi penagihan, validasi pembayaran vendor, dan monitoring tagihan operasional pabrik.",
+      "url": "http://38.47.92.151:5000",
+      "category": "finance",
+      "categoryName": "Finance & Plant",
+      "status": "Active",
+      "statusState": "Information",
+      "icon": "sap-icon://money-bills",
+      "iconColor": "sdkIconOrange",
+      "tags": ["PPPN", "Plant Notification", "Invoicing", "Payment Flow"]
+    },
+    {
+      "id": "file-manager",
+      "title": "File Manager",
+      "subtitle": "Centralized Cloud Storage & Document Center",
+      "description": "Easily and securely manage, store, and access files centrally using the File Manager. Penyimpanan dokumen terpusat berstandar keamanan enterprise.",
+      "url": "http://file.jhonlingroup.id/login",
+      "category": "storage",
+      "categoryName": "Storage & Infra",
+      "status": "Active",
+      "statusState": "Information",
+      "icon": "sap-icon://attachment",
+      "iconColor": "sdkIconCyan",
+      "tags": ["File Manager", "Cloud Storage", "Centralized", "Document Center"]
+    }
+  ]
+}
