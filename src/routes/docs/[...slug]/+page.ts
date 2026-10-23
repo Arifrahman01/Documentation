@@ -70,6 +70,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			title: doc.title,
 			section: doc.section || 'SAP',
 			category: doc.category,
+			subcategory: doc.subcategory,
 			snippet: doc.snippet || doc.description,
 			tags: doc.tags || [],
 			updatedAt: doc.updatedAt

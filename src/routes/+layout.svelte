@@ -36,9 +36,9 @@
 				<span>AI Copilot Enterprise</span>
 			</div>
 			<div class="flex items-center gap-4 text-xs text-muted-foreground">
+				<a href="/" class="hover:underline">Overview</a>
 				<a href="/docs/sap/overview" class="hover:underline">Documentation</a>
-				<a href="/api-reference" class="hover:underline">API Reference</a>
-				<a href="/apps" class="hover:underline">Apps Navigator</a>
+				<a href="/apps" class="hover:underline">Program Navigator</a>
 			</div>
 		</div>
 	</footer>

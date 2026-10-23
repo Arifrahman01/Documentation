@@ -313,7 +313,7 @@ Pedoman Format:
 // 2. Chat API (with intelligent caching & fallback)
 app.post('/api/ai/chat', async (req, res) => {
   try {
-    const { messages, documentContext, model, currentRoute, query, context, history } = req.body;
+    const { messages, documentContext, model, currentRoute, query, context, history, strictDocScope, docMeta } = req.body;
 
     let messageList = messages;
     if (!messageList && (query || history)) {
@@ -327,20 +327,55 @@ app.post('/api/ai/chat', async (req, res) => {
       return res.status(400).json({ error: 'Messages array atau parameter query diperlukan' });
     }
 
-    // Extract user query for RAG semantic knowledge retrieval
-    const lastUserQuery = query || (messageList.filter(m => m.role === 'user').pop()?.content || '');
-    const relevantKnowledge = retrieveRelevantKnowledge(lastUserQuery);
+    const docCtx = documentContext || context || '';
+    let contextualPrompt = '';
 
-    let contextualPrompt = SYSTEM_PROMPT_BASE;
-    if (currentRoute) {
-      contextualPrompt += `\nLOKASI PENGGUNA SAAT INI DI PORTAL: ${currentRoute}`;
-    }
-    const docCtx = documentContext || context;
-    if (docCtx && docCtx.trim()) {
-      contextualPrompt += `\n\n[KONTEKS DOKUMEN AKTIF SAAT INI]:\n"""\n${docCtx.substring(0, 3500)}\n"""`;
-    }
-    if (relevantKnowledge) {
-      contextualPrompt += `\n\n${relevantKnowledge}\n\nIngat: Jawab HANYA berdasarkan fakta di atas. Dilarang mengarang fakta di luar dokumen!`;
+    if (strictDocScope) {
+      const docTitle = docMeta?.title || currentRoute || 'Dokumen Aktif';
+      const docSection = docMeta?.section || 'Dokumentasi';
+      const docCategory = docMeta?.category || 'Umum';
+      const docSlug = docMeta?.slug ? `/docs/${docMeta.slug}` : '';
+
+      contextualPrompt = `Anda adalah "AI Assistant Dokumen", asisten analisis khusus yang HANYA bertugas menjelaskan, merangkum, dan menjawab pertanyaan berdasarkan SATU dokumen yang sedang dibuka pengguna.
+
+==================================================
+ATURAN LINGKUP DOKUMEN TUNGGAL (STRICT DOCUMENT SCOPE):
+==================================================
+1. LINGKUP TERKUNCI:
+   - Anda HANYA boleh menggunakan informasi yang tertulis di dalam [ISI LENGKAP DOKUMEN AKTIF] di bawah ini.
+   - DILARANG mengambil, mencampur, atau mengarang informasi di luar isi dokumen "${docTitle}" ini.
+2. JIKA TIDAK ADA DI DOKUMEN INI:
+   - Apabila pengguna menanyakan topik yang tidak dibahas di dalam dokumen "${docTitle}", jawab dengan sopan:
+     "Topik tersebut tidak dibahas di dalam dokumen **${docTitle}** ini. Silakan gunakan **Chat AI Copilot (Global)** di pojok kanan atas jika ingin mencari informasi lintas seluruh dokumen portal."
+3. GAYA JAWABAN:
+   - Gunakan Bahasa Indonesia yang terstruktur, jelas, dan mudah dipahami.
+   - Gunakan format Markdown (poin-poin, tabel, bold, atau blok kode sesuai isi dokumen).
+   - Jangan pernah menyebutkan nama model AI teknis di balik layar.
+
+[METADATA DOKUMEN AKTIF]:
+- Judul: ${docTitle}
+- Bagian: ${docSection}
+- Kategori: ${docCategory}
+${docSlug ? `- Path: ${docSlug}` : ''}
+
+[ISI LENGKAP DOKUMEN AKTIF]:
+"""
+${docCtx.substring(0, 12000)}
+"""`;
+    } else {
+      const lastUserQuery = query || (messageList.filter(m => m.role === 'user').pop()?.content || '');
+      const relevantKnowledge = retrieveRelevantKnowledge(lastUserQuery);
+
+      contextualPrompt = SYSTEM_PROMPT_BASE;
+      if (currentRoute) {
+        contextualPrompt += `\nLOKASI PENGGUNA SAAT INI DI PORTAL: ${currentRoute}`;
+      }
+      if (docCtx && docCtx.trim()) {
+        contextualPrompt += `\n\n[KONTEKS DOKUMEN AKTIF SAAT INI]:\n"""\n${docCtx.substring(0, 3500)}\n"""`;
+      }
+      if (relevantKnowledge) {
+        contextualPrompt += `\n\n${relevantKnowledge}\n\nIngat: Jawab HANYA berdasarkan fakta di atas. Dilarang mengarang fakta di luar dokumen!`;
+      }
     }
 
     const fullMessages = [
@@ -482,6 +517,7 @@ app.get('/api/docs', (req, res) => {
       path: doc.slug,
       section: sec,
       category: cat,
+      subcategory: doc.subcategory ? String(doc.subcategory).trim() : undefined,
       icon: 'FileText'
     };
 
@@ -544,7 +580,7 @@ app.get('/api/docs/:id(*)', (req, res) => {
 
 // 7. Create New Document
 app.post('/api/docs', (req, res) => {
-  const { title, category, content, description, tags, slug, section, sacUrl } = req.body;
+  const { title, category, subcategory, content, description, tags, slug, section, sacUrl } = req.body;
   if (!title || !content) {
     return res.status(400).json({ error: 'Judul dan konten dokumentasi wajib diisi' });
   }
@@ -554,6 +590,7 @@ app.post('/api/docs', (req, res) => {
     : inferSection({ title, category, slug });
 
   const cat = (category || 'General').trim();
+  const subcat = subcategory ? String(subcategory).trim() : undefined;
   const catSlug = cat.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const titleSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const finalSlug = slug || `${sec.toLowerCase()}/${titleSlug}`;
@@ -566,10 +603,11 @@ app.post('/api/docs', (req, res) => {
     section: sec,
     title: title.trim(),
     category: cat,
+    subcategory: subcat || undefined,
     description: cleanDesc,
     snippet: cleanDesc,
     content: content.trim(),
-    tags: Array.isArray(tags) && tags.length > 0 ? tags : [sec, cat, 'Dokumentasi'],
+    tags: Array.isArray(tags) && tags.length > 0 ? tags : [sec, cat, ...(subcat ? [subcat] : []), 'Dokumentasi'],
     updatedAt: new Date().toISOString()
   };
 
@@ -595,7 +633,7 @@ app.put('/api/docs/:id(*)', (req, res) => {
     return res.status(404).json({ error: 'Dokumen tidak ditemukan untuk diubah' });
   }
 
-  const { title, category, content, description, tags, section, sacUrl } = req.body;
+  const { title, category, subcategory, content, description, tags, section, sacUrl } = req.body;
   const doc = docs[index];
 
   if (section && ['SAP', 'SAC', 'WEB'].includes(section.toUpperCase())) {
@@ -603,6 +641,7 @@ app.put('/api/docs/:id(*)', (req, res) => {
   }
   if (title) doc.title = title.trim();
   if (category) doc.category = category.trim();
+  if (subcategory !== undefined) doc.subcategory = subcategory ? String(subcategory).trim() : undefined;
   if (content) doc.content = content.trim();
   if (sacUrl !== undefined) doc.sacUrl = sacUrl ? sacUrl.trim() : undefined;
   if (description) {
@@ -752,6 +791,23 @@ Balas HANYA dalam format blok kode Markdown dengan sedikit penjelasan.`
         {
           role: 'user',
           content: `Judul: ${currentDoc?.title || ''}\n\nIsi Dokumen:\n${(currentDoc?.content || '').slice(0, 4500)}`
+        }
+      ];
+    } else if (action === 'format') {
+      messages = [
+        {
+          role: 'system',
+          content: `Anda adalah Formatter Dokumentasi Teknis Enterprise (${targetSection}).
+Tugas Anda adalah merapikan catatan mentah/kasar pengguna menjadi format Markdown yang sangat rapi, bersih, dan terstruktur:
+1. PERTAHANKAN 100% FAKTA ASLI: Jangan menghapus detail teknis, nama tabel, rumus, ukuran, T-Code, atau langkah yang ditulis pengguna, dan jangan mengarang fakta baru di luar catatan pengguna.
+2. Gunakan Heading H2 (##) dan H3 (###) secara proporsional.
+3. Ubah daftar parameter, perbandingan, atau ukuran menjadi Tabel Markdown (| Kolom |) jika cocok.
+4. Bungkus rumus, query, atau kode ke dalam blok kode (\`\`\`) dan sorot informasi penting dengan Callout (> [!NOTE] atau > [!TIP]).
+5. Balas HANYA teks Markdown yang sudah dirapikan tanpa kata pengantar.`
+        },
+        {
+          role: 'user',
+          content: `Judul Dokumen: ${currentDoc?.title || prompt || 'Catatan Dokumentasi'}\n\nCatatan Mentah yang Perlu Dirapikan:\n${currentDoc?.content || prompt || ''}`
         }
       ];
     } else {

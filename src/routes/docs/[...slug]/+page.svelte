@@ -1,33 +1,48 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { ui } from '$lib/stores/ui.svelte';
-	import { marked } from 'marked';
 	import { goto } from '$app/navigation';
 	import { Button } from '$lib/components/ui/button';
+	import { Input } from '$lib/components/ui/input';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Separator } from '$lib/components/ui/separator';
+	import { Tabs, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import DocEditorModal from '$lib/components/DocEditorModal.svelte';
-	import { 
-		BookOpen, 
-		Sparkles, 
-		ChevronRight, 
-		ChevronLeft, 
-		FileText, 
-		Copy, 
-		Check, 
+	import DocAiAssistantModal from '$lib/components/docs/DocAiAssistantModal.svelte';
+	import DocsContextMenu from '$lib/components/docs/DocsContextMenu.svelte';
+	import DocsLightbox from '$lib/components/docs/DocsLightbox.svelte';
+	import DocsRightOutline from '$lib/components/docs/DocsRightOutline.svelte';
+	import { renderMarkdown, extractOutlineTree } from '$lib/utils/markdown';
+	import {
+		DOC_TEMPLATES,
+		MARKDOWN_TABLE_SNIPPET,
+		MARKDOWN_CHECKLIST_SNIPPET,
+		type DocTemplate
+	} from '$lib/utils/docTemplates';
+	import {
+		Sparkles,
+		ChevronRight,
+		ChevronLeft,
+		FileText,
+		FilePlus,
+		FolderPlus,
+		Folder,
+		FolderOpen,
+		Copy,
+		Check,
 		ListTree,
-		Plus, 
-		Edit3, 
-		Trash2, 
-		Clock, 
-		Search, 
-		Calendar, 
-		Tag, 
-		Layers, 
-		Building2, 
-		BarChart3, 
-		Globe, 
-		ExternalLink, 
-		ChevronDown, 
+		Plus,
+		Clock,
+		Search,
+		Calendar,
+		Tag,
+		Layers,
+		Building2,
+		BarChart3,
+		Globe,
+		ExternalLink,
+		ChevronDown,
 		ChevronsUpDown,
 		X,
 		Maximize2,
@@ -35,26 +50,40 @@
 		Download,
 		FileCode,
 		FolderTree,
-		MousePointerClick
+		MousePointerClick,
+		MoreHorizontal,
+		Edit3,
+		Save,
+		Eye,
+		Columns2,
+		Wand2,
+		Code,
+		List,
+		Heading2,
+		Heading3,
+		Bold,
+		Italic,
+		Table,
+		CheckSquare,
+		Image as ImageIcon,
+		FileUp,
+		Loader2,
+		LayoutTemplate
 	} from '@lucide/svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
-	// Sidebar View Switcher: 'explorer' (Semua Dokumen, default) vs 'outline' (Struktur Bab Catatan)
+	// Sidebar View Switcher (primarily for < xl screens; on xl+ Explorer is left & Outline is right)
 	let sidebarView = $state<'outline' | 'explorer'>('explorer');
-
-	// Active main section filter for explorer: 'SAP' | 'SAC' | 'WEB' | 'ALL'
 	let activeSection = $state<'SAP' | 'SAC' | 'WEB' | 'ALL'>('ALL');
 
-	// Local mutable document state that responds to prop changes or editor saves
+	// Local mutable document & tree state
 	let editorDoc = $state<any>(null);
 	let currentDoc = $derived(editorDoc ?? data.doc);
 	let customTree = $state<any>(null);
 	let currentTree = $derived(customTree ?? data.treeData);
 	let sidebarFilter = $state('');
-
-	// Accordion / Collapsible state for category groups in Explorer
 	let expandedCategories = $state<Record<string, boolean>>({});
 
 	// VS Code Tabs Management
@@ -65,121 +94,275 @@
 	}
 	let openTabs = $state<DocTab[]>([]);
 
-	// Focus mode (Distraction-free / Full width reading)
+	// Focus mode & In-page search
 	let isFocusMode = $state(false);
-
-	// In-page search toggle
 	let isSearchActive = $state(false);
 	let inPageSearchQuery = $state('');
-
-	// Outline Hierarchical Tree state
-	interface OutlineNode {
-		id: string;
-		text: string;
-		level: number;
-		children: OutlineNode[];
-	}
-	let outlineFilter = $state('');
-	let collapsedOutline = $state<Record<string, boolean>>({});
 	let activeHeadingId = $state<string>('');
 
-	// -------------------------------------------------------------
-	// OBSIDIAN / NOTION STYLE CONTEXT MENU STATE (KLIK KANAN)
-	// -------------------------------------------------------------
-	interface ContextMenuState {
-		open: boolean;
-		x: number;
-		y: number;
-		targetDoc: any;
-	}
+	// Lightbox state for zoomable images
+	let lightboxSrc = $state<string | null>(null);
+	let lightboxAlt = $state<string>('');
 
-	let contextMenu = $state<ContextMenuState>({
+	// Obsidian Context Menu & Editor Modal State
+	let contextMenu = $state<{ open: boolean; x: number; y: number; targetDoc: any }>({
 		open: false,
 		x: 0,
 		y: 0,
 		targetDoc: null
 	});
-
 	let isEditorOpen = $state(false);
 	let editorMode = $state<'create' | 'edit'>('edit');
 	let editingDocTarget = $state<any>(null);
 	let copiedUrl = $state(false);
 	let copiedMarkdown = $state(false);
-	let isDeleting = $state(false);
 
-	// Load & sync open tabs with localStorage
-	$effect(() => {
+	// Dedicated Single-Document AI Assistant Modal & Pinned Summary State
+	let isDocAiOpen = $state(false);
+	let docAiTarget = $state<any>(null);
+	let docAiInitialPrompt = $state('');
+	let pinnedAiSummary = $state<{ title: string; content: string; slug: string } | null>(null);
+
+	// =========================================================================
+	// OBSIDIAN FILE EXPLORER STATE (Create Folder / Create File First)
+	// =========================================================================
+	let explorerCreator = $state<{
+		open: boolean;
+		type: 'file' | 'folder';
+		section: 'SAP' | 'SAC' | 'WEB';
+		category: string;
+		subcategory: string;
+		isRootFolder: boolean;
+		name: string;
+		isSubmitting: boolean;
+		error: string;
+	}>({
+		open: false,
+		type: 'file',
+		section: 'SAP',
+		category: '',
+		subcategory: '',
+		isRootFolder: true,
+		name: '',
+		isSubmitting: false,
+		error: ''
+	});
+
+	let pendingAutoEditSlug = $state<string>('');
+
+	// =========================================================================
+	// OBSIDIAN IN-PAGE NOTE EDITOR STATE (Write Directly Inside the Note!)
+	// =========================================================================
+	let isInlineEditing = $state(false);
+	let inlineTitle = $state('');
+	let inlineContent = $state('');
+	let inlineMode = $state<'edit' | 'split' | 'preview'>('edit');
+	let isSavingInline = $state(false);
+	let inlineStatusMsg = $state('');
+	let inlineErrorMsg = $state('');
+	let showTemplateBar = $state(false);
+	let inlineAiPrompt = $state('');
+	let isInlineAiLoading = $state(false);
+	let isUploadingInlineImage = $state(false);
+	let inlineImageInputRef = $state<HTMLInputElement | null>(null);
+	let inlineMdInputRef = $state<HTMLInputElement | null>(null);
+
+	// Load & sync open tabs with localStorage (using untrack + lastSyncedSlug to prevent re-adding a tab when closing it)
+	let tabsInitialized = false;
+	let lastSyncedSlug = '';
+	let closingSlug = '';
+
+	function saveTabsToStorage(tabs: DocTab[]) {
 		if (typeof window !== 'undefined') {
 			try {
-				const stored = localStorage.getItem('portal_open_tabs');
-				if (stored) {
-					openTabs = JSON.parse(stored);
-				}
-			} catch (e) {}
+				localStorage.setItem('portal_open_tabs', JSON.stringify(tabs));
+			} catch (_) {}
 		}
-	});
+	}
+
+	function ensureTabOpen(docNode: any) {
+		const slug = docNode?.path || docNode?.slug || data.slug;
+		const title = docNode?.title || currentDoc?.title || data.article?.title || slug;
+		const section = docNode?.section || currentDoc?.section || data.article?.section || 'SAP';
+		if (!slug) return;
+
+		if (!openTabs.some((t) => t.slug === slug)) {
+			const updated = [...openTabs, { slug, title, section }].slice(-10);
+			openTabs = updated;
+			saveTabsToStorage(updated);
+		}
+	}
 
 	$effect(() => {
-		if (data.slug) {
-			const currentTitle = currentDoc?.title || data.article?.title || data.slug;
-			const currentSection = currentDoc?.section || data.article?.section || 'SAP';
-			
-			const existingIndex = openTabs.findIndex((t) => t.slug === data.slug);
-			if (existingIndex >= 0) {
-				if (openTabs[existingIndex].title !== currentTitle) {
-					openTabs[existingIndex].title = currentTitle;
-				}
-			} else {
-				const updated = [...openTabs, { slug: data.slug, title: currentTitle, section: currentSection }].slice(-10);
-				openTabs = updated;
+		const activeSlug = data.slug;
+		const currentTitle = currentDoc?.title || data.article?.title || activeSlug;
+		const currentSection = currentDoc?.section || data.article?.section || 'SAP';
+
+		if (!activeSlug) return;
+
+		untrack(() => {
+			if (closingSlug === activeSlug) return;
+
+			let currentList = openTabs;
+			const isFirstInit = !tabsInitialized && typeof window !== 'undefined';
+			if (isFirstInit) {
+				tabsInitialized = true;
+				try {
+					const stored = localStorage.getItem('portal_open_tabs');
+					if (stored) {
+						const parsed = JSON.parse(stored);
+						if (Array.isArray(parsed)) currentList = parsed;
+					}
+				} catch (_) {}
 			}
 
-			if (typeof window !== 'undefined') {
-				try {
-					localStorage.setItem('portal_open_tabs', JSON.stringify(openTabs));
-				} catch (e) {}
+			const existingIndex = currentList.findIndex((t) => t.slug === activeSlug);
+			if (existingIndex >= 0) {
+				lastSyncedSlug = activeSlug;
+				if (currentList[existingIndex].title !== currentTitle) {
+					currentList = currentList.map((t, i) =>
+						i === existingIndex ? { ...t, title: currentTitle } : t
+					);
+					openTabs = currentList;
+					saveTabsToStorage(currentList);
+				} else if (isFirstInit) {
+					openTabs = currentList;
+				}
+			} else if (isFirstInit || activeSlug !== lastSyncedSlug) {
+				// Only auto-add tab on initial mount or when navigating to a different document slug
+				lastSyncedSlug = activeSlug;
+				currentList = [
+					...currentList,
+					{ slug: activeSlug, title: currentTitle, section: currentSection }
+				].slice(-10);
+				openTabs = currentList;
+				saveTabsToStorage(currentList);
 			}
-		}
+		});
 	});
 
-	function closeTab(tabSlug: string, event: MouseEvent) {
-		event.stopPropagation();
-		event.preventDefault();
+	async function closeTab(tabSlug: string, event?: Event) {
+		if (event) {
+			event.stopPropagation();
+			event.preventDefault();
+		}
+
 		const idx = openTabs.findIndex((t) => t.slug === tabSlug);
 		if (idx === -1) return;
 
 		const nextTabs = openTabs.filter((t) => t.slug !== tabSlug);
 		openTabs = nextTabs;
+		saveTabsToStorage(nextTabs);
 
-		if (typeof window !== 'undefined') {
-			try {
-				localStorage.setItem('portal_open_tabs', JSON.stringify(nextTabs));
-			} catch (e) {}
-		}
-
+		// Keep lastSyncedSlug equal to current data.slug so $effect never re-adds the closed tab
 		if (tabSlug === data.slug) {
-			if (nextTabs.length > 0) {
-				const nextIndex = Math.min(idx, nextTabs.length - 1);
-				goto(`/docs/${nextTabs[nextIndex].slug}`);
-			} else {
-				goto('/docs/sap/overview');
+			closingSlug = tabSlug;
+			lastSyncedSlug = tabSlug;
+			try {
+				if (nextTabs.length > 0) {
+					const nextIndex = Math.min(idx, nextTabs.length - 1);
+					const targetSlug = nextTabs[nextIndex].slug;
+					lastSyncedSlug = targetSlug;
+					await goto(`/docs/${targetSlug}`);
+				}
+			} finally {
+				closingSlug = '';
 			}
 		}
 	}
+
+	function closeAllTabs(event?: Event) {
+		if (event) {
+			event.stopPropagation();
+			event.preventDefault();
+		}
+		lastSyncedSlug = data.slug;
+		openTabs = [];
+		saveTabsToStorage([]);
+	}
+
+	// Category & Sub-Category Accordion helpers
+	let expandedSubcategories = $state<Record<string, boolean>>({});
 
 	function isCategoryExpanded(group: any): boolean {
 		if (sidebarFilter.trim()) return true;
 		if (expandedCategories[group.title] !== undefined) {
 			return expandedCategories[group.title];
 		}
-		const containsCurrent = (group.nodes || []).some((n: any) => n.path === data.slug || n.slug === data.slug);
-		return containsCurrent;
+		return (group.nodes || []).some((n: any) => n.path === data.slug || n.slug === data.slug);
 	}
 
 	function toggleCategory(catTitle: string, group: any) {
-		const current = isCategoryExpanded(group);
-		expandedCategories[catTitle] = !current;
+		expandedCategories[catTitle] = !isCategoryExpanded(group);
 	}
+
+	function isSubcategoryExpanded(catTitle: string, subGroup: any): boolean {
+		if (sidebarFilter.trim()) return true;
+		const key = `${catTitle}::${subGroup.title}`;
+		if (expandedSubcategories[key] !== undefined) {
+			return expandedSubcategories[key];
+		}
+		return true;
+	}
+
+	function toggleSubcategory(catTitle: string, subGroup: any) {
+		const key = `${catTitle}::${subGroup.title}`;
+		expandedSubcategories[key] = !isSubcategoryExpanded(catTitle, subGroup);
+	}
+
+	const filteredTree = $derived.by(() => {
+		const q = sidebarFilter.toLowerCase().trim();
+		return currentTree
+			.map((group: any) => {
+				const groupSec = group.section || group.nodes?.[0]?.section || 'SAP';
+				const matchesGroupSection = activeSection === 'ALL' || groupSec === activeSection;
+				if (!matchesGroupSection) return null;
+
+				const nodes = (group.nodes || []).filter((n: any) => {
+					const nodeSec = n.section || groupSec;
+					const matchesSection = activeSection === 'ALL' || nodeSec === activeSection;
+					const matchesQuery =
+						!q ||
+						n.title.toLowerCase().includes(q) ||
+						(n.category && n.category.toLowerCase().includes(q)) ||
+						(n.subcategory && n.subcategory.toLowerCase().includes(q));
+					return matchesSection && matchesQuery;
+				});
+
+				// Group into subcategories + directNodes (including empty subfolders!)
+				const subMap = new Map<string, any[]>();
+				if (Array.isArray(group.subfolders)) {
+					for (const sf of group.subfolders) {
+						if (sf && (!q || sf.toLowerCase().includes(q))) {
+							subMap.set(sf, []);
+						}
+					}
+				}
+
+				const directNodes: any[] = [];
+				for (const n of nodes) {
+					const sub = (n.subcategory || '').trim();
+					if (sub) {
+						if (!subMap.has(sub)) subMap.set(sub, []);
+						subMap.get(sub)!.push(n);
+					} else {
+						directNodes.push(n);
+					}
+				}
+				const subcategories = Array.from(subMap.entries()).map(([title, subNodes]) => ({
+					title,
+					nodes: subNodes
+				}));
+
+				const matchesFolderQuery = !q || group.title.toLowerCase().includes(q);
+				if (q && nodes.length === 0 && subcategories.length === 0 && !matchesFolderQuery) {
+					return null;
+				}
+
+				return { ...group, section: groupSec, nodes, subcategories, directNodes };
+			})
+			.filter(Boolean);
+	});
 
 	const allExpanded = $derived.by(() => {
 		if (!filteredTree.length) return false;
@@ -195,6 +378,8 @@
 		expandedCategories = updated;
 	}
 
+	const categoriesList = $derived.by(() => currentTree.map((g: any) => g.title));
+
 	$effect(() => {
 		if (data.slug) {
 			editorDoc = null;
@@ -203,11 +388,391 @@
 				activeSection = sec;
 			}
 			const cat = currentDoc?.category || data.article?.category;
-			if (cat) {
-				expandedCategories[cat] = true;
+			if (cat) expandedCategories[cat] = true;
+
+			// Automatically enter Obsidian In-Page Note Writing Mode if file was just created or is empty
+			const isNewlyCreated = pendingAutoEditSlug === data.slug;
+			const isEmptyNote = !String(data.doc?.content || '').trim();
+			if (isNewlyCreated || isEmptyNote) {
+				pendingAutoEditSlug = '';
+				startInlineEdit(data.doc);
+			} else {
+				isInlineEditing = false;
 			}
 		}
 	});
+
+	// =========================================================================
+	// OBSIDIAN FILE EXPLORER ACTIONS: CREATE FOLDER / CREATE FILE FIRST
+	// =========================================================================
+	function resolveActiveContext(target?: any): {
+		section: 'SAP' | 'SAC' | 'WEB';
+		category: string;
+		subcategory: string;
+	} {
+		const rawSec =
+			target?.section && ['SAP', 'SAC', 'WEB'].includes(String(target.section).toUpperCase())
+				? String(target.section).toUpperCase()
+				: activeSection !== 'ALL'
+					? activeSection
+					: currentDoc?.section || 'SAP';
+		const section = (['SAP', 'SAC', 'WEB'].includes(rawSec) ? rawSec : 'SAP') as
+			| 'SAP'
+			| 'SAC'
+			| 'WEB';
+
+		const defaultCat =
+			section === 'SAP'
+				? 'Overview & Landscape'
+				: section === 'SAC'
+					? 'Overview & BI'
+					: 'Web Stack';
+
+		let category = target?.category || '';
+		if (!category) {
+			if ((currentDoc?.section || 'SAP') === section && currentDoc?.category) {
+				category = currentDoc.category;
+			} else {
+				const firstFolderInSec = currentTree.find((g: any) => (g.section || 'SAP') === section);
+				category = firstFolderInSec?.title || defaultCat;
+			}
+		}
+		const subcategory = target?.subcategory || '';
+		return { section, category, subcategory };
+	}
+
+	function openExplorerCreateFile(target?: any) {
+		closeContextMenu();
+		sidebarView = 'explorer';
+		const ctx = resolveActiveContext(target);
+		expandedCategories[ctx.category] = true;
+
+		explorerCreator = {
+			open: true,
+			type: 'file',
+			section: ctx.section,
+			category: ctx.category,
+			subcategory: ctx.subcategory,
+			isRootFolder: false,
+			name: '',
+			isSubmitting: false,
+			error: ''
+		};
+
+		setTimeout(() => {
+			const el = document.getElementById('explorer-creator-input') as HTMLInputElement | null;
+			el?.focus();
+		}, 30);
+	}
+
+	function openExplorerCreateFolder(target?: any) {
+		closeContextMenu();
+		sidebarView = 'explorer';
+		const ctx = resolveActiveContext(target);
+		const isSubfolderTarget = Boolean(target?.isFolder && target?.category && !target?.subcategory);
+
+		explorerCreator = {
+			open: true,
+			type: 'folder',
+			section: ctx.section,
+			category: isSubfolderTarget ? target.category : '',
+			subcategory: '',
+			isRootFolder: !isSubfolderTarget,
+			name: '',
+			isSubmitting: false,
+			error: ''
+		};
+
+		setTimeout(() => {
+			const el = document.getElementById('explorer-creator-input') as HTMLInputElement | null;
+			el?.focus();
+		}, 30);
+	}
+
+	async function submitExplorerCreator(e?: Event) {
+		if (e) e.preventDefault();
+		const cleanName = explorerCreator.name.trim();
+		if (!cleanName) return;
+
+		explorerCreator.isSubmitting = true;
+		explorerCreator.error = '';
+
+		try {
+			if (explorerCreator.type === 'folder') {
+				const payload = explorerCreator.isRootFolder
+					? {
+							type: 'folder',
+							section: explorerCreator.section,
+							category: cleanName
+						}
+					: {
+							type: 'folder',
+							section: explorerCreator.section,
+							category: explorerCreator.category,
+							subcategory: cleanName
+						};
+
+				const res = await fetch('/api/docs', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify(payload)
+				});
+				const json = await res.json();
+				if (!res.ok) throw new Error(json.error || 'Gagal membuat folder');
+
+				if (json.treeData) customTree = json.treeData;
+				const targetCat = explorerCreator.isRootFolder ? cleanName : explorerCreator.category;
+				expandedCategories[targetCat] = true;
+				if (!explorerCreator.isRootFolder) {
+					expandedSubcategories[`${targetCat}::${cleanName}`] = true;
+				}
+				explorerCreator.open = false;
+			} else {
+				// Create File (Note) first, then immediately open in Note Writing Mode
+				const res = await fetch('/api/docs', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						title: cleanName.replace(/\.md$/i, ''),
+						section: explorerCreator.section,
+						category: explorerCreator.category,
+						subcategory: explorerCreator.subcategory || undefined,
+						content: ''
+					})
+				});
+				const json = await res.json();
+				if (!res.ok) throw new Error(json.error || 'Gagal membuat file catatan');
+
+				if (json.treeData) customTree = json.treeData;
+				expandedCategories[explorerCreator.category] = true;
+				explorerCreator.open = false;
+
+				if (json.document?.slug) {
+					pendingAutoEditSlug = json.document.slug;
+					ensureTabOpen({
+						slug: json.document.slug,
+						title: json.document.title,
+						section: json.document.section
+					});
+					await goto(`/docs/${json.document.slug}`);
+				}
+			}
+		} catch (err: any) {
+			explorerCreator.error = err.message || 'Gagal memproses permintaan';
+		} finally {
+			explorerCreator.isSubmitting = false;
+		}
+	}
+
+	// =========================================================================
+	// OBSIDIAN IN-PAGE NOTE WRITING & EDITING FUNCTIONS
+	// =========================================================================
+	function startInlineEdit(docToEdit?: any) {
+		const d = docToEdit || currentDoc;
+		inlineTitle = d?.title || '';
+		inlineContent = d?.content || '';
+		inlineMode = 'edit';
+		inlineStatusMsg = '';
+		inlineErrorMsg = '';
+		isInlineEditing = true;
+
+		setTimeout(() => {
+			const textarea = document.getElementById('inline-note-textarea') as HTMLTextAreaElement | null;
+			textarea?.focus();
+		}, 40);
+	}
+
+	async function saveInlineNote(closeAfterSave = true) {
+		if (!inlineTitle.trim()) {
+			inlineErrorMsg = 'Judul catatan tidak boleh kosong.';
+			return;
+		}
+		isSavingInline = true;
+		inlineErrorMsg = '';
+		inlineStatusMsg = '';
+
+		try {
+			const slug = currentDoc?.slug || data.slug;
+			const res = await fetch(`/api/docs/${slug}`, {
+				method: 'PUT',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					title: inlineTitle.trim(),
+					content: inlineContent,
+					section: currentDoc?.section || data.article.section,
+					category: currentDoc?.category || data.article.category,
+					subcategory: currentDoc?.subcategory || data.article.subcategory
+				})
+			});
+			const json = await res.json();
+			if (!res.ok) throw new Error(json.error || 'Gagal menyimpan catatan');
+
+			editorDoc = json.document;
+			fetch('/api/docs')
+				.then((r) => r.json())
+				.then((d) => {
+					if (d.treeData) customTree = d.treeData;
+				})
+				.catch(() => {});
+
+			if (closeAfterSave) {
+				isInlineEditing = false;
+			} else {
+				inlineStatusMsg = `✓ Tersimpan (${new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })})`;
+			}
+		} catch (err: any) {
+			inlineErrorMsg = err.message || 'Gagal menyimpan catatan';
+		} finally {
+			isSavingInline = false;
+		}
+	}
+
+	function insertInlineSnippet(before: string, after: string = '') {
+		const textarea = document.getElementById('inline-note-textarea') as HTMLTextAreaElement | null;
+		if (!textarea) {
+			inlineContent = `${inlineContent}${before}${after}`;
+			return;
+		}
+		const start = textarea.selectionStart;
+		const end = textarea.selectionEnd;
+		const selected = inlineContent.substring(start, end) || 'Teks';
+		const replacement = before + selected + after;
+		inlineContent = inlineContent.substring(0, start) + replacement + inlineContent.substring(end);
+		setTimeout(() => {
+			textarea.focus();
+			textarea.setSelectionRange(start + before.length, start + before.length + selected.length);
+		}, 10);
+	}
+
+	function applyInlineTemplate(tpl: DocTemplate) {
+		if (inlineContent.trim().length > 40) {
+			if (!confirm(`Ganti isi catatan saat ini dengan kerangka "${tpl.name}"?`)) return;
+		}
+		inlineContent = tpl.content;
+		inlineStatusMsg = `📋 Kerangka "${tpl.name}" diterapkan!`;
+		showTemplateBar = false;
+	}
+
+	async function runInlineAiAction(action: 'generate' | 'format' | 'improve' | 'code') {
+		isInlineAiLoading = true;
+		inlineErrorMsg = '';
+		inlineStatusMsg = '';
+		try {
+			const sec = currentDoc?.section || data.article.section || 'SAP';
+			const cat = currentDoc?.category || data.article.category || 'General';
+			const effectivePrompt = inlineAiPrompt.trim() || inlineTitle.trim() || `Dokumentasi ${sec}`;
+
+			const res = await fetch('/api/ai/doc-assist', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					action,
+					prompt: effectivePrompt,
+					section: sec,
+					currentDoc: {
+						title: inlineTitle,
+						section: sec,
+						category: cat,
+						content: inlineContent
+					}
+				})
+			});
+			const d = await res.json();
+			if (!res.ok || !d.success) throw new Error(d.error || 'Gagal memproses AI');
+
+			if (action === 'generate') {
+				inlineContent = d.result?.content || inlineContent;
+				inlineStatusMsg = '✨ Draft catatan berhasil ditulis oleh AI!';
+			} else if (action === 'format') {
+				inlineContent = d.result?.content || inlineContent;
+				inlineStatusMsg = '✨ Catatan mentah berhasil dirapikan ke format Markdown!';
+			} else if (action === 'improve') {
+				inlineContent = d.result?.content || inlineContent;
+				inlineStatusMsg = '✨ Isi catatan berhasil dipoles oleh AI!';
+			} else if (action === 'code') {
+				inlineContent = `${inlineContent.trim()}\n\n${d.result?.content || ''}`;
+				inlineStatusMsg = '✨ Contoh blok kode berhasil ditambahkan!';
+			}
+		} catch (err: any) {
+			inlineErrorMsg = err.message || 'Gagal menjalankan AI';
+		} finally {
+			isInlineAiLoading = false;
+		}
+	}
+
+	async function uploadInlineImage(file: File) {
+		isUploadingInlineImage = true;
+		const cleanFileName = file.name ? file.name.replace(/\.[^/.]+$/, '') : 'gambar';
+		const placeholder = `\n![Mengunggah ${cleanFileName}...]()\n`;
+		insertInlineSnippet(placeholder, '');
+
+		try {
+			const reader = new FileReader();
+			const base64 = await new Promise<string>((resolve, reject) => {
+				reader.onload = () => resolve(reader.result as string);
+				reader.onerror = reject;
+				reader.readAsDataURL(file);
+			});
+
+			const res = await fetch('/api/upload', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({ image: base64, filename: cleanFileName })
+			});
+			const json = await res.json();
+			if (!res.ok || !json.url) throw new Error(json.error || 'Gagal mengunggah gambar');
+
+			inlineContent = inlineContent.replace(placeholder.trim(), `![${cleanFileName}](${json.url})`);
+			inlineStatusMsg = '🖼️ Gambar berhasil disisipkan!';
+		} catch (err: any) {
+			inlineContent = inlineContent.replace(placeholder, '');
+			inlineErrorMsg = err.message || 'Gagal mengunggah gambar';
+		} finally {
+			isUploadingInlineImage = false;
+		}
+	}
+
+	function handleInlinePaste(e: ClipboardEvent) {
+		const items = e.clipboardData?.items;
+		if (!items) return;
+		for (const item of items) {
+			if (item.type.startsWith('image/')) {
+				e.preventDefault();
+				const file = item.getAsFile();
+				if (file) uploadInlineImage(file);
+				return;
+			}
+		}
+	}
+
+	function handleInlineDrop(e: DragEvent) {
+		const files = e.dataTransfer?.files;
+		if (!files || files.length === 0) return;
+		if (files[0].type.startsWith('image/')) {
+			e.preventDefault();
+			uploadInlineImage(files[0]);
+		}
+	}
+
+	function handleInlineFileUpload(e: Event) {
+		const target = e.target as HTMLInputElement;
+		if (target.files && target.files.length > 0) {
+			uploadInlineImage(target.files[0]);
+			target.value = '';
+		}
+	}
+
+	async function handleInlineMdImport(e: Event) {
+		const target = e.target as HTMLInputElement;
+		const file = target.files?.[0];
+		if (!file) return;
+		const text = await file.text();
+		if (text.trim()) {
+			inlineContent = inlineContent.trim() ? `${inlineContent}\n\n${text}` : text;
+			inlineStatusMsg = `📂 File "${file.name}" berhasil diimpor!`;
+		}
+		target.value = '';
+	}
 
 	$effect(() => {
 		ui.currentContext = {
@@ -218,91 +783,14 @@
 		};
 	});
 
-	// Reading time estimate
 	const readingTime = $derived.by(() => {
 		const words = (currentDoc?.content || '').split(/\s+/).length;
 		return Math.max(1, Math.ceil(words / 180));
 	});
 
-	// Build Hierarchical Outline Tree: H1 -> H2 -> H3
-	const outlineTree = $derived.by(() => {
-		const lines = (currentDoc?.content || '').split('\n');
-		const rawHeadings: { id: string; text: string; level: number }[] = [];
-
-		for (const line of lines) {
-			const m = line.match(/^(#{1,4})\s+(.+)$/);
-			if (m) {
-				const level = m[1].length;
-				const text = m[2].trim().replace(/[*_`]/g, '');
-				const id = text.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
-				rawHeadings.push({ id, text, level });
-			}
-		}
-
-		if (rawHeadings.length === 0) return [];
-
-		const rootNodes: OutlineNode[] = [];
-		const stack: { node: OutlineNode; level: number }[] = [];
-
-		for (const h of rawHeadings) {
-			const node: OutlineNode = { id: h.id, text: h.text, level: h.level, children: [] };
-
-			while (stack.length > 0 && stack[stack.length - 1].level >= h.level) {
-				stack.pop();
-			}
-
-			if (stack.length === 0) {
-				rootNodes.push(node);
-			} else {
-				stack[stack.length - 1].node.children.push(node);
-			}
-
-			stack.push({ node, level: h.level });
-		}
-
-		return rootNodes;
-	});
-
-	function isOutlineCollapsed(nodeId: string): boolean {
-		if (outlineFilter.trim()) return false;
-		return collapsedOutline[nodeId] === true;
-	}
-
-	function toggleOutlineNode(nodeId: string) {
-		collapsedOutline[nodeId] = !isOutlineCollapsed(nodeId);
-	}
-
-	function toggleAllOutline() {
-		const currentlyAllExpanded = Object.values(collapsedOutline).every((v) => !v);
-		const updated: Record<string, boolean> = {};
-		function traverse(nodes: OutlineNode[]) {
-			for (const n of nodes) {
-				updated[n.id] = currentlyAllExpanded;
-				if (n.children) traverse(n.children);
-			}
-		}
-		traverse(outlineTree);
-		collapsedOutline = updated;
-	}
-
-	function filterOutlineNodes(nodes: OutlineNode[], query: string): OutlineNode[] {
-		if (!query.trim()) return nodes;
-		const q = query.toLowerCase();
-		const result: OutlineNode[] = [];
-		for (const n of nodes) {
-			const matchesSelf = n.text.toLowerCase().includes(q);
-			const filteredChildren = filterOutlineNodes(n.children, query);
-			if (matchesSelf || filteredChildren.length > 0) {
-				result.push({
-					...n,
-					children: matchesSelf ? n.children : filteredChildren
-				});
-			}
-		}
-		return result;
-	}
-
-	const filteredOutline = $derived(filterOutlineNodes(outlineTree, outlineFilter));
+	// Outline & Markdown Rendering (via centralized utility)
+	const outlineTree = $derived(extractOutlineTree(currentDoc?.content || ''));
+	const renderedHtml = $derived(renderMarkdown(currentDoc?.content || ''));
 
 	function scrollToHeading(id: string) {
 		const el = document.getElementById(id);
@@ -310,15 +798,13 @@
 			el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 			activeHeadingId = id;
 			el.classList.add('outline-anchor-target');
-			setTimeout(() => {
-				el.classList.remove('outline-anchor-target');
-			}, 2000);
+			setTimeout(() => el.classList.remove('outline-anchor-target'), 2000);
 		}
 	}
 
-	// Active heading tracking on scroll
+	// Scroll-spy for active heading
 	$effect(() => {
-		if (typeof window === 'undefined') return;
+		if (typeof window === 'undefined' || !renderedHtml) return;
 
 		const observer = new IntersectionObserver(
 			(entries) => {
@@ -329,67 +815,68 @@
 					}
 				}
 			},
-			{ rootMargin: '-100px 0px -60% 0px', threshold: 0.1 }
+			{ rootMargin: '-90px 0px -65% 0px', threshold: 0.1 }
 		);
 
-		const observedHeadings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id]');
-		observedHeadings.forEach((h) => observer.observe(h));
+		const headings = document.querySelectorAll('h1[id], h2[id], h3[id], h4[id]');
+		headings.forEach((h) => observer.observe(h));
 
-		return () => {
-			observer.disconnect();
-		};
+		return () => observer.disconnect();
 	});
 
-	// Render Markdown HTML with GitHub Alerts formatting & Heading Anchor IDs
-	const renderedHtml = $derived.by(() => {
-		let raw = currentDoc?.content || '';
-		raw = raw.replace(/>\s*\[!NOTE\]\s*(.*?)(?=(\n\n|\n>|$))/gs, '<div class="my-4 rounded-xl border-l-4 border-blue-500 bg-blue-50/70 p-4 text-xs text-blue-950 dark:bg-blue-950/40 dark:text-blue-200"><strong>Note:</strong> $1</div>');
-		raw = raw.replace(/>\s*\[!TIP\]\s*(.*?)(?=(\n\n|\n>|$))/gs, '<div class="my-4 rounded-xl border-l-4 border-emerald-500 bg-emerald-50/70 p-4 text-xs text-emerald-950 dark:bg-emerald-950/40 dark:text-emerald-200"><strong>Tip:</strong> $1</div>');
-		raw = raw.replace(/>\s*\[!IMPORTANT\]\s*(.*?)(?=(\n\n|\n>|$))/gs, '<div class="my-4 rounded-xl border-l-4 border-amber-500 bg-amber-50/70 p-4 text-xs text-amber-950 dark:bg-amber-950/40 dark:text-amber-200"><strong>Important:</strong> $1</div>');
-		raw = raw.replace(/>\s*\[!WARNING\]\s*(.*?)(?=(\n\n|\n>|$))/gs, '<div class="my-4 rounded-xl border-l-4 border-red-500 bg-red-50/70 p-4 text-xs text-red-950 dark:bg-red-950/40 dark:text-red-200"><strong>Warning:</strong> $1</div>');
-		
-		let parsed = marked.parse(raw) as string;
-		parsed = parsed.replace(/<table>/g, '<div class="overflow-x-auto my-5 rounded-xl border border-zinc-200 dark:border-zinc-800"><table class="my-0">');
-		parsed = parsed.replace(/<\/table>/g, '</table></div>');
+	// Delegated Click Handler on Article (for Copy Code buttons & Image Zoom Lightbox)
+	function handleArticleClick(e: MouseEvent) {
+		const target = e.target as HTMLElement | null;
+		if (!target) return;
 
-		parsed = parsed.replace(/<h([1-4])>(.*?)<\/h\1>/g, (match, level, content) => {
-			const cleanText = content.replace(/<[^>]+>/g, '').trim().replace(/[*_`]/g, '');
-			const id = cleanText.toLowerCase().replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-');
-			return `<h${level} id="${id}" class="scroll-mt-28 group relative">${content}</h${level}>`;
-		});
+		// 1. Check if Copy Code button was clicked
+		const copyBtn = target.closest('[data-copy-code]') as HTMLButtonElement | null;
+		if (copyBtn) {
+			const encoded = copyBtn.getAttribute('data-copy-code');
+			if (encoded) {
+				const decoded = decodeURIComponent(encoded);
+				navigator.clipboard.writeText(decoded);
+				const originalHtml = copyBtn.innerHTML;
+				copyBtn.innerHTML = '<span class="text-emerald-400 font-semibold">✓ Tersalin!</span>';
+				setTimeout(() => {
+					copyBtn.innerHTML = originalHtml;
+				}, 2000);
+			}
+			return;
+		}
 
-		return parsed;
-	});
+		// 2. Check if a zoomable image was clicked
+		const imgEl = target.closest('img[data-zoomable="true"]') as HTMLImageElement | null;
+		if (imgEl && imgEl.src) {
+			lightboxSrc = imgEl.src;
+			lightboxAlt = imgEl.alt || currentDoc?.title || 'Gambar Dokumentasi';
+		}
+	}
 
-	// Filtered sidebar groups based on active section and search filter
-	const filteredTree = $derived.by(() => {
-		const q = sidebarFilter.toLowerCase().trim();
-		return currentTree
-			.map((group: any) => {
-				const nodes = (group.nodes || []).filter((n: any) => {
-					const nodeSec = n.section || group.section || 'SAP';
-					const matchesSection = activeSection === 'ALL' || nodeSec === activeSection;
-					const matchesQuery = !q || n.title.toLowerCase().includes(q) || (n.category && n.category.toLowerCase().includes(q));
-					return matchesSection && matchesQuery;
-				});
-				return {
-					...group,
-					nodes
-				};
-			})
-			.filter((group: any) => group.nodes.length > 0);
-	});
-
-	const categoriesList = $derived.by(() => {
-		return currentTree.map((g: any) => g.title);
-	});
-
+	// Actions & Context Menu Handlers (Scoped strictly to current document via DocAiAssistantModal)
 	function askAiAboutDoc() {
-		ui.openAi(`Rangkum konsep utama, best practice, dan arsitektur dari dokumen "${currentDoc?.title || data.article.title}".`, {
-			type: 'docs',
-			title: currentDoc?.title || data.article.title,
-			key: data.slug
-		});
+		docAiTarget = currentDoc;
+		docAiInitialPrompt = '';
+		isDocAiOpen = true;
+	}
+
+	async function handleContextMenuAi(target: any) {
+		closeContextMenu();
+		const t = target || currentDoc;
+		const slug = t.slug || t.path || t.id;
+
+		if (t.content || slug === data.slug) {
+			docAiTarget = t.content ? t : currentDoc;
+		} else {
+			try {
+				const res = await fetch(`/api/docs/${slug}`);
+				docAiTarget = res.ok ? await res.json() : t;
+			} catch (_) {
+				docAiTarget = t;
+			}
+		}
+		docAiInitialPrompt = '';
+		isDocAiOpen = true;
 	}
 
 	function handleSaved(savedDoc: any) {
@@ -400,7 +887,7 @@
 				if (d.treeData) customTree = d.treeData;
 			})
 			.catch(() => {});
-		
+
 		if (savedDoc.slug && savedDoc.slug !== data.slug) {
 			goto(`/docs/${savedDoc.slug}`);
 		}
@@ -428,23 +915,19 @@
 		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
 		a.href = url;
-		const fileName = (currentDoc.title || 'document').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.md';
-		a.download = fileName;
+		a.download = (currentDoc.title || 'document').toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.md';
 		a.click();
 		URL.revokeObjectURL(url);
 	}
 
-	// -------------------------------------------------------------
-	// OBSIDIAN / NOTION CONTEXT MENU HANDLERS
-	// -------------------------------------------------------------
 	function openContextMenu(e: MouseEvent, docTarget: any = null) {
 		e.preventDefault();
 		e.stopPropagation();
 
-		const menuWidth = 230;
-		const menuHeight = 290;
-		const x = Math.min(e.clientX, window.innerWidth - menuWidth - 10);
-		const y = Math.min(e.clientY, window.innerHeight - menuHeight - 10);
+		const menuWidth = 250;
+		const menuHeight = 310;
+		const x = Math.min(e.clientX, window.innerWidth - menuWidth - 12);
+		const y = Math.min(e.clientY, window.innerHeight - menuHeight - 12);
 
 		contextMenu = {
 			open: true,
@@ -466,16 +949,28 @@
 			const handleKey = (e: KeyboardEvent) => {
 				if (e.key === 'Escape') {
 					closeContextMenu();
+					if (lightboxSrc) lightboxSrc = null;
+					if (explorerCreator.open) explorerCreator.open = false;
 				}
-				// Obsidian Shortcut: Ctrl + E to Edit current note
+				if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's' && isInlineEditing) {
+					e.preventDefault();
+					saveInlineNote(false);
+				}
 				if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'e' && !isEditorOpen) {
 					e.preventDefault();
-					handleContextMenuEdit(currentDoc);
+					if (isInlineEditing) {
+						saveInlineNote(true);
+					} else {
+						startInlineEdit(currentDoc);
+					}
 				}
-				// Obsidian Shortcut: Ctrl + N to Create new note
 				if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'n' && !isEditorOpen) {
 					e.preventDefault();
-					handleContextMenuCreate(currentDoc);
+					openExplorerCreateFile(currentDoc);
+				}
+				if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'i' && !isEditorOpen) {
+					e.preventDefault();
+					askAiAboutDoc();
 				}
 			};
 			window.addEventListener('keydown', handleKey);
@@ -489,55 +984,63 @@
 	async function handleContextMenuEdit(target: any) {
 		closeContextMenu();
 		const docToEdit = target || currentDoc;
-		const slug = docToEdit.slug || docToEdit.path || docToEdit.id;
+		const slug = docToEdit?.slug || docToEdit?.path || docToEdit?.id;
 
-		if (docToEdit.content || slug === data.slug) {
-			editingDocTarget = docToEdit.content ? docToEdit : currentDoc;
-			editorMode = 'edit';
-			isEditorOpen = true;
+		if (!slug || slug === data.slug) {
+			startInlineEdit(currentDoc);
 		} else {
-			try {
-				const res = await fetch(`/api/docs/${slug}`);
-				if (res.ok) {
-					editingDocTarget = await res.json();
-				} else {
-					editingDocTarget = docToEdit;
-				}
-			} catch (e) {
-				editingDocTarget = docToEdit;
-			}
-			editorMode = 'edit';
-			isEditorOpen = true;
+			pendingAutoEditSlug = slug;
+			await goto(`/docs/${slug}`);
 		}
 	}
 
 	function handleContextMenuCreate(target: any) {
-		closeContextMenu();
-		const parentDoc = target || currentDoc;
-		const sec = parentDoc?.section && ['SAP', 'SAC', 'WEB'].includes(parentDoc.section)
-			? parentDoc.section
-			: (activeSection !== 'ALL' ? activeSection : (currentDoc?.section || 'SAP'));
-		const cat = parentDoc?.category || currentDoc?.category || 'General';
-
-		editingDocTarget = {
-			section: sec,
-			category: cat,
-			title: '',
-			content: '',
-			tags: [sec, cat]
-		};
-		editorMode = 'create';
-		isEditorOpen = true;
+		openExplorerCreateFile(target || currentDoc);
 	}
 
-	function handleContextMenuAi(target: any) {
+	async function handleContextMenuDuplicate(target: any) {
 		closeContextMenu();
-		const t = target || currentDoc;
-		ui.openAi(`Jelaskan rincian dan arsitektur dari dokumen "${t.title}".`, {
-			type: 'docs',
-			title: t.title,
-			key: t.slug || t.path || t.id
-		});
+		const docToDup = target || currentDoc;
+		const slug = docToDup?.slug || docToDup?.path || docToDup?.id;
+
+		let fullSource = docToDup;
+		if (!fullSource?.content && slug && slug !== data.slug) {
+			try {
+				const res = await fetch(`/api/docs/${slug}`);
+				if (res.ok) fullSource = await res.json();
+			} catch (_) {}
+		} else if (!fullSource?.content) {
+			fullSource = currentDoc;
+		}
+
+		try {
+			const res = await fetch('/api/docs', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					title: `${fullSource?.title || 'Catatan'} (Salinan)`,
+					section: fullSource?.section || currentDoc?.section || 'SAP',
+					category: fullSource?.category || currentDoc?.category || 'General',
+					subcategory: fullSource?.subcategory || undefined,
+					content: fullSource?.content || ''
+				})
+			});
+			const json = await res.json();
+			if (res.ok && json.document?.slug) {
+				if (json.treeData) customTree = json.treeData;
+				pendingAutoEditSlug = json.document.slug;
+				await goto(`/docs/${json.document.slug}`);
+			}
+		} catch (_) {}
+	}
+
+	function handleArticleDblClick(e: MouseEvent) {
+		const target = e.target as HTMLElement | null;
+		if (!target) return;
+		if (target.closest('button, a, pre, code, input, textarea, img')) return;
+		if (!isInlineEditing) {
+			startInlineEdit(currentDoc);
+		}
 	}
 
 	function handleContextMenuCopyLink(target: any) {
@@ -545,8 +1048,7 @@
 		const t = target || currentDoc;
 		const slug = t.slug || t.path || t.id;
 		if (typeof window !== 'undefined') {
-			const fullUrl = `${window.location.origin}/docs/${slug}`;
-			navigator.clipboard.writeText(fullUrl);
+			navigator.clipboard.writeText(`${window.location.origin}/docs/${slug}`);
 			copiedUrl = true;
 			setTimeout(() => (copiedUrl = false), 2000);
 		}
@@ -582,19 +1084,38 @@
 
 	async function handleContextMenuDelete(target: any) {
 		closeContextMenu();
+		if (target?.isFolder) {
+			if ((target.nodeCount || 0) > 0) {
+				alert('Folder ini masih berisi file catatan. Hapus atau pindahkan file di dalamnya terlebih dahulu.');
+				return;
+			}
+			if (!confirm(`Hapus folder "${target.subcategory || target.category}"?`)) return;
+			try {
+				const res = await fetch('/api/docs', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						type: 'delete-folder',
+						section: target.section,
+						category: target.category,
+						subcategory: target.subcategory
+					})
+				});
+				const d = await res.json();
+				if (res.ok && d.treeData) customTree = d.treeData;
+			} catch (_) {}
+			return;
+		}
+
 		const docToDelete = target || currentDoc;
 		const slug = docToDelete.slug || docToDelete.path || docToDelete.id;
 		const title = docToDelete.title || 'dokumen ini';
 
-		if (!confirm(`Apakah Anda yakin ingin menghapus dokumen "${title}"?`)) {
-			return;
-		}
+		if (!confirm(`Apakah Anda yakin ingin menghapus file catatan "${title}"?`)) return;
 
-		isDeleting = true;
 		try {
 			const res = await fetch(`/api/docs/${slug}`, { method: 'DELETE' });
 			if (res.ok) {
-				alert(`Dokumen "${title}" berhasil dihapus.`);
 				if (slug === data.slug) {
 					goto('/docs/sap/overview');
 				} else {
@@ -610,8 +1131,6 @@
 			}
 		} catch (err: any) {
 			alert('Terjadi kesalahan saat menghapus: ' + err.message);
-		} finally {
-			isDeleting = false;
 		}
 	}
 </script>
@@ -620,83 +1139,44 @@
 	<title>{currentDoc?.title || data.article.title} - Portal Dokumentasi</title>
 </svelte:head>
 
-<!-- Recursive Snippet for Hierarchical Outline Items -->
-{#snippet renderOutlineItem(node: OutlineNode, depth: number)}
-	{@const collapsed = isOutlineCollapsed(node.id)}
-	{@const hasChildren = node.children && node.children.length > 0}
-	{@const isActive = activeHeadingId === node.id}
-
-	<div
-		class="outline-node group/node"
-		oncontextmenu={(e) => openContextMenu(e, currentDoc)}
-		role="treeitem"
-		aria-selected={isActive}
-		tabindex="0"
-	>
-		<div
-			class="flex items-center gap-1.5 py-1 px-1.5 rounded-md text-xs transition-colors {isActive
-				? 'bg-blue-50 font-semibold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border-l-2 border-blue-600'
-				: 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-200'}"
-			style="padding-left: {depth * 14 + 6}px;"
-		>
-			{#if hasChildren}
-				<button
-					type="button"
-					onclick={() => toggleOutlineNode(node.id)}
-					class="p-0.5 rounded hover:bg-zinc-200 dark:hover:bg-zinc-700 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-transform shrink-0"
-				>
-					<ChevronDown
-						class="h-3 w-3 transition-transform duration-150 {collapsed ? '-rotate-90' : 'rotate-0'}"
-					/>
-				</button>
-			{:else}
-				<span class="w-3 shrink-0 text-center text-zinc-300 dark:text-zinc-600 font-bold">•</span>
-			{/if}
-
-			<button
-				type="button"
-				onclick={() => scrollToHeading(node.id)}
-				class="truncate text-left flex-1 hover:underline"
-				title={node.text}
-			>
-				{node.text}
-			</button>
-		</div>
-
-		{#if hasChildren && !collapsed}
-			<div class="border-l border-zinc-200/80 dark:border-zinc-800/80 ml-3">
-				{#each node.children as child}
-					{@render renderOutlineItem(child, depth + 1)}
-				{/each}
-			</div>
-		{/if}
-	</div>
-{/snippet}
-
-<div 
+<div
 	class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8"
 	oncontextmenu={(e) => openContextMenu(e, currentDoc)}
 	role="region"
 	aria-label="Dokumentasi Workspace"
 >
 	<!-- ======================================================== -->
-	<!-- VS CODE TOP TAB BAR                                       -->
+	<!-- 1. VS CODE TOP TAB BAR                                    -->
 	<!-- ======================================================== -->
-	<div class="mt-4 flex items-center justify-between border-b border-zinc-200 bg-zinc-100/90 dark:border-zinc-800 dark:bg-zinc-950 rounded-t-xl px-2 pt-1.5 overflow-x-auto">
-		<div class="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5">
-			{#each openTabs as tab}
+	<div class="mt-3 flex items-center justify-between border-b border-border bg-muted/60 rounded-t-xl px-2 pt-1.5 overflow-x-auto">
+		<div class="flex items-center gap-1 overflow-x-auto scrollbar-none py-0.5 min-h-[34px]">
+			{#if openTabs.length === 0}
+				<button
+					type="button"
+					onclick={() => ensureTabOpen(currentDoc)}
+					class="flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11px] font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+				>
+					<Plus class="h-3 w-3" />
+					<span>Buka tab untuk dokumen ini</span>
+				</button>
+			{/if}
+
+			{#each openTabs as tab (tab.slug)}
 				{@const isActive = tab.slug === data.slug}
 				<div
-					class="group relative flex items-center gap-2 rounded-t-lg border-t-2 px-3 py-1.5 text-xs font-medium transition-all {isActive
-						? 'border-indigo-600 bg-white text-zinc-900 shadow-2xs dark:border-indigo-500 dark:bg-zinc-900 dark:text-zinc-100'
-						: 'border-transparent bg-zinc-200/60 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 dark:bg-zinc-900/40 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-200'}"
+					class="group relative flex items-center gap-1.5 rounded-t-lg border-t-2 pl-3 pr-1.5 py-1.5 text-xs font-medium transition-all {isActive
+						? 'border-indigo-600 bg-background text-foreground shadow-2xs dark:border-indigo-500'
+						: 'border-transparent bg-muted/50 text-muted-foreground hover:bg-muted hover:text-foreground'}"
 					oncontextmenu={(e) => openContextMenu(e, tab)}
+					onauxclick={(e) => {
+						if (e.button === 1) closeTab(tab.slug, e);
+					}}
 					role="tab"
 					tabindex="0"
 				>
 					<a
 						href="/docs/{tab.slug}"
-						class="flex items-center gap-1.5 truncate max-w-[170px]"
+						class="flex items-center gap-1.5 truncate max-w-[170px] py-0.5"
 						title="{tab.title} (Klik kanan untuk opsi)"
 					>
 						{#if tab.section === 'SAP'}
@@ -711,27 +1191,37 @@
 
 					<button
 						type="button"
+						onpointerdown={(e) => e.stopPropagation()}
+						onmousedown={(e) => e.stopPropagation()}
 						onclick={(e) => closeTab(tab.slug, e)}
 						title="Tutup Tab"
-						class="rounded p-0.5 text-zinc-400 hover:bg-zinc-200 hover:text-zinc-900 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+						aria-label="Tutup Tab {tab.title}"
+						class="relative z-10 flex h-5 w-5 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-red-500/15 hover:text-red-600 dark:hover:text-red-400"
 					>
-						<X class="h-3 w-3" />
+						<X class="h-3.5 w-3.5 pointer-events-none" />
 					</button>
 				</div>
 			{/each}
 		</div>
 
-		<!-- Right Side Tab Action Buttons -->
-		<div class="flex items-center gap-1.5 pb-1 pl-2 shrink-0">
-			<Badge variant="outline" class="hidden sm:inline-flex gap-1 text-[10px] font-mono border-zinc-300 dark:border-zinc-700">
-				<span>Markdown Viewer</span>
-			</Badge>
+		<div class="flex items-center gap-1 pb-1 pl-2 shrink-0">
+			{#if openTabs.length > 1}
+				<button
+					type="button"
+					onclick={(e) => closeAllTabs(e)}
+					title="Tutup Semua Tab"
+					class="rounded-md px-2 py-1 text-[10px] font-medium text-muted-foreground hover:bg-red-500/10 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+				>
+					Tutup Semua
+				</button>
+			{/if}
+
 			<Button
 				variant="ghost"
 				size="icon"
 				title={isFocusMode ? 'Keluar Mode Fokus' : 'Mode Fokus Layar Penuh'}
 				onclick={() => (isFocusMode = !isFocusMode)}
-				class="h-7 w-7 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+				class="h-7 w-7 text-muted-foreground hover:text-foreground"
 			>
 				{#if isFocusMode}
 					<Minimize2 class="h-3.5 w-3.5" />
@@ -743,113 +1233,102 @@
 	</div>
 
 	<!-- ======================================================== -->
-	<!-- VS CODE BREADCRUMB BAR                                    -->
+	<!-- 2. UNIFIED BREADCRUMB & COMPACT ACTION BAR               -->
 	<!-- ======================================================== -->
-	<div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 bg-white px-4 py-2 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/70">
+	<div class="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-card/90 px-3.5 py-2 text-xs">
+		<!-- Left: Breadcrumb Navigation -->
 		<div class="flex items-center gap-1.5 font-mono text-[11px] overflow-x-auto truncate">
-			<a href="/" class="hover:underline flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
-				<span>Home</span>
-			</a>
-			<ChevronRight class="h-3 w-3 text-zinc-400 shrink-0" />
-			<span class="font-semibold {currentDoc?.section === 'SAP' ? 'text-blue-600 dark:text-blue-400' : currentDoc?.section === 'SAC' ? 'text-purple-600 dark:text-purple-400' : 'text-emerald-600 dark:text-emerald-400'}">
+			<a href="/" class="hover:underline text-muted-foreground hover:text-foreground">Home</a>
+			<ChevronRight class="h-3 w-3 text-muted-foreground shrink-0" />
+			<span
+				class="font-semibold {currentDoc?.section === 'SAP'
+					? 'text-blue-600 dark:text-blue-400'
+					: currentDoc?.section === 'SAC'
+						? 'text-purple-600 dark:text-purple-400'
+						: 'text-emerald-600 dark:text-emerald-400'}"
+			>
 				{currentDoc?.section || data.article.section || 'SAP'}
 			</span>
-			<ChevronRight class="h-3 w-3 text-zinc-400 shrink-0" />
-			<span class="text-zinc-700 dark:text-zinc-300">{currentDoc?.category || data.article.category}</span>
-			<ChevronRight class="h-3 w-3 text-zinc-400 shrink-0" />
-			<span class="font-bold text-zinc-900 dark:text-zinc-100 truncate">{currentDoc?.title || data.article.title}.md</span>
+			<ChevronRight class="h-3 w-3 text-muted-foreground shrink-0" />
+			<span class="text-muted-foreground truncate">{currentDoc?.category || data.article.category}</span>
+			{#if currentDoc?.subcategory || data.article?.subcategory}
+				<ChevronRight class="h-3 w-3 text-muted-foreground shrink-0" />
+				<span class="text-indigo-600 dark:text-indigo-400 font-medium truncate">
+					{currentDoc?.subcategory || data.article?.subcategory}
+				</span>
+			{/if}
+			<ChevronRight class="h-3 w-3 text-muted-foreground shrink-0" />
+			<span class="font-bold text-foreground truncate">{currentDoc?.title || data.article.title}.md</span>
 		</div>
 
-		<div class="flex items-center gap-2 shrink-0">
+		<!-- Right: Quick Actions & Discoverable Context Menu Button -->
+		<div class="flex items-center gap-1 shrink-0">
 			{#if currentDoc?.sacUrl}
 				<a
 					href={currentDoc.sacUrl}
 					target="_blank"
 					rel="noopener noreferrer"
-					class="inline-flex items-center gap-1 h-6 px-2.5 rounded-md text-[11px] font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-2xs transition-colors"
+					class="inline-flex items-center gap-1 h-7 px-2.5 rounded-md text-[11px] font-semibold bg-purple-600 text-white hover:bg-purple-700 shadow-2xs transition-colors mr-1"
 				>
 					<ExternalLink class="h-3 w-3" />
 					<span>Buka Story SAC ↗</span>
 				</a>
 			{/if}
-			<div class="flex items-center gap-1 text-[11px] text-zinc-400">
-				<Clock class="h-3 w-3" />
-				<span>{readingTime}m</span>
-			</div>
-		</div>
-	</div>
 
-	<!-- ======================================================== -->
-	<!-- VS CODE MARKDOWN TOOLBAR                                  -->
-	<!-- ======================================================== -->
-	<div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 bg-zinc-50/70 px-4 py-1.5 dark:border-zinc-800 dark:bg-zinc-900/30">
-		<!-- Left Tools: View Switchers -->
-		<div class="flex items-center gap-1">
-			<Button
-				variant={sidebarView === 'explorer' ? 'secondary' : 'ghost'}
-				size="sm"
-				onclick={() => (sidebarView = 'explorer')}
-				title="Tampilkan Explorer / Semua Dokumen"
-				class="h-7 gap-1 px-2.5 text-xs {sidebarView === 'explorer' ? 'font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50' : 'text-zinc-600 dark:text-zinc-400'}"
-			>
-				<FolderTree class="h-3.5 w-3.5" />
-				<span>Explorer</span>
-			</Button>
-
-			<Button
-				variant={sidebarView === 'outline' ? 'secondary' : 'ghost'}
-				size="sm"
-				onclick={() => (sidebarView = 'outline')}
-				title="Tampilkan Outline / Hierarki Catatan"
-				class="h-7 gap-1 px-2.5 text-xs {sidebarView === 'outline' ? 'font-bold text-indigo-700 dark:text-indigo-300 bg-indigo-50 dark:bg-indigo-950/50' : 'text-zinc-600 dark:text-zinc-400'}"
-			>
-				<ListTree class="h-3.5 w-3.5" />
-				<span>Outline</span>
-			</Button>
-
-			<Separator orientation="vertical" class="h-4 mx-1" />
+			{#if isInlineEditing}
+				<Button
+					variant="default"
+					size="sm"
+					onclick={() => saveInlineNote(true)}
+					disabled={isSavingInline}
+					class="h-7 gap-1 px-2.5 text-xs bg-emerald-600 text-white hover:bg-emerald-700 shadow-2xs"
+				>
+					{#if isSavingInline}
+						<Loader2 class="h-3.5 w-3.5 animate-spin" />
+					{:else}
+						<Save class="h-3.5 w-3.5" />
+					{/if}
+					<span>Simpan & Baca</span>
+				</Button>
+			{:else}
+				<Button
+					variant="outline"
+					size="sm"
+					title="Tulis / Edit Isi Catatan Ini (Ctrl+E)"
+					onclick={() => startInlineEdit(currentDoc)}
+					class="h-7 gap-1 px-2.5 text-xs"
+				>
+					<Edit3 class="h-3.5 w-3.5 text-blue-500" />
+					<span>Tulis / Edit</span>
+					<kbd class="hidden md:inline-flex items-center rounded bg-muted px-1 py-0.2 text-[9px] font-mono text-muted-foreground">
+						Ctrl+E
+					</kbd>
+				</Button>
+			{/if}
 
 			<Button
 				variant="ghost"
 				size="sm"
 				onclick={() => (isSearchActive = !isSearchActive)}
-				title="Cari di catatan ini"
-				class="h-7 gap-1 px-2 text-xs text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white"
+				title="Cari teks di halaman ini"
+				class="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground"
 			>
 				<Search class="h-3.5 w-3.5" />
 				<span class="hidden sm:inline">Cari</span>
 			</Button>
-		</div>
-
-		<!-- Right Tools: Actions & Obsidian/Notion Tip -->
-		<div class="flex items-center gap-1">
-			<div class="hidden md:flex items-center gap-1 text-[11px] text-zinc-400 px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800/60 mr-1">
-				<MousePointerClick class="h-3 w-3 text-zinc-400" />
-				<span>Klik kanan untuk Edit & Tambah Baru</span>
-			</div>
 
 			<Button
 				variant="secondary"
 				size="sm"
+				title="AI Assistant Khusus Dokumen Ini (Ctrl+I)"
 				onclick={askAiAboutDoc}
 				class="h-7 gap-1 px-2.5 text-xs border border-indigo-200 bg-indigo-50 text-indigo-900 hover:bg-indigo-100 dark:border-indigo-900/60 dark:bg-indigo-950/40 dark:text-indigo-300"
 			>
 				<Sparkles class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-				<span>AI Assistant</span>
-			</Button>
-
-			<Button
-				variant="ghost"
-				size="icon"
-				title="Salin Raw Markdown"
-				onclick={copyRawMarkdown}
-				class="h-7 w-7 text-zinc-600 dark:text-zinc-400"
-			>
-				{#if copiedMarkdown}
-					<Check class="h-3.5 w-3.5 text-emerald-600" />
-				{:else}
-					<FileText class="h-3.5 w-3.5" />
-				{/if}
+				<span class="hidden sm:inline">AI Assistant</span>
+				<kbd class="hidden md:inline-flex items-center rounded bg-indigo-200/70 px-1 py-0.2 text-[9px] font-mono text-indigo-900 dark:bg-indigo-900/70 dark:text-indigo-200">
+					Ctrl+I
+				</kbd>
 			</Button>
 
 			<Button
@@ -857,7 +1336,7 @@
 				size="icon"
 				title="Salin Tautan Halaman"
 				onclick={copyPageUrl}
-				class="h-7 w-7 text-zinc-600 dark:text-zinc-400"
+				class="h-7 w-7 text-muted-foreground hover:text-foreground"
 			>
 				{#if copiedUrl}
 					<Check class="h-3.5 w-3.5 text-emerald-600" />
@@ -871,51 +1350,74 @@
 				size="icon"
 				title="Unduh File (.md)"
 				onclick={downloadMarkdown}
-				class="h-7 w-7 text-zinc-600 dark:text-zinc-400"
+				class="h-7 w-7 text-muted-foreground hover:text-foreground"
 			>
 				<Download class="h-3.5 w-3.5" />
+			</Button>
+
+			<!-- Discoverable More Actions Button (Triggers the same Obsidian Context Menu) -->
+			<Button
+				variant="outline"
+				size="sm"
+				title="Opsi Catatan: Edit (Ctrl+E), Tambah Baru (Ctrl+N), Hapus (Atau Klik Kanan di mana saja)"
+				onclick={(e) => openContextMenu(e, currentDoc)}
+				class="h-7 gap-1 px-2 text-xs text-muted-foreground hover:text-foreground ml-0.5"
+			>
+				<MoreHorizontal class="h-3.5 w-3.5" />
+				<span class="hidden md:inline text-[11px]">Aksi</span>
 			</Button>
 		</div>
 	</div>
 
 	<!-- In-Page Search Bar Banner -->
 	{#if isSearchActive}
-		<div class="flex items-center gap-2 border-b border-zinc-200 bg-amber-50/50 px-4 py-2 dark:border-zinc-800 dark:bg-amber-950/20">
+		<div class="flex items-center gap-2 border-b border-border bg-amber-50/60 px-4 py-2 dark:bg-amber-950/20">
 			<Search class="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0" />
 			<input
 				type="text"
 				bind:value={inPageSearchQuery}
-				placeholder="Ketik kata kunci untuk mencari di dalam teks..."
-				class="flex-1 bg-transparent text-xs text-zinc-900 placeholder:text-zinc-400 focus:outline-none dark:text-zinc-100"
+				onkeydown={(e) => {
+					if (e.key === 'Escape') {
+						isSearchActive = false;
+						inPageSearchQuery = '';
+					}
+				}}
+				placeholder="Ketik kata kunci untuk mencari di dalam catatan ini..."
+				class="flex-1 bg-transparent text-xs text-foreground placeholder:text-muted-foreground focus:outline-none"
 			/>
 			<button
 				type="button"
-				onclick={() => { isSearchActive = false; inPageSearchQuery = ''; }}
-				class="text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200"
+				onclick={() => {
+					isSearchActive = false;
+					inPageSearchQuery = '';
+				}}
+				title="Tutup Pencarian (ESC)"
+				aria-label="Tutup Pencarian"
+				class="flex h-6 w-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-amber-500/15 hover:text-foreground"
 			>
-				<X class="h-3.5 w-3.5" />
+				<X class="h-3.5 w-3.5 pointer-events-none" />
 			</button>
 		</div>
 	{/if}
 
 	<!-- ======================================================== -->
-	<!-- MAIN WORKSPACE LAYOUT (SIDEBAR + CONTENT + TOC)           -->
+	<!-- 3. THREE-COLUMN WORKSPACE (EXPLORER + ARTICLE + OUTLINE)  -->
 	<!-- ======================================================== -->
-	<div class="flex gap-8 py-6">
-		<!-- Left Sidebar (Desktop, hidden in focus mode) -->
+	<div class="flex gap-7 py-6">
+		<!-- LEFT SIDEBAR: EXPLORER (Pohon Semua Dokumen) -->
 		{#if !isFocusMode}
-			<aside class="hidden lg:block w-72 shrink-0">
-				<div class="sticky top-20 space-y-3.5">
-					<!-- Top Switcher: EXPLORER vs OUTLINE -->
-					<div class="grid grid-cols-2 gap-1 rounded-xl bg-zinc-200/70 p-1 dark:bg-zinc-900 text-center text-xs font-semibold">
+			<aside class="hidden lg:block w-68 shrink-0">
+				<div class="sticky top-20 space-y-3">
+					<!-- Switcher only shown on lg screens where Right Outline is hidden; on xl+ Explorer is dedicated left -->
+					<div class="grid grid-cols-2 gap-1 rounded-xl bg-muted p-1 text-center text-xs font-semibold xl:hidden">
 						<button
 							type="button"
 							onclick={() => (sidebarView = 'explorer')}
 							class="flex items-center justify-center gap-1.5 rounded-lg py-1.5 transition-all {sidebarView === 'explorer'
-								? 'bg-white text-zinc-900 shadow-xs dark:bg-zinc-800 dark:text-white'
-								: 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
+								? 'bg-background text-foreground shadow-xs'
+								: 'text-muted-foreground hover:text-foreground'}"
 						>
-							<FolderTree class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
+							<FolderTree class="h-3.5 w-3.5 text-indigo-500" />
 							<span>Explorer</span>
 						</button>
 
@@ -923,296 +1425,908 @@
 							type="button"
 							onclick={() => (sidebarView = 'outline')}
 							class="flex items-center justify-center gap-1.5 rounded-lg py-1.5 transition-all {sidebarView === 'outline'
-								? 'bg-white text-zinc-900 shadow-xs dark:bg-zinc-800 dark:text-white'
-								: 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
+								? 'bg-background text-foreground shadow-xs'
+								: 'text-muted-foreground hover:text-foreground'}"
 						>
-							<ListTree class="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+							<ListTree class="h-3.5 w-3.5 text-blue-500" />
 							<span>Outline</span>
-							{#if outlineTree.length > 0}
-								<span class="rounded px-1.5 py-0.2 text-[10px] bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300 font-bold">
-									{outlineTree.length}
-								</span>
-							{/if}
 						</button>
 					</div>
 
-					<!-- VIEW 1: OUTLINE MODE (Struktur Bab Catatan Ini, persis seperti di screenshot VS Code) -->
 					{#if sidebarView === 'outline'}
-						<div class="space-y-3 rounded-xl border border-zinc-200/80 bg-white p-3 shadow-2xs dark:border-zinc-800 dark:bg-zinc-900/60">
-							<div class="flex items-center justify-between">
-								<span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">
-									Struktur Dokumen (Outline)
-								</span>
-								<div class="flex items-center gap-1">
-									<Button
-										variant="ghost"
-										size="icon"
-										title="Ciutkan / Bentangkan Semua"
-										onclick={toggleAllOutline}
-										class="h-6 w-6 text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100"
-									>
-										<ChevronsUpDown class="h-3.5 w-3.5" />
-									</Button>
-								</div>
-							</div>
+						<div class="xl:hidden">
+							<DocsRightOutline
+								{outlineTree}
+								{activeHeadingId}
+								onSelectHeading={scrollToHeading}
+								onContextMenu={(e) => openContextMenu(e, currentDoc)}
+							/>
+						</div>
+					{/if}
 
-							<!-- Filter in Outline -->
-							<div class="relative">
-								<Search class="absolute left-2.5 top-2.5 h-3 w-3 text-zinc-400" />
-								<input
-									type="text"
-									bind:value={outlineFilter}
-									placeholder="Cari bagian heading..."
-									class="w-full rounded-lg border border-zinc-200 bg-zinc-50/50 py-1 pl-7 pr-3 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-blue-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-								/>
-							</div>
-
-							<!-- Outline Hierarchical Tree -->
-							<div class="space-y-0.5 max-h-[calc(100vh-270px)] overflow-y-auto pr-1">
-								{#if filteredOutline.length > 0}
-									{#each filteredOutline as node}
-										{@render renderOutlineItem(node, 0)}
-									{/each}
-								{:else}
-									<div class="py-6 text-center text-xs text-zinc-400">
-										{#if outlineFilter.trim()}
-											Tidak ada heading yang cocok dengan "{outlineFilter}"
-										{:else}
-											Dokumen ini belum memiliki heading (#, ##, ###)
-										{/if}
-									</div>
-								{/if}
+					<!-- Explorer Tree (Always visible on xl+, or when sidebarView === 'explorer') -->
+					<div
+						class="space-y-3 {sidebarView === 'outline' ? 'hidden xl:block' : ''}"
+						oncontextmenu={(e) => openContextMenu(e, null)}
+						role="region"
+						aria-label="Semua Dokumen"
+					>
+						<!-- Explorer Header with Obsidian File Explorer Actions: + File | + Folder | Collapse -->
+						<div class="flex items-center justify-between px-1">
+							<span class="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+								File Explorer
+							</span>
+							<div class="flex items-center gap-1">
+								<Button
+									variant="outline"
+									size="sm"
+									title="Buat File Catatan Baru (Ctrl+N)"
+									onclick={() => openExplorerCreateFile()}
+									class="h-6 gap-1 px-2 text-[11px] font-semibold"
+								>
+									<FilePlus class="h-3 w-3 text-emerald-500" />
+									<span>+ File</span>
+								</Button>
+								<Button
+									variant="outline"
+									size="sm"
+									title="Buat Folder Baru (Kategori)"
+									onclick={() => openExplorerCreateFolder()}
+									class="h-6 gap-1 px-2 text-[11px] font-semibold"
+								>
+									<FolderPlus class="h-3 w-3 text-amber-500" />
+									<span>+ Folder</span>
+								</Button>
+								<Button
+									variant="ghost"
+									size="icon"
+									title={allExpanded ? 'Ciutkan Semua Folder' : 'Bentangkan Semua Folder'}
+									onclick={toggleAllCategories}
+									class="h-6 w-6 text-muted-foreground hover:text-foreground rounded-md"
+								>
+									<ChevronsUpDown class="h-3.5 w-3.5" />
+								</Button>
 							</div>
 						</div>
-					{:else}
-						<!-- VIEW 2: EXPLORER MODE (Pohon Semua Dokumen SAP/SAC/WEB) -->
-						<div
-							class="space-y-3"
-							oncontextmenu={(e) => openContextMenu(e, null)}
-							role="region"
-							aria-label="Semua Dokumen"
-						>
-							<!-- Header & Expand Button (Buttons Removed per user request) -->
-							<div class="flex items-center justify-between">
-								<span class="text-xs font-bold uppercase tracking-wider text-zinc-400">Semua Dokumen</span>
-								<div class="flex items-center gap-1">
-									<Button
-										variant="ghost"
-										size="icon"
-										title={allExpanded ? 'Ciutkan Semua' : 'Bentangkan Semua'}
-										onclick={toggleAllCategories}
-										class="h-7 w-7 text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 rounded-md"
+
+						<!-- Section Switcher: SAP | SAC | WEB | Semua -->
+						<div class="grid grid-cols-4 gap-1 rounded-xl bg-muted p-1 text-center shadow-2xs">
+							<button
+								type="button"
+								onclick={() => (activeSection = 'SAP')}
+								class="rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'SAP'
+									? 'bg-blue-600 text-white shadow-xs'
+									: 'text-muted-foreground hover:text-foreground'}"
+							>
+								SAP
+							</button>
+							<button
+								type="button"
+								onclick={() => (activeSection = 'SAC')}
+								class="rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'SAC'
+									? 'bg-purple-600 text-white shadow-xs'
+									: 'text-muted-foreground hover:text-foreground'}"
+							>
+								SAC
+							</button>
+							<button
+								type="button"
+								onclick={() => (activeSection = 'WEB')}
+								class="rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'WEB'
+									? 'bg-emerald-600 text-white shadow-xs'
+									: 'text-muted-foreground hover:text-foreground'}"
+							>
+								WEB
+							</button>
+							<button
+								type="button"
+								onclick={() => (activeSection = 'ALL')}
+								class="rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'ALL'
+									? 'bg-foreground text-background shadow-xs'
+									: 'text-muted-foreground hover:text-foreground'}"
+							>
+								Semua
+							</button>
+						</div>
+
+						<!-- OBSIDIAN INLINE FILE / FOLDER CREATOR BOX -->
+						{#if explorerCreator.open}
+							<form
+								onsubmit={submitExplorerCreator}
+								class="rounded-xl border border-indigo-500/40 bg-indigo-500/5 p-2.5 space-y-2 shadow-sm animate-in fade-in duration-100"
+							>
+								<div class="flex items-center justify-between gap-1 text-[10px] font-semibold">
+									<div class="flex items-center gap-1.5 truncate">
+										{#if explorerCreator.type === 'folder'}
+											<FolderPlus class="h-3.5 w-3.5 text-amber-500 shrink-0" />
+											<span class="truncate text-foreground">
+												{explorerCreator.isRootFolder
+													? `Folder Baru di ${explorerCreator.section}`
+													: `Sub-Folder di ${explorerCreator.category}`}
+											</span>
+										{:else}
+											<FilePlus class="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+											<span class="truncate text-foreground">
+												File Baru di {explorerCreator.section} / {explorerCreator.subcategory || explorerCreator.category}
+											</span>
+										{/if}
+									</div>
+									<button
+										type="button"
+										onclick={() => (explorerCreator.open = false)}
+										class="rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
 									>
-										<ChevronsUpDown class="h-3.5 w-3.5" />
+										<X class="h-3 w-3" />
+									</button>
+								</div>
+
+								{#if explorerCreator.type === 'file'}
+									<!-- Quick folder selector within current section so user can also pick any folder -->
+									<select
+										bind:value={explorerCreator.category}
+										class="flex h-7 w-full rounded-md border border-input bg-background px-2 py-1 text-[11px] text-foreground focus:outline-none"
+									>
+										{#each currentTree.filter((g: any) => (g.section || 'SAP') === explorerCreator.section) as folderGroup}
+											<option value={folderGroup.title}>📁 {folderGroup.title}</option>
+										{/each}
+									</select>
+								{/if}
+
+								<div class="flex items-center gap-1.5">
+									<Input
+										id="explorer-creator-input"
+										type="text"
+										bind:value={explorerCreator.name}
+										placeholder={explorerCreator.type === 'folder'
+											? 'Ketik nama folder lalu Enter...'
+											: 'Ketik nama catatan lalu Enter...'}
+										class="h-7 text-xs flex-1"
+									/>
+									<Button
+										type="submit"
+										size="sm"
+										disabled={explorerCreator.isSubmitting || !explorerCreator.name.trim()}
+										class="h-7 px-2.5 text-[11px]"
+									>
+										{explorerCreator.isSubmitting ? '...' : 'Buat'}
 									</Button>
 								</div>
-							</div>
 
-							<!-- Section Switcher: SAP | SAC | WEB | Semua -->
-							<div class="grid grid-cols-4 gap-1 rounded-xl bg-zinc-100 p-1 dark:bg-zinc-900 text-center shadow-2xs">
-								<button
-									type="button"
-									onclick={() => (activeSection = 'SAP')}
-									class="flex flex-col items-center justify-center rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'SAP'
-										? 'bg-blue-600 text-white shadow-xs'
-										: 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
-								>
-									<span>SAP</span>
-								</button>
-								<button
-									type="button"
-									onclick={() => (activeSection = 'SAC')}
-									class="flex flex-col items-center justify-center rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'SAC'
-										? 'bg-purple-600 text-white shadow-xs'
-										: 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
-								>
-									<span>SAC</span>
-								</button>
-								<button
-									type="button"
-									onclick={() => (activeSection = 'WEB')}
-									class="flex flex-col items-center justify-center rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'WEB'
-										? 'bg-emerald-600 text-white shadow-xs'
-										: 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
-								>
-									<span>WEB</span>
-								</button>
-								<button
-									type="button"
-									onclick={() => (activeSection = 'ALL')}
-									class="flex flex-col items-center justify-center rounded-lg py-1.5 text-[11px] font-bold transition-all {activeSection === 'ALL'
-										? 'bg-zinc-800 text-white dark:bg-zinc-200 dark:text-zinc-950 shadow-xs'
-										: 'text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white'}"
-								>
-									<span>Semua</span>
-								</button>
-							</div>
+								{#if explorerCreator.error}
+									<p class="text-[10px] text-destructive">{explorerCreator.error}</p>
+								{/if}
+							</form>
+						{/if}
 
-							<!-- Quick Filter Input -->
-							<div class="relative">
-								<Search class="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-zinc-400" />
-								<input
-									type="text"
-									bind:value={sidebarFilter}
-									placeholder="Filter dalam {activeSection === 'ALL' ? 'semua' : activeSection}..."
-									class="w-full rounded-lg border border-zinc-200 bg-white py-1.5 pl-8 pr-3 text-xs text-zinc-900 placeholder:text-zinc-400 shadow-2xs focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-								/>
-							</div>
+						<!-- Quick Filter Input -->
+						<div class="relative">
+							<Search class="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+							<Input
+								type="text"
+								bind:value={sidebarFilter}
+								onkeydown={(e) => {
+									if (e.key === 'Escape') sidebarFilter = '';
+								}}
+								placeholder="Filter dalam {activeSection === 'ALL' ? 'semua' : activeSection}..."
+								class="h-8 pl-8 pr-7 text-xs"
+							/>
+							{#if sidebarFilter}
+								<button
+									type="button"
+									onclick={() => (sidebarFilter = '')}
+									title="Hapus Filter"
+									aria-label="Hapus Filter"
+									class="absolute right-1.5 top-1.5 flex h-5 w-5 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+								>
+									<X class="h-3 w-3 pointer-events-none" />
+								</button>
+							{/if}
+						</div>
 
-							<!-- Navigation Groups (Collapsible Accordion) -->
-							<nav class="space-y-1.5 max-h-[calc(100vh-270px)] overflow-y-auto pr-1">
-								{#each filteredTree as group}
-									{@const expanded = isCategoryExpanded(group)}
-									<div
-										class="rounded-xl transition-colors {expanded ? 'bg-zinc-50/60 dark:bg-zinc-900/30' : ''}"
-										oncontextmenu={(e) => openContextMenu(e, { section: group.section, category: group.title, title: `Kategori: ${group.title}` })}
-										role="group"
-									>
+						<!-- Navigation Groups (File Explorer Folders & Files) -->
+						<nav class="space-y-1 max-h-[calc(100vh-280px)] overflow-y-auto pr-1">
+							{#each filteredTree as group}
+								{@const expanded = isCategoryExpanded(group)}
+								<div
+									class="group/folder rounded-xl transition-colors {expanded ? 'bg-muted/30' : ''}"
+									oncontextmenu={(e) =>
+										openContextMenu(e, {
+											isFolder: true,
+											nodeCount: group.nodes.length,
+											section: group.section,
+											category: group.title,
+											title: `Folder: ${group.title}`
+										})}
+									role="group"
+								>
+									<div class="flex items-center justify-between pr-1 rounded-lg hover:bg-muted/80 transition-colors">
 										<button
 											type="button"
 											onclick={() => toggleCategory(group.title, group)}
-											class="w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold text-zinc-800 hover:bg-zinc-100/80 dark:text-zinc-200 dark:hover:bg-zinc-800/60 transition-colors"
+											class="flex-1 flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-foreground truncate"
 										>
-											<div class="flex items-center gap-1.5 truncate">
-												<ChevronDown
-													class="h-3.5 w-3.5 text-zinc-400 transition-transform duration-200 shrink-0 {expanded ? 'rotate-0 text-zinc-700 dark:text-zinc-300' : '-rotate-90'}"
-												/>
-												<Layers class="h-3 w-3 text-zinc-400 shrink-0" />
-												<span class="truncate font-medium">{group.title}</span>
-											</div>
-
-											<div class="flex items-center gap-1.5 shrink-0">
-												{#if activeSection === 'ALL' && group.section}
-													<span class="rounded px-1.5 py-0.2 text-[9px] font-semibold uppercase {group.section === 'SAP' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300' : group.section === 'SAC' ? 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'}">
-														{group.section}
-													</span>
-												{/if}
-												<span class="text-[10px] text-zinc-400 font-medium px-1.5 py-0.2 rounded-full bg-zinc-100 dark:bg-zinc-800">
-													{group.nodes.length}
-												</span>
-											</div>
+											<ChevronDown
+												class="h-3.5 w-3.5 text-muted-foreground transition-transform duration-200 shrink-0 {expanded
+													? 'rotate-0 text-foreground'
+													: '-rotate-90'}"
+											/>
+											{#if expanded}
+												<FolderOpen class="h-3.5 w-3.5 text-amber-500 shrink-0" />
+											{:else}
+												<Folder class="h-3.5 w-3.5 text-amber-500 shrink-0" />
+											{/if}
+											<span class="truncate font-medium">{group.title}</span>
 										</button>
 
-										{#if expanded}
-											<div class="space-y-0.5 pl-3 ml-3 border-l-2 border-zinc-200 dark:border-zinc-800 my-1 animate-in fade-in duration-150">
-												{#each group.nodes as node}
-													{@const isCurrent = node.path === data.slug || node.slug === data.slug}
-													<a
-														href="/docs/{node.path}"
-														oncontextmenu={(e) => openContextMenu(e, node)}
-														class="flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors {isCurrent
-															? 'bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-950 shadow-2xs font-semibold'
-															: 'text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-900 dark:hover:text-zinc-200'}"
-														title="{node.title} (Klik kanan untuk opsi)"
-													>
-														<div class="flex items-center gap-2 truncate">
-															{#if node.section === 'SAP'}
-																<Building2 class="h-3.5 w-3.5 opacity-60 shrink-0" />
-															{:else if node.section === 'SAC'}
-																<BarChart3 class="h-3.5 w-3.5 opacity-60 shrink-0" />
-															{:else}
-																<Globe class="h-3.5 w-3.5 opacity-60 shrink-0" />
-															{/if}
-															<span class="truncate">{node.title}</span>
-														</div>
-													</a>
-												{/each}
-											</div>
-										{/if}
+										<div class="flex items-center gap-0.5 shrink-0">
+											<!-- Quick Create File & Create Sub-Folder buttons on folder row -->
+											<button
+												type="button"
+												title="Buat File Baru di folder {group.title}"
+												onclick={(e) => {
+													e.stopPropagation();
+													openExplorerCreateFile({
+														section: group.section,
+														category: group.title
+													});
+												}}
+												class="opacity-0 group-hover/folder:opacity-100 flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-emerald-500 transition-opacity"
+											>
+												<FilePlus class="h-3 w-3" />
+											</button>
+											<button
+												type="button"
+												title="Buat Sub-Folder di dalam {group.title}"
+												onclick={(e) => {
+													e.stopPropagation();
+													openExplorerCreateFolder({
+														isFolder: true,
+														section: group.section,
+														category: group.title
+													});
+												}}
+												class="opacity-0 group-hover/folder:opacity-100 flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-amber-500 transition-opacity"
+											>
+												<FolderPlus class="h-3 w-3" />
+											</button>
+
+											{#if activeSection === 'ALL' && group.section}
+												<span
+													class="rounded px-1.5 py-0.2 text-[9px] font-semibold uppercase {group.section === 'SAP'
+														? 'bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
+														: group.section === 'SAC'
+															? 'bg-purple-100 text-purple-700 dark:bg-purple-950 dark:text-purple-300'
+															: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300'}"
+												>
+													{group.section}
+												</span>
+											{/if}
+											<span class="text-[10px] text-muted-foreground font-medium px-1.5 py-0.2 rounded-full bg-muted">
+												{group.nodes.length}
+											</span>
+										</div>
 									</div>
-								{/each}
-							</nav>
-						</div>
-					{/if}
+
+									{#if expanded}
+										<div class="space-y-1 pl-2.5 ml-3 border-l-2 border-border my-1 animate-in fade-in duration-150">
+											<!-- Sub-Categories (Nested Sub-Folders) -->
+											{#each group.subcategories || [] as subGroup}
+												{@const subExpanded = isSubcategoryExpanded(group.title, subGroup)}
+												<div
+													class="rounded-lg bg-muted/20"
+													oncontextmenu={(e) =>
+														openContextMenu(e, {
+															isFolder: true,
+															nodeCount: subGroup.nodes.length,
+															section: group.section,
+															category: group.title,
+															subcategory: subGroup.title,
+															title: `Sub-Folder: ${group.title} / ${subGroup.title}`
+														})}
+													role="group"
+												>
+													<div class="flex items-center justify-between pr-1">
+														<button
+															type="button"
+															onclick={() => toggleSubcategory(group.title, subGroup)}
+															class="flex-1 flex items-center gap-1.5 px-2 py-1 rounded-md text-[11px] font-semibold text-indigo-600 dark:text-indigo-400 hover:bg-muted/80 transition-colors truncate"
+														>
+															<ChevronDown
+																class="h-3 w-3 transition-transform duration-150 shrink-0 {subExpanded
+																	? 'rotate-0'
+																	: '-rotate-90'}"
+															/>
+															<Folder class="h-3 w-3 shrink-0" />
+															<span class="truncate">{subGroup.title}</span>
+															<span class="ml-auto text-[9px] text-muted-foreground px-1 rounded bg-muted">
+																{subGroup.nodes.length}
+															</span>
+														</button>
+														<button
+															type="button"
+															title="Buat File Baru di Sub-Folder {subGroup.title}"
+															onclick={() =>
+																openExplorerCreateFile({
+																	section: group.section,
+																	category: group.title,
+																	subcategory: subGroup.title
+																})}
+															class="flex h-5 w-5 items-center justify-center rounded text-muted-foreground hover:bg-muted hover:text-emerald-500"
+														>
+															<FilePlus class="h-3 w-3" />
+														</button>
+													</div>
+
+													{#if subExpanded}
+														<div class="space-y-0.5 pl-2.5 ml-2.5 border-l border-indigo-500/30 py-0.5">
+															{#each subGroup.nodes as node}
+																{@const isCurrent = node.path === data.slug || node.slug === data.slug}
+																<a
+																	href="/docs/{node.path}"
+																	onclick={() => ensureTabOpen(node)}
+																	oncontextmenu={(e) => openContextMenu(e, node)}
+																	class="flex items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-xs font-medium transition-colors {isCurrent
+																		? 'bg-foreground text-background shadow-2xs font-semibold'
+																		: 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+																	title="{node.title} (Klik kanan untuk opsi)"
+																>
+																	<div class="flex items-center gap-2 truncate">
+																		<FileText class="h-3.5 w-3.5 opacity-60 shrink-0" />
+																		<span class="truncate">{node.title}</span>
+																	</div>
+																</a>
+															{/each}
+															{#if subGroup.nodes.length === 0}
+																<button
+																	type="button"
+																	onclick={() =>
+																		openExplorerCreateFile({
+																			section: group.section,
+																			category: group.title,
+																			subcategory: subGroup.title
+																		})}
+																	class="w-full text-left px-2 py-1 text-[10px] italic text-muted-foreground hover:text-foreground"
+																>
+																	+ Buat file di sub-folder ini...
+																</button>
+															{/if}
+														</div>
+													{/if}
+												</div>
+											{/each}
+
+											<!-- Direct Documents inside Category (without Sub-Category) -->
+											{#each group.directNodes || group.nodes as node}
+												{@const isCurrent = node.path === data.slug || node.slug === data.slug}
+												<a
+													href="/docs/{node.path}"
+													onclick={() => ensureTabOpen(node)}
+													oncontextmenu={(e) => openContextMenu(e, node)}
+													class="flex items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors {isCurrent
+														? 'bg-foreground text-background shadow-2xs font-semibold'
+														: 'text-muted-foreground hover:bg-muted hover:text-foreground'}"
+													title="{node.title} (Klik kanan untuk opsi)"
+												>
+													<div class="flex items-center gap-2 truncate">
+														<FileText class="h-3.5 w-3.5 opacity-60 shrink-0" />
+														<span class="truncate">{node.title}</span>
+													</div>
+												</a>
+											{/each}
+
+											{#if (group.directNodes || group.nodes).length === 0 && (group.subcategories || []).length === 0}
+												<button
+													type="button"
+													onclick={() =>
+														openExplorerCreateFile({
+															section: group.section,
+															category: group.title
+														})}
+													class="w-full text-left px-2.5 py-1.5 text-[11px] italic text-muted-foreground hover:text-foreground"
+												>
+													Folder kosong — klik untuk + Buat File
+												</button>
+											{/if}
+										</div>
+									{/if}
+								</div>
+							{/each}
+						</nav>
+					</div>
 				</div>
 			</aside>
 		{/if}
 
-		<!-- ======================================================== -->
-		<!-- MAIN CONTENT AREA                                         -->
-		<!-- ======================================================== -->
+		<!-- CENTER AREA: DOCUMENT CONTENT OR OBSIDIAN IN-PAGE NOTE EDITOR -->
+		<!-- svelte-ignore a11y_click_events_have_key_events -->
+		<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 		<div
-			class="min-w-0 flex-1 {isFocusMode ? 'max-w-4xl mx-auto' : 'max-w-3xl'}"
+			class="min-w-0 flex-1 {isFocusMode ? 'max-w-4xl mx-auto' : ''}"
 			oncontextmenu={(e) => openContextMenu(e, currentDoc)}
+			onclick={handleArticleClick}
+			ondblclick={handleArticleDblClick}
 			role="article"
 		>
-			<!-- Document Title & Meta Header -->
-			<div class="mb-8">
-				<div class="flex flex-wrap items-center gap-2 mb-3">
-					{#if (currentDoc?.section || data.article.section) === 'SAP'}
-						<Badge class="gap-1 border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300">
-							<Building2 class="h-3 w-3" />
-							<span>SAP Enterprise</span>
-						</Badge>
-					{:else if (currentDoc?.section || data.article.section) === 'SAC'}
-						<Badge class="gap-1 border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300">
-							<BarChart3 class="h-3 w-3" />
-							<span>SAC Analytics</span>
-						</Badge>
-					{:else}
-						<Badge class="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
-							<Globe class="h-3 w-3" />
-							<span>WEB Stack</span>
-						</Badge>
+			{#if isInlineEditing}
+				<!-- ============================================================ -->
+				<!-- OBSIDIAN IN-PAGE NOTE EDITOR (Write Directly Inside Note!)   -->
+				<!-- ============================================================ -->
+				<div class="space-y-4 rounded-2xl border border-indigo-500/30 bg-card/60 p-5 shadow-sm animate-in fade-in duration-150">
+					<!-- Top Automatic Folder Path & Action Buttons -->
+					<div class="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
+						<div class="flex flex-wrap items-center gap-1.5 text-xs">
+							{#if (currentDoc?.section || data.article.section) === 'SAP'}
+								<Badge class="gap-1 border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300">
+									<Building2 class="h-3 w-3" />
+									<span>SAP Enterprise</span>
+								</Badge>
+							{:else if (currentDoc?.section || data.article.section) === 'SAC'}
+								<Badge class="gap-1 border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300">
+									<BarChart3 class="h-3 w-3" />
+									<span>SAC Analytics</span>
+								</Badge>
+							{:else}
+								<Badge class="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+									<Globe class="h-3 w-3" />
+									<span>WEB Stack</span>
+								</Badge>
+							{/if}
+
+							<span class="text-muted-foreground">/</span>
+							<Badge variant="outline" class="gap-1 text-[11px] font-semibold">
+								<Folder class="h-3 w-3 text-amber-500" />
+								<span>{currentDoc?.category || data.article.category}</span>
+							</Badge>
+
+							{#if currentDoc?.subcategory || data.article?.subcategory}
+								<span class="text-muted-foreground">/</span>
+								<Badge variant="secondary" class="gap-1 text-[11px] font-semibold border border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+									<FolderTree class="h-3 w-3" />
+									<span>{currentDoc?.subcategory || data.article?.subcategory}</span>
+								</Badge>
+							{/if}
+
+							{#if inlineStatusMsg}
+								<span class="ml-2 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
+									{inlineStatusMsg}
+								</span>
+							{/if}
+						</div>
+
+						<div class="flex items-center gap-1.5">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onclick={() => (isInlineEditing = false)}
+								class="h-8 gap-1 text-xs"
+							>
+								<Eye class="h-3.5 w-3.5" />
+								<span>Mode Baca</span>
+							</Button>
+							<Button
+								type="button"
+								variant="default"
+								size="sm"
+								disabled={isSavingInline}
+								onclick={() => saveInlineNote(true)}
+								class="h-8 gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 text-xs shadow-xs"
+							>
+								{#if isSavingInline}
+									<Loader2 class="h-3.5 w-3.5 animate-spin" />
+									<span>Menyimpan...</span>
+								{:else}
+									<Save class="h-3.5 w-3.5" />
+									<span>Simpan Catatan (Ctrl+S)</span>
+								{/if}
+							</Button>
+						</div>
+					</div>
+
+					<!-- Note Title Input (Like Obsidian / Notion Note Heading) -->
+					<div>
+						<Input
+							type="text"
+							bind:value={inlineTitle}
+							placeholder="Judul Catatan..."
+							class="h-11 border-transparent bg-muted/40 px-3 text-xl font-extrabold tracking-tight text-foreground focus-visible:border-indigo-500 sm:text-2xl"
+						/>
+					</div>
+
+					{#if inlineErrorMsg}
+						<div class="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+							{inlineErrorMsg}
+						</div>
 					{/if}
 
-					<Badge variant="outline" class="text-[11px] font-semibold">
-						{currentDoc?.category || data.article.category}
-					</Badge>
-					<span class="text-xs text-zinc-400">•</span>
-					<div class="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-						<Clock class="h-3.5 w-3.5" />
-						<span>{readingTime} menit baca</span>
+					<!-- Formatting & Mode Toolbar -->
+					<div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border bg-muted/40 p-2">
+						<Tabs bind:value={inlineMode} class="w-auto">
+							<TabsList class="h-8 bg-background/80 p-0.5">
+								<TabsTrigger value="edit" class="gap-1.5 px-2.5 py-1 text-xs">
+									<Edit3 class="h-3 w-3" />
+									<span>Tulis</span>
+								</TabsTrigger>
+								<TabsTrigger value="split" class="gap-1.5 px-2.5 py-1 text-xs">
+									<Columns2 class="h-3 w-3" />
+									<span>Split</span>
+								</TabsTrigger>
+								<TabsTrigger value="preview" class="gap-1.5 px-2.5 py-1 text-xs">
+									<Eye class="h-3 w-3" />
+									<span>Preview</span>
+								</TabsTrigger>
+							</TabsList>
+						</Tabs>
+
+						<div class="flex flex-wrap items-center gap-1">
+							<button
+								type="button"
+								title="Heading 2"
+								onclick={() => insertInlineSnippet('\n## ', '\n')}
+								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
+							>
+								<Heading2 class="h-3.5 w-3.5" />
+							</button>
+							<button
+								type="button"
+								title="Heading 3"
+								onclick={() => insertInlineSnippet('\n### ', '\n')}
+								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
+							>
+								<Heading3 class="h-3.5 w-3.5" />
+							</button>
+							<button
+								type="button"
+								title="Bold"
+								onclick={() => insertInlineSnippet('**', '**')}
+								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
+							>
+								<Bold class="h-3.5 w-3.5" />
+							</button>
+							<button
+								type="button"
+								title="Italic"
+								onclick={() => insertInlineSnippet('*', '*')}
+								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
+							>
+								<Italic class="h-3.5 w-3.5" />
+							</button>
+							<button
+								type="button"
+								title="Bullet List"
+								onclick={() => insertInlineSnippet('\n- ', '')}
+								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
+							>
+								<List class="h-3.5 w-3.5" />
+							</button>
+							<button
+								type="button"
+								title="Sisipkan Checklist"
+								onclick={() => insertInlineSnippet(MARKDOWN_CHECKLIST_SNIPPET, '')}
+								class="flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-background hover:text-foreground"
+							>
+								<CheckSquare class="h-3.5 w-3.5 text-emerald-500" />
+								<span class="hidden sm:inline">Checklist</span>
+							</button>
+							<button
+								type="button"
+								title="Sisipkan Tabel Markdown"
+								onclick={() => insertInlineSnippet(MARKDOWN_TABLE_SNIPPET, '')}
+								class="flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-background hover:text-foreground"
+							>
+								<Table class="h-3.5 w-3.5 text-indigo-500" />
+								<span class="hidden sm:inline">Tabel</span>
+							</button>
+							<button
+								type="button"
+								title="Blok Kode"
+								onclick={() => insertInlineSnippet('\n```javascript\n', '\n```\n')}
+								class="rounded p-1.5 text-muted-foreground hover:bg-background hover:text-foreground"
+							>
+								<Code class="h-3.5 w-3.5" />
+							</button>
+							<button
+								type="button"
+								title="Unggah Gambar / Screenshot"
+								onclick={() => inlineImageInputRef?.click()}
+								disabled={isUploadingInlineImage}
+								class="flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium text-muted-foreground hover:bg-background hover:text-foreground"
+							>
+								<ImageIcon class="h-3.5 w-3.5 text-indigo-500" />
+								<span class="hidden sm:inline">{isUploadingInlineImage ? 'Unggah...' : '+ Gambar'}</span>
+							</button>
+							<button
+								type="button"
+								title="Tampilkan Template Cepat & AI Writer"
+								onclick={() => (showTemplateBar = !showTemplateBar)}
+								class="flex items-center gap-1 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1 text-[11px] font-semibold text-indigo-600 hover:bg-indigo-500/20 dark:text-indigo-400"
+							>
+								<Sparkles class="h-3 w-3" />
+								<span>Template & AI</span>
+							</button>
+						</div>
 					</div>
-					{#if currentDoc?.updatedAt}
-						<span class="text-xs text-zinc-400">•</span>
-						<div class="flex items-center gap-1 text-xs text-zinc-500 dark:text-zinc-400">
-							<Calendar class="h-3.5 w-3.5" />
-							<span>{new Date(currentDoc.updatedAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+
+					<!-- Hidden File Inputs for Inline Editor -->
+					<input
+						type="file"
+						bind:this={inlineImageInputRef}
+						accept="image/*"
+						class="hidden"
+						onchange={handleInlineFileUpload}
+					/>
+					<input
+						type="file"
+						bind:this={inlineMdInputRef}
+						accept=".md,.txt,text/markdown,text/plain"
+						class="hidden"
+						onchange={handleInlineMdImport}
+					/>
+
+					<!-- Optional Collapsible Template & AI Writer Bar -->
+					{#if showTemplateBar}
+						<div class="rounded-xl border border-indigo-500/30 bg-indigo-500/5 p-3 space-y-3 animate-in fade-in duration-100">
+							<div class="flex flex-wrap items-center justify-between gap-2">
+								<span class="text-xs font-semibold text-foreground flex items-center gap-1.5">
+									<LayoutTemplate class="h-3.5 w-3.5 text-indigo-500" />
+									<span>Pilih Kerangka Template 1-Klik atau Bantuan AI:</span>
+								</span>
+								<button
+									type="button"
+									onclick={() => inlineMdInputRef?.click()}
+									class="inline-flex items-center gap-1 rounded-lg border border-border bg-background px-2.5 py-1 text-[11px] font-semibold text-foreground hover:bg-muted"
+								>
+									<FileUp class="h-3 w-3 text-indigo-500" />
+									<span>Import File (.md / .txt)</span>
+								</button>
+							</div>
+
+							<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+								{#each DOC_TEMPLATES as tpl}
+									<button
+										type="button"
+										onclick={() => applyInlineTemplate(tpl)}
+										class="flex flex-col items-start rounded-lg border border-border bg-background p-2 text-left hover:border-indigo-500/60 transition-all"
+									>
+										<span class="text-[11px] font-bold text-foreground truncate">{tpl.name}</span>
+										<span class="text-[10px] text-muted-foreground line-clamp-1">{tpl.description}</span>
+									</button>
+								{/each}
+							</div>
+
+							<div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 pt-1 border-t border-border/60">
+								<Input
+									type="text"
+									bind:value={inlineAiPrompt}
+									placeholder="Ketik instruksi untuk dibuatkan AI (opsional)..."
+									class="h-8 text-xs flex-1"
+									disabled={isInlineAiLoading}
+								/>
+								<div class="flex items-center gap-1.5">
+									<Button
+										type="button"
+										size="sm"
+										disabled={isInlineAiLoading}
+										onclick={() => runInlineAiAction('generate')}
+										class="h-8 gap-1 bg-indigo-600 text-white hover:bg-indigo-700 text-xs"
+									>
+										{#if isInlineAiLoading}
+											<Loader2 class="h-3 w-3 animate-spin" />
+										{:else}
+											<Wand2 class="h-3 w-3" />
+										{/if}
+										<span>Tulis AI</span>
+									</Button>
+									<Button
+										type="button"
+										size="sm"
+										variant="outline"
+										disabled={isInlineAiLoading || !inlineContent}
+										onclick={() => runInlineAiAction('format')}
+										class="h-8 gap-1 text-xs"
+									>
+										<Sparkles class="h-3 w-3" />
+										<span>Rapikan Format</span>
+									</Button>
+								</div>
+							</div>
+						</div>
+					{/if}
+
+					<!-- Main Content Writing Area (Only fill the content!) -->
+					{#if inlineMode === 'edit'}
+						<Textarea
+							id="inline-note-textarea"
+							bind:value={inlineContent}
+							onpaste={handleInlinePaste}
+							ondrop={handleInlineDrop}
+							ondragover={(e) => e.preventDefault()}
+							rows={20}
+							placeholder="Langsung ketik isi catatan dokumentasi di sini... (Mendukung Markdown, Paste Screenshot Ctrl+V, Tabel, dan Code Block)"
+							class="min-h-[440px] rounded-xl p-4 font-mono text-xs leading-relaxed shadow-inner"
+						/>
+					{:else if inlineMode === 'split'}
+						<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+							<Textarea
+								id="inline-note-textarea"
+								bind:value={inlineContent}
+								onpaste={handleInlinePaste}
+								ondrop={handleInlineDrop}
+								ondragover={(e) => e.preventDefault()}
+								rows={20}
+								placeholder="Langsung ketik isi catatan dokumentasi di sini..."
+								class="h-[460px] resize-none rounded-xl p-4 font-mono text-xs leading-relaxed shadow-inner"
+							/>
+							<div class="h-[460px] overflow-y-auto rounded-xl border border-border bg-background/60 p-5">
+								<div class="prose prose-zinc dark:prose-invert max-w-none text-xs leading-relaxed">
+									{@html renderMarkdown(inlineContent || '*Pratinjau catatan akan tampil di sini...*')}
+								</div>
+							</div>
+						</div>
+					{:else}
+						<div class="min-h-[400px] rounded-xl border border-border bg-background/60 p-6">
+							<div class="prose prose-zinc dark:prose-invert max-w-none text-xs leading-relaxed">
+								{@html renderMarkdown(inlineContent || '*Catatan masih kosong.*')}
+							</div>
+						</div>
+					{/if}
+
+					<div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground pt-1">
+						<span>
+							💡 Lokasi otomatis di <strong class="text-foreground">{currentDoc?.section || data.article.section} / {currentDoc?.category || data.article.category}</strong>. Tekan <strong class="text-foreground">Ctrl + S</strong> untuk menyimpan atau <strong class="text-foreground">Ctrl + V</strong> untuk paste gambar.
+						</span>
+						<Button
+							type="button"
+							size="sm"
+							disabled={isSavingInline}
+							onclick={() => saveInlineNote(true)}
+							class="h-8 gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 text-xs"
+						>
+							<Save class="h-3.5 w-3.5" />
+							<span>Simpan & Selesai</span>
+						</Button>
+					</div>
+				</div>
+			{:else}
+				<!-- ============================================================ -->
+				<!-- READING VIEW (Standard Note View)                            -->
+				<!-- ============================================================ -->
+				<!-- Document Header & Meta -->
+				<div class="mb-7">
+					<div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+						<div class="flex flex-wrap items-center gap-2">
+							{#if (currentDoc?.section || data.article.section) === 'SAP'}
+								<Badge class="gap-1 border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-900/60 dark:bg-blue-950/40 dark:text-blue-300">
+									<Building2 class="h-3 w-3" />
+									<span>SAP Enterprise</span>
+								</Badge>
+							{:else if (currentDoc?.section || data.article.section) === 'SAC'}
+								<Badge class="gap-1 border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-900/60 dark:bg-purple-950/40 dark:text-purple-300">
+									<BarChart3 class="h-3 w-3" />
+									<span>SAC Analytics</span>
+								</Badge>
+							{:else}
+								<Badge class="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/40 dark:text-emerald-300">
+									<Globe class="h-3 w-3" />
+									<span>WEB Stack</span>
+								</Badge>
+							{/if}
+
+							<Badge variant="outline" class="gap-1 text-[11px] font-semibold">
+								<Folder class="h-3 w-3 text-amber-500" />
+								<span>{currentDoc?.category || data.article.category}</span>
+							</Badge>
+							{#if currentDoc?.subcategory || data.article?.subcategory}
+								<Badge variant="secondary" class="gap-1 text-[11px] font-semibold border border-indigo-500/30 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+									<FolderTree class="h-3 w-3" />
+									<span>{currentDoc?.subcategory || data.article?.subcategory}</span>
+								</Badge>
+							{/if}
+							<span class="text-xs text-muted-foreground">•</span>
+							<div class="flex items-center gap-1 text-xs text-muted-foreground">
+								<Clock class="h-3.5 w-3.5" />
+								<span>{readingTime} menit baca</span>
+							</div>
+							{#if currentDoc?.updatedAt}
+								<span class="text-xs text-muted-foreground">•</span>
+								<div class="flex items-center gap-1 text-xs text-muted-foreground">
+									<Calendar class="h-3.5 w-3.5" />
+									<span>
+										{new Date(currentDoc.updatedAt).toLocaleDateString('id-ID', {
+											day: 'numeric',
+											month: 'short',
+											year: 'numeric'
+										})}
+									</span>
+								</div>
+							{/if}
+						</div>
+
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={() => startInlineEdit(currentDoc)}
+							class="h-8 gap-1.5 text-xs"
+						>
+							<Edit3 class="h-3.5 w-3.5 text-blue-500" />
+							<span>Tulis / Edit Isi Catatan</span>
+						</Button>
+					</div>
+
+					<h1 class="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
+						{currentDoc?.title || data.article.title}
+					</h1>
+
+					{#if currentDoc?.description || data.article.snippet}
+						<p class="mt-2.5 text-sm leading-relaxed text-muted-foreground">
+							{currentDoc?.description || data.article.snippet}
+						</p>
+					{/if}
+
+					{#if currentDoc?.tags && currentDoc.tags.length > 0}
+						<div class="mt-3.5 flex flex-wrap items-center gap-1.5">
+							{#each currentDoc.tags as tag}
+								<Badge variant="outline" class="gap-1 px-2 py-0.5 text-[10px] text-muted-foreground">
+									<Tag class="h-2.5 w-2.5 opacity-60" />
+									<span>{tag}</span>
+								</Badge>
+							{/each}
 						</div>
 					{/if}
 				</div>
 
-				<h1 class="text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-4xl dark:text-white">
-					{currentDoc?.title || data.article.title}
-				</h1>
-
-				{#if currentDoc?.description || data.article.snippet}
-					<p class="mt-3 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
-						{currentDoc?.description || data.article.snippet}
-					</p>
-				{/if}
-
-				<!-- Tags list -->
-				{#if currentDoc?.tags && currentDoc.tags.length > 0}
-					<div class="mt-4 flex flex-wrap items-center gap-1.5">
-						{#each currentDoc.tags as tag}
-							<Badge variant="outline" class="gap-1 px-2 py-0.5 text-[10px] text-zinc-600 dark:text-zinc-400">
-								<Tag class="h-2.5 w-2.5 opacity-60" />
-								<span>{tag}</span>
-							</Badge>
-						{/each}
+				<!-- Pinned Inline AI Summary Card (when user pins an analysis from DocAiAssistantModal) -->
+				{#if pinnedAiSummary && pinnedAiSummary.slug === data.slug}
+					<div class="mb-7 overflow-hidden rounded-2xl border border-indigo-500/30 bg-gradient-to-br from-indigo-950/20 via-background to-background p-4 shadow-sm ring-1 ring-indigo-500/15 animate-in fade-in duration-150">
+						<div class="mb-2.5 flex items-center justify-between border-b border-border/70 pb-2">
+							<div class="flex items-center gap-2 text-xs font-bold text-indigo-600 dark:text-indigo-400">
+								<Sparkles class="h-3.5 w-3.5" />
+								<span>{pinnedAiSummary.title}</span>
+								<Badge variant="outline" class="text-[9px] px-1.5 py-0 border-indigo-500/30 text-indigo-500">
+									Disematkan
+								</Badge>
+							</div>
+							<div class="flex items-center gap-1">
+								<button
+									type="button"
+									onclick={askAiAboutDoc}
+									class="rounded-md px-2 py-1 text-[11px] font-medium text-indigo-600 hover:bg-indigo-500/10 dark:text-indigo-400 transition-colors"
+								>
+									Buka Modal AI
+								</button>
+								<button
+									type="button"
+									onclick={() => (pinnedAiSummary = null)}
+									title="Tutup sematan AI"
+									aria-label="Tutup sematan AI"
+									class="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground hover:bg-red-500/15 hover:text-red-500 transition-colors"
+								>
+									<X class="h-3.5 w-3.5 pointer-events-none" />
+								</button>
+							</div>
+						</div>
+						<div class="prose prose-xs dark:prose-invert max-w-none leading-relaxed">
+							{@html renderMarkdown(pinnedAiSummary.content)}
+						</div>
 					</div>
 				{/if}
-			</div>
 
-			<!-- Markdown Rendered Body with Tailwind Typography -->
-			<article class="prose prose-zinc dark:prose-invert max-w-none prose-headings:scroll-mt-28 prose-headings:font-bold prose-headings:tracking-tight prose-a:text-indigo-600 dark:prose-a:text-indigo-400 prose-pre:bg-zinc-950 prose-pre:border prose-pre:border-zinc-800 prose-code:rounded prose-code:bg-zinc-100 dark:prose-code:bg-zinc-800 prose-code:px-1 prose-code:py-0.5 prose-code:font-normal prose-code:before:content-none prose-code:after:content-none leading-relaxed">
-				{@html renderedHtml}
-			</article>
+				<!-- Markdown Rendered Body -->
+				<article class="prose prose-zinc dark:prose-invert max-w-none leading-relaxed">
+					{@html renderedHtml}
+				</article>
 
-			<!-- Clean Quick Action Banner (Buttons removed, Right-Click Hint) -->
-			<div class="mt-12 rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 dark:border-zinc-800 dark:bg-zinc-900/40">
-				<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-					<div class="flex items-center gap-2">
-						<MousePointerClick class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-						<span class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-							Tip: Klik kanan di mana saja untuk mengedit, menambah catatan baru, atau menyalin link seperti di Obsidian & Notion.
-						</span>
-					</div>
+				<!-- Obsidian Quick Hint Banner -->
+				<div class="mt-12 rounded-2xl border border-border bg-muted/30 p-4">
+					<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+						<div class="flex items-center gap-2">
+							<MousePointerClick class="h-4 w-4 text-indigo-500 shrink-0" />
+							<span class="text-xs text-muted-foreground">
+								Tip: Buat <strong class="text-foreground">+ Folder</strong> atau <strong class="text-foreground">+ File</strong> di File Explorer kiri, lalu tulis isinya langsung di halaman ini (<strong class="text-foreground">Double-Click</strong> teks atau tekan <kbd class="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-mono">Ctrl+E</kbd>).
+							</span>
+						</div>
 
-					<div class="flex items-center gap-2 shrink-0">
-						<Button size="sm" onclick={copyPageUrl} variant="ghost" class="gap-1 text-xs">
+						<Button size="sm" onclick={copyPageUrl} variant="ghost" class="gap-1 text-xs shrink-0">
 							{#if copiedUrl}
 								<Check class="h-3.5 w-3.5 text-emerald-600" />
 								<span>Tersalin</span>
@@ -1223,202 +2337,82 @@
 						</Button>
 					</div>
 				</div>
-			</div>
 
-			<Separator class="my-10" />
+				<Separator class="my-8" />
 
-			<!-- Pagination Footer -->
-			<div class="flex items-center justify-between gap-4">
-				{#if data.prevArticle}
-					<a href="/docs/{data.prevArticle.path}" class="flex-1">
-						<div class="group flex flex-col rounded-xl border border-zinc-200 p-4 transition-all hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-900">
-							<span class="flex items-center gap-1 text-[11px] text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300">
-								<ChevronLeft class="h-3.5 w-3.5" /> Sebelumnya
-							</span>
-							<span class="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-								{data.prevArticle.title}
-							</span>
-						</div>
-					</a>
-				{:else}
-					<div></div>
-				{/if}
+				<!-- Pagination Footer -->
+				<div class="flex items-center justify-between gap-4">
+					{#if data.prevArticle}
+						<a href="/docs/{data.prevArticle.path}" class="flex-1">
+							<div class="group flex flex-col rounded-xl border border-border p-4 transition-all hover:bg-muted/50">
+								<span class="flex items-center gap-1 text-[11px] text-muted-foreground">
+									<ChevronLeft class="h-3.5 w-3.5" /> Sebelumnya
+								</span>
+								<span class="mt-1 text-sm font-semibold text-foreground">
+									{data.prevArticle.title}
+								</span>
+							</div>
+						</a>
+					{:else}
+						<div></div>
+					{/if}
 
-				{#if data.nextArticle}
-					<a href="/docs/{data.nextArticle.path}" class="flex-1 text-right">
-						<div class="group flex flex-col rounded-xl border border-zinc-200 p-4 transition-all hover:border-zinc-300 hover:bg-zinc-50 dark:border-zinc-800 dark:hover:border-zinc-700 dark:hover:bg-zinc-900">
-							<span class="flex items-center justify-end gap-1 text-[11px] text-zinc-400 group-hover:text-zinc-600 dark:group-hover:text-zinc-300">
-								Selanjutnya <ChevronRight class="h-3.5 w-3.5" />
-							</span>
-							<span class="mt-1 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-								{data.nextArticle.title}
-							</span>
-						</div>
-					</a>
-				{/if}
-			</div>
+					{#if data.nextArticle}
+						<a href="/docs/{data.nextArticle.path}" class="flex-1 text-right">
+							<div class="group flex flex-col rounded-xl border border-border p-4 transition-all hover:bg-muted/50">
+								<span class="flex items-center justify-end gap-1 text-[11px] text-muted-foreground">
+									Selanjutnya <ChevronRight class="h-3.5 w-3.5" />
+								</span>
+								<span class="mt-1 text-sm font-semibold text-foreground">
+									{data.nextArticle.title}
+								</span>
+							</div>
+						</a>
+					{/if}
+				</div>
+			{/if}
 		</div>
 
-		<!-- Right Sidebar (AI Copilot Quick Action) -->
+		<!-- RIGHT SIDEBAR: DEDICATED OUTLINE ("Di Halaman Ini") on XL+ Screens -->
 		{#if !isFocusMode}
-			<aside class="hidden xl:block w-64 shrink-0">
-				<div class="sticky top-20 space-y-6">
-					<!-- Quick AI Assistant Action Widget -->
-					<div class="rounded-xl border border-indigo-200/80 bg-indigo-50/40 p-4 dark:border-indigo-900/60 dark:bg-indigo-950/20">
-						<div class="flex items-center gap-2 mb-2">
-							<Sparkles class="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-							<span class="text-xs font-bold text-indigo-950 dark:text-indigo-200">AI Assistant Cepat</span>
-						</div>
-						<p class="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed mb-3">
-							Minta AI merangkum isi panduan ini atau jelaskan arsitektur teknis secara interaktif.
-						</p>
-						<div class="space-y-1.5">
-							<Button
-								size="sm"
-								variant="outline"
-								onclick={() => ui.openAi(`Rangkum poin kunci dokumen "${currentDoc?.title}" dalam 3 butir padat.`)}
-								class="w-full justify-start text-[11px] h-7 bg-white dark:bg-zinc-900 border-indigo-200 dark:border-indigo-900"
-							>
-								⚡ Ringkas 3 Poin
-							</Button>
-							<Button
-								size="sm"
-								variant="outline"
-								onclick={() => ui.openAi(`Buatkan contoh kode implementasi praktis terkait topik "${currentDoc?.title}".`)}
-								class="w-full justify-start text-[11px] h-7 bg-white dark:bg-zinc-900 border-indigo-200 dark:border-indigo-900"
-							>
-								💻 Buat Contoh Kode
-							</Button>
-						</div>
-					</div>
-
-					<!-- Document Metadata Card -->
-					<div class="rounded-xl border border-zinc-200 bg-zinc-50/50 p-3.5 dark:border-zinc-800 dark:bg-zinc-900/30 text-xs space-y-2">
-						<div class="font-semibold text-zinc-700 dark:text-zinc-300">Info Berkas</div>
-						<div class="text-[11px] text-zinc-500 space-y-1">
-							<div class="flex justify-between">
-								<span>Format:</span>
-								<span class="font-mono text-zinc-700 dark:text-zinc-300">Markdown (.md)</span>
-							</div>
-							<div class="flex justify-between">
-								<span>Bagian:</span>
-								<span class="font-semibold text-zinc-700 dark:text-zinc-300">{currentDoc?.section || 'SAP'}</span>
-							</div>
-							<div class="flex justify-between">
-								<span>Kategori:</span>
-								<span class="text-zinc-700 dark:text-zinc-300 truncate max-w-[120px]">{currentDoc?.category || 'General'}</span>
-							</div>
-							{#if currentDoc?.updatedAt}
-								<div class="flex justify-between">
-									<span>Pembaruan:</span>
-									<span class="text-zinc-700 dark:text-zinc-300">{new Date(currentDoc.updatedAt).toLocaleDateString('id-ID')}</span>
-								</div>
-							{/if}
-						</div>
-					</div>
+			<aside class="hidden xl:block w-60 shrink-0">
+				<div class="sticky top-20">
+					<DocsRightOutline
+						{outlineTree}
+						{activeHeadingId}
+						onSelectHeading={scrollToHeading}
+						onContextMenu={(e) => openContextMenu(e, currentDoc)}
+					/>
 				</div>
 			</aside>
 		{/if}
 	</div>
 </div>
 
-<!-- ======================================================== -->
-<!-- OBSIDIAN / NOTION FLOATING CONTEXT MENU                   -->
-<!-- ======================================================== -->
-{#if contextMenu.open}
-	<div
-		class="fixed z-50 min-w-[240px] max-w-[280px] overflow-hidden rounded-xl border border-zinc-200/90 bg-white/95 p-1.5 text-xs text-zinc-800 shadow-2xl backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/95 dark:text-zinc-200 animate-in fade-in zoom-in-95 duration-100 select-none ring-1 ring-black/5 dark:ring-white/10"
-		style="left: {contextMenu.x}px; top: {contextMenu.y}px;"
-		onclick={(e) => e.stopPropagation()}
-		onkeydown={(e) => { if (e.key === 'Escape') closeContextMenu(); }}
-		role="menu"
-		tabindex="-1"
-	>
-		{#if contextMenu.targetDoc?.title}
-			<div class="px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 dark:border-zinc-900 truncate max-w-[260px] flex items-center gap-1.5">
-				<FileText class="h-3 w-3 text-zinc-400 shrink-0" />
-				<span class="truncate">{contextMenu.targetDoc.title}</span>
-			</div>
-		{/if}
+<!-- Obsidian / Notion Floating Context Menu -->
+<DocsContextMenu
+	open={contextMenu.open}
+	x={contextMenu.x}
+	y={contextMenu.y}
+	targetDoc={contextMenu.targetDoc}
+	onEdit={handleContextMenuEdit}
+	onCreate={handleContextMenuCreate}
+	onCreateFolder={openExplorerCreateFolder}
+	onDuplicate={handleContextMenuDuplicate}
+	onAskAi={handleContextMenuAi}
+	onCopyLink={handleContextMenuCopyLink}
+	onCopyMarkdown={handleContextMenuCopyMarkdown}
+	onDownload={handleContextMenuDownload}
+	onDelete={handleContextMenuDelete}
+	onClose={closeContextMenu}
+/>
 
-		<div class="space-y-0.5 pt-1">
-			<button
-				type="button"
-				onclick={() => handleContextMenuEdit(contextMenu.targetDoc)}
-				class="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left font-medium hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800/80 dark:hover:text-zinc-100 transition-colors"
-			>
-				<div class="flex items-center gap-2">
-					<Edit3 class="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
-					<span>Edit Catatan</span>
-				</div>
-				<kbd class="text-[9px] text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-1 py-0.2 rounded font-mono">Ctrl+E</kbd>
-			</button>
-
-			<button
-				type="button"
-				onclick={() => handleContextMenuCreate(contextMenu.targetDoc)}
-				class="flex w-full items-center justify-between rounded-lg px-2.5 py-1.5 text-left font-medium hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800/80 dark:hover:text-zinc-100 transition-colors"
-			>
-				<div class="flex items-center gap-2">
-					<Plus class="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" />
-					<span>Tambah Catatan Baru</span>
-				</div>
-				<kbd class="text-[9px] text-zinc-400 dark:text-zinc-500 bg-zinc-100 dark:bg-zinc-800/80 px-1 py-0.2 rounded font-mono">Ctrl+N</kbd>
-			</button>
-
-			<button
-				type="button"
-				onclick={() => handleContextMenuAi(contextMenu.targetDoc)}
-				class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left font-medium hover:bg-indigo-50 hover:text-indigo-900 dark:hover:bg-indigo-950/50 dark:hover:text-indigo-200 transition-colors"
-			>
-				<Sparkles class="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-				<span>Tanya AI Copilot</span>
-			</button>
-
-			<div class="my-1 border-t border-zinc-100 dark:border-zinc-900"></div>
-
-			<button
-				type="button"
-				onclick={() => handleContextMenuCopyLink(contextMenu.targetDoc)}
-				class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800/80 dark:hover:text-zinc-100 transition-colors"
-			>
-				<Copy class="h-3.5 w-3.5 text-zinc-500" />
-				<span>Salin Tautan</span>
-			</button>
-
-			<button
-				type="button"
-				onclick={() => handleContextMenuCopyMarkdown(contextMenu.targetDoc)}
-				class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800/80 dark:hover:text-zinc-100 transition-colors"
-			>
-				<FileText class="h-3.5 w-3.5 text-zinc-500" />
-				<span>Salin Raw Markdown</span>
-			</button>
-
-			<button
-				type="button"
-				onclick={() => handleContextMenuDownload(contextMenu.targetDoc)}
-				class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left hover:bg-zinc-100 hover:text-zinc-900 dark:hover:bg-zinc-800/80 dark:hover:text-zinc-100 transition-colors"
-			>
-				<Download class="h-3.5 w-3.5 text-zinc-500" />
-				<span>Unduh File (.md)</span>
-			</button>
-
-			{#if contextMenu.targetDoc}
-				<div class="my-1 border-t border-zinc-100 dark:border-zinc-900"></div>
-
-				<button
-					type="button"
-					onclick={() => handleContextMenuDelete(contextMenu.targetDoc)}
-					class="flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-left text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40 transition-colors"
-				>
-					<Trash2 class="h-3.5 w-3.5" />
-					<span>Hapus Catatan</span>
-				</button>
-			{/if}
-		</div>
-	</div>
-{/if}
+<!-- Full-Screen Image Lightbox -->
+<DocsLightbox
+	src={lightboxSrc}
+	alt={lightboxAlt}
+	onClose={() => (lightboxSrc = null)}
+/>
 
 <!-- Modal Document Editor & AI Generator -->
 <DocEditorModal
@@ -1427,4 +2421,18 @@
 	initialDoc={editingDocTarget || (editorMode === 'edit' ? currentDoc : null)}
 	categories={categoriesList}
 	onSave={handleSaved}
+/>
+
+<!-- Dedicated Single-Document AI Assistant Modal -->
+<DocAiAssistantModal
+	bind:isOpen={isDocAiOpen}
+	doc={docAiTarget || currentDoc}
+	initialPrompt={docAiInitialPrompt}
+	onPinToArticle={(content, title) => {
+		pinnedAiSummary = {
+			content,
+			title,
+			slug: data.slug
+		};
+	}}
 />

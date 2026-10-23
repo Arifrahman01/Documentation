@@ -1,15 +1,25 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
+	import { Textarea } from '$lib/components/ui/textarea';
+	import { Label } from '$lib/components/ui/label';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Separator } from '$lib/components/ui/separator';
-	import { marked } from 'marked';
+	import { Tabs, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
+	import { renderMarkdown } from '$lib/utils/markdown';
+	import {
+		DOC_TEMPLATES,
+		MARKDOWN_TABLE_SNIPPET,
+		MARKDOWN_CHECKLIST_SNIPPET,
+		type DocTemplate
+	} from '$lib/utils/docTemplates';
 	import {
 		X,
 		Sparkles,
 		Save,
 		Eye,
 		Edit3,
+		Columns2,
 		Wand2,
 		Code,
 		List,
@@ -20,10 +30,13 @@
 		AlertCircle,
 		CheckCircle2,
 		Loader2,
-		RefreshCw,
-		HelpCircle,
 		Image as ImageIcon,
-		Link as LinkIcon
+		Link as LinkIcon,
+		Table,
+		CheckSquare,
+		FileUp,
+		RotateCcw,
+		LayoutTemplate
 	} from '@lucide/svelte';
 
 	interface DocumentItem {
@@ -32,6 +45,7 @@
 		section?: 'SAP' | 'SAC' | 'WEB';
 		title: string;
 		category: string;
+		subcategory?: string;
 		description?: string;
 		snippet?: string;
 		content: string;
@@ -43,6 +57,21 @@
 		SAP: ['Core Architecture', 'Integration & Development', 'Gateway Services', 'SAP Modules (FI/CO/MM/SD)', 'Customizing & Configuration'],
 		SAC: ['Finance', 'Marketing', 'Operation Mining', 'Operation Marine', 'PnL by Segment', 'PM Mining', 'PM Marine', 'PnL by Trip', 'Overview & BI'],
 		WEB: ['Web Stack', 'API & Backend', 'Security', 'Frontend Essentials', 'Quality Assurance']
+	};
+
+	const SUBCATEGORY_SUGGESTIONS: Record<string, string[]> = {
+		'Core Architecture': ['System Landscape', 'Database & HANA', 'Performance'],
+		'Integration & Development': ['ABAP Report', 'RFC & BAPI', 'CDS Views', 'Enhancement & BAdI'],
+		'Gateway Services': ['OData v2/v4', 'SAP Fiori', 'Cloud Connector'],
+		'SAP Modules (FI/CO/MM/SD)': ['FI - Financial', 'CO - Controlling', 'MM - Material Management', 'SD - Sales & Distribution', 'PM - Plant Maintenance'],
+		'Customizing & Configuration': ['SPRO Configuration', 'Authorization & Role', 'Transport Management'],
+		'Finance': ['Profit & Loss', 'Balance Sheet & Cashflow', 'AP & AR', 'Financial Covenant'],
+		'Marketing': ['Sales Volume', 'Contract & Shipment', 'Market Price'],
+		'Operation Mining': ['OB Removal', 'Coal Getting', 'Hauling &barging', 'Fuel & Equipment'],
+		'Operation Marine': ['Vessel & Tugboat', 'Trip & Tonnage', 'Fuel Consumption', 'Port & Demurrage'],
+		'Web Stack': ['SvelteKit Core', 'State Management', 'Deployment'],
+		'API & Backend': ['REST Endpoints', 'Middleware & Cache', 'AI Integration'],
+		'Security': ['Authentication', 'Authorization & RBAC', 'API Security']
 	};
 
 	let {
@@ -63,17 +92,37 @@
 	let title = $state('');
 	let category = $state('Core Architecture');
 	let customCategory = $state('');
+	let subcategory = $state('');
 	let sacUrl = $state('');
 	let description = $state('');
 	let tagsString = $state('');
 	let content = $state('');
 
-	let activeTab = $state<'edit' | 'preview'>('edit');
+	let activeTab = $state<'edit' | 'split' | 'preview'>('split');
 	let aiPrompt = $state('');
 	let isAiLoading = $state(false);
 	let isSaving = $state(false);
 	let aiSuccessMessage = $state('');
 	let errorMessage = $state('');
+
+	// Auto-save Draft State
+	let draftStorageKey = $derived(
+		`portal_doc_draft_${mode}_${initialDoc?.slug || initialDoc?.id || 'new'}`
+	);
+	let availableDraft = $state<{
+		title: string;
+		section: 'SAP' | 'SAC' | 'WEB';
+		category: string;
+		subcategory?: string;
+		sacUrl: string;
+		description: string;
+		tagsString: string;
+		content: string;
+		savedAt: string;
+	} | null>(null);
+	let lastAutoSavedAt = $state<string>('');
+	let modalReadyForAutoSave = $state(false);
+	let mdFileInputRef = $state<HTMLInputElement | null>(null);
 
 	function selectSection(sec: 'SAP' | 'SAC' | 'WEB') {
 		section = sec;
@@ -85,45 +134,179 @@
 
 	$effect(() => {
 		if (isOpen) {
+			modalReadyForAutoSave = false;
+			lastAutoSavedAt = '';
+			availableDraft = null;
+
 			if (mode === 'edit' && initialDoc) {
 				const inferredSec = (initialDoc.section || (initialDoc.slug?.startsWith('sac') ? 'SAC' : initialDoc.slug?.startsWith('sap') ? 'SAP' : 'WEB')) as 'SAP' | 'SAC' | 'WEB';
 				section = inferredSec;
 				title = initialDoc.title || '';
 				category = initialDoc.category || SECTION_CATEGORIES[inferredSec][0];
+				subcategory = initialDoc.subcategory || '';
 				sacUrl = initialDoc.sacUrl || '';
 				description = initialDoc.description || initialDoc.snippet || '';
 				tagsString = (initialDoc.tags || []).join(', ');
 				content = initialDoc.content || '';
 			} else {
-				// mode === 'create'
+				// mode === 'create' (also supports Duplicating an existing doc if initialDoc has content/title)
 				const initSec = (initialDoc?.section || 'SAP') as 'SAP' | 'SAC' | 'WEB';
 				section = ['SAP', 'SAC', 'WEB'].includes(initSec) ? initSec : 'SAP';
-				title = '';
+				title = initialDoc?.title || '';
 				const availableCats = SECTION_CATEGORIES[section] || [];
-				category = initialDoc?.category && availableCats.includes(initialDoc.category) 
-					? initialDoc.category 
-					: availableCats[0] || 'General';
+				category = initialDoc?.category || availableCats[0] || 'General';
 				customCategory = '';
-				sacUrl = '';
-				description = '';
-				tagsString = '';
-				content = '';
+				subcategory = initialDoc?.subcategory || '';
+				sacUrl = initialDoc?.sacUrl || '';
+				description = initialDoc?.description || initialDoc?.snippet || '';
+				tagsString = initialDoc?.tags ? initialDoc.tags.join(', ') : '';
+				content = initialDoc?.content || '';
 			}
-			activeTab = 'edit';
+			activeTab = 'split';
 			aiPrompt = '';
 			errorMessage = '';
 			aiSuccessMessage = '';
+
+			// Check if an unsaved draft exists in localStorage
+			if (typeof window !== 'undefined') {
+				try {
+					const rawDraft = localStorage.getItem(draftStorageKey);
+					if (rawDraft) {
+						const parsed = JSON.parse(rawDraft);
+						if (
+							parsed &&
+							parsed.content &&
+							parsed.content.trim() !== (initialDoc?.content || '').trim()
+						) {
+							availableDraft = parsed;
+						}
+					}
+				} catch (_) {}
+			}
+
+			setTimeout(() => {
+				modalReadyForAutoSave = true;
+			}, 300);
+		} else {
+			modalReadyForAutoSave = false;
 		}
 	});
 
+	// Real-time Auto-Save Draft Effect
+	$effect(() => {
+		if (!isOpen || !modalReadyForAutoSave || typeof window === 'undefined') return;
+		const currentTitle = title;
+		const currentContent = content;
+		const currentSection = section;
+		const currentCategory = category;
+		const currentSacUrl = sacUrl;
+		const currentDesc = description;
+		const currentTags = tagsString;
+
+		if (!currentTitle.trim() && !currentContent.trim()) return;
+		if (
+			currentContent.trim() === (initialDoc?.content || '').trim() &&
+			currentTitle.trim() === (initialDoc?.title || '').trim()
+		) {
+			return;
+		}
+
+		const timer = setTimeout(() => {
+			try {
+				const nowStr = new Date().toLocaleTimeString('id-ID', {
+					hour: '2-digit',
+					minute: '2-digit',
+					second: '2-digit'
+				});
+				localStorage.setItem(
+					draftStorageKey,
+					JSON.stringify({
+						title: currentTitle,
+						section: currentSection,
+						category: currentCategory,
+						sacUrl: currentSacUrl,
+						description: currentDesc,
+						tagsString: currentTags,
+						content: currentContent,
+						savedAt: nowStr
+					})
+				);
+				lastAutoSavedAt = nowStr;
+			} catch (_) {}
+		}, 700);
+
+		return () => clearTimeout(timer);
+	});
+
+	function restoreDraft() {
+		if (!availableDraft) return;
+		section = availableDraft.section || section;
+		title = availableDraft.title || title;
+		category = availableDraft.category || category;
+		subcategory = availableDraft.subcategory || '';
+		sacUrl = availableDraft.sacUrl || '';
+		description = availableDraft.description || '';
+		tagsString = availableDraft.tagsString || '';
+		content = availableDraft.content || '';
+		aiSuccessMessage = `💾 Draft dari pukul ${availableDraft.savedAt} berhasil dipulihkan!`;
+		availableDraft = null;
+	}
+
+	function discardDraft() {
+		availableDraft = null;
+		if (typeof window !== 'undefined') {
+			try {
+				localStorage.removeItem(draftStorageKey);
+			} catch (_) {}
+		}
+	}
+
+	function applyTemplate(tpl: DocTemplate) {
+		if (content.trim() && content.trim().length > 40) {
+			const replace = confirm(
+				`Terapkan "${tpl.name}"?\nKlik OK untuk mengganti isi saat ini dengan kerangka template, atau Cancel untuk membatalkan.`
+			);
+			if (!replace) return;
+		}
+		if (!title.trim()) {
+			title = tpl.defaultTitle;
+		}
+		content = tpl.content;
+		aiSuccessMessage = `📋 Kerangka "${tpl.name}" siap diisi!`;
+	}
+
+	async function importMarkdownFile(file: File) {
+		try {
+			const text = await file.text();
+			if (!text.trim()) return;
+
+			let importedBody = text;
+			const h1Match = importedBody.match(/^#\s+(.+)$/m);
+			if (!title.trim()) {
+				if (h1Match) {
+					title = h1Match[1].trim();
+				} else {
+					title = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ');
+				}
+			}
+			content = content.trim() ? `${content}\n\n${importedBody}` : importedBody;
+			aiSuccessMessage = `📂 File "${file.name}" berhasil diimpor ke dalam editor!`;
+		} catch (err: any) {
+			errorMessage = 'Gagal membaca file: ' + (err.message || 'Format tidak didukung');
+		}
+	}
+
+	function handleMdFileChange(e: Event) {
+		const target = e.target as HTMLInputElement;
+		if (target.files && target.files.length > 0) {
+			importMarkdownFile(target.files[0]);
+			target.value = '';
+		}
+	}
+
 	const renderedPreview = $derived.by(() => {
 		if (!content) return '<p class="text-zinc-400 italic">Konten dokumen masih kosong. Mulai menulis atau gunakan generator AI.</p>';
-		let raw = content;
-		raw = raw.replace(/>\s*\[!NOTE\]\s*(.*?)(?=(\n\n|\n>|$))/gs, '<div class="my-4 rounded-lg border-l-4 border-blue-500 bg-blue-50/60 p-3.5 text-xs text-blue-900 dark:bg-blue-950/40 dark:text-blue-200"><strong>Note:</strong> $1</div>');
-		raw = raw.replace(/>\s*\[!TIP\]\s*(.*?)(?=(\n\n|\n>|$))/gs, '<div class="my-4 rounded-lg border-l-4 border-emerald-500 bg-emerald-50/60 p-3.5 text-xs text-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200"><strong>Tip:</strong> $1</div>');
-		raw = raw.replace(/>\s*\[!IMPORTANT\]\s*(.*?)(?=(\n\n|\n>|$))/gs, '<div class="my-4 rounded-lg border-l-4 border-amber-500 bg-amber-50/60 p-3.5 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200"><strong>Important:</strong> $1</div>');
-		raw = raw.replace(/>\s*\[!WARNING\]\s*(.*?)(?=(\n\n|\n>|$))/gs, '<div class="my-4 rounded-lg border-l-4 border-red-500 bg-red-50/60 p-3.5 text-xs text-red-900 dark:bg-red-950/40 dark:text-red-200"><strong>Warning:</strong> $1</div>');
-		return marked.parse(raw);
+		return renderMarkdown(content);
 	});
 
 	function insertSnippet(before: string, after: string = '') {
@@ -212,6 +395,14 @@
 		if (file.type.startsWith('image/')) {
 			e.preventDefault();
 			uploadAndInsertImage(file);
+		} else if (
+			file.name.endsWith('.md') ||
+			file.name.endsWith('.txt') ||
+			file.type === 'text/markdown' ||
+			file.type === 'text/plain'
+		) {
+			e.preventDefault();
+			importMarkdownFile(file);
 		}
 	}
 
@@ -232,7 +423,7 @@
 		}
 	}
 
-	async function runAiAction(action: 'generate' | 'improve' | 'code' | 'summarize') {
+	async function runAiAction(action: 'generate' | 'improve' | 'code' | 'summarize' | 'format') {
 		isAiLoading = true;
 		errorMessage = '';
 		aiSuccessMessage = '';
@@ -268,13 +459,7 @@
 
 			if (action === 'generate') {
 				const generated = data.result;
-				if (generated.section && ['SAP', 'SAC', 'WEB'].includes(generated.section.toUpperCase())) {
-					section = generated.section.toUpperCase() as 'SAP' | 'SAC' | 'WEB';
-				}
-				if (generated.title) title = generated.title;
-				if (generated.category) {
-					category = generated.category;
-				}
+				if (!title.trim() && generated.title) title = generated.title;
 				if (generated.description) description = generated.description;
 				if (generated.tags) tagsString = Array.isArray(generated.tags) ? generated.tags.join(', ') : generated.tags;
 				if (generated.content) content = generated.content;
@@ -282,6 +467,9 @@
 			} else if (action === 'improve') {
 				content = data.result;
 				aiSuccessMessage = '✨ Konten dokumen berhasil disempurnakan dan dirapikan oleh AI!';
+			} else if (action === 'format') {
+				content = data.result;
+				aiSuccessMessage = '✨ Catatan mentah berhasil dirapikan menjadi format Markdown terstruktur!';
 			} else if (action === 'code') {
 				content = content + '\n\n' + data.result;
 				aiSuccessMessage = '✨ Contoh kode implementasi telah ditambahkan oleh AI!';
@@ -307,15 +495,17 @@
 		errorMessage = '';
 
 		const finalCategory = category === 'custom' ? (customCategory.trim() || 'General') : category;
+		const finalSubcategory = subcategory.trim() || undefined;
 		const finalTags = tagsString.split(',').map((t) => t.trim()).filter(Boolean);
 
 		const payload = {
 			title: title.trim(),
 			section,
 			category: finalCategory,
+			subcategory: finalSubcategory,
 			sacUrl: section === 'SAC' && sacUrl.trim() ? sacUrl.trim() : undefined,
 			description: description.trim() || content.slice(0, 160).replace(/[#*`\n]/g, ' ').trim(),
-			tags: finalTags.length > 0 ? finalTags : [section, finalCategory],
+			tags: finalTags.length > 0 ? finalTags : [section, finalCategory, ...(finalSubcategory ? [finalSubcategory] : [])],
 			content: content.trim()
 		};
 
@@ -341,6 +531,11 @@
 
 			const json = await res.json();
 			if (json.document) {
+				if (typeof window !== 'undefined') {
+					try {
+						localStorage.removeItem(draftStorageKey);
+					} catch (_) {}
+				}
 				onSave(json.document);
 				isOpen = false;
 			}
@@ -350,14 +545,37 @@
 			isSaving = false;
 		}
 	}
+
+	function closeModal(e?: Event) {
+		if (e) {
+			e.stopPropagation();
+		}
+		isOpen = false;
+	}
 </script>
 
+<svelte:window
+	onkeydown={(e) => {
+		if (e.key === 'Escape' && isOpen) {
+			closeModal(e);
+		}
+	}}
+/>
+
 {#if isOpen}
-	<div class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
+	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+		onclick={(e) => {
+			if (e.target === e.currentTarget) closeModal(e);
+		}}
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+	>
 		<div
-			class="relative flex flex-col w-full max-w-5xl max-h-[92vh] rounded-2xl border border-zinc-200 bg-white shadow-2xl overflow-hidden dark:border-zinc-800 dark:bg-zinc-950"
-			role="dialog"
-			aria-modal="true"
+			class="relative flex flex-col w-full max-w-6xl max-h-[92vh] rounded-2xl border border-zinc-200 bg-white shadow-2xl overflow-hidden dark:border-zinc-800 dark:bg-zinc-950"
 		>
 			<!-- Header -->
 			<div class="flex items-center justify-between px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-900/50">
@@ -376,9 +594,16 @@
 				</div>
 
 				<div class="flex items-center gap-2">
-					<Button variant="ghost" size="icon" onclick={() => (isOpen = false)} class="h-8 w-8 rounded-lg">
-						<X class="h-4 w-4" />
-					</Button>
+					<button
+						type="button"
+						onpointerdown={(e) => e.stopPropagation()}
+						onclick={closeModal}
+						title="Tutup Modal (ESC)"
+						aria-label="Tutup Modal"
+						class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-zinc-500 transition-colors hover:bg-red-500/15 hover:text-red-600 dark:text-zinc-400 dark:hover:text-red-400"
+					>
+						<X class="h-4 w-4 pointer-events-none" />
+					</button>
 				</div>
 			</div>
 
@@ -392,11 +617,11 @@
 						</Badge>
 					</div>
 
-					<input
+					<Input
 						type="text"
 						bind:value={aiPrompt}
 						placeholder="Ketik topik untuk dibuatkan AI (contoh: 'Panduan konfigurasi SAP OData v4 & CDS View')..."
-						class="flex-1 rounded-lg border border-indigo-200 bg-white/90 px-3 py-1.5 text-xs text-zinc-900 placeholder:text-zinc-400 shadow-xs focus:border-indigo-500 focus:outline-none dark:border-indigo-900/60 dark:bg-zinc-900 dark:text-zinc-100"
+						class="flex-1 h-8 border-indigo-200 bg-white/90 text-xs text-foreground placeholder:text-muted-foreground shadow-xs focus-visible:border-indigo-500 dark:border-indigo-900/60 dark:bg-zinc-900"
 						disabled={isAiLoading}
 					/>
 
@@ -422,11 +647,24 @@
 							type="button"
 							size="sm"
 							variant="outline"
+							onclick={() => runAiAction('format')}
+							disabled={isAiLoading || !content}
+							title="Rapikan catatan mentah/kasar menjadi Markdown terstruktur tanpa mengubah isi fakta"
+							class="h-8 gap-1 text-xs border-indigo-200 text-indigo-800 hover:bg-indigo-100/60 dark:border-indigo-900 dark:text-indigo-300"
+						>
+							<Sparkles class="h-3.5 w-3.5" />
+							<span class="hidden sm:inline">Rapikan Format</span>
+						</Button>
+
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
 							onclick={() => runAiAction('improve')}
 							disabled={isAiLoading || !content}
 							class="h-8 gap-1 text-xs border-indigo-200 text-indigo-800 hover:bg-indigo-100/60 dark:border-indigo-900 dark:text-indigo-300"
 						>
-							<Sparkles class="h-3.5 w-3.5" />
+							<Wand2 class="h-3.5 w-3.5" />
 							<span class="hidden sm:inline">Poles AI</span>
 						</Button>
 
@@ -444,6 +682,33 @@
 					</div>
 				</div>
 
+				{#if availableDraft}
+					<div class="mt-2.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-1.5 text-xs text-amber-800 dark:text-amber-300">
+						<div class="flex items-center gap-1.5">
+							<RotateCcw class="h-3.5 w-3.5 shrink-0" />
+							<span>
+								Ditemukan <strong>draft otomatis belum disimpan</strong> dari pukul {availableDraft.savedAt} ({availableDraft.title || 'Tanpa Judul'}).
+							</span>
+						</div>
+						<div class="flex items-center gap-1.5">
+							<button
+								type="button"
+								onclick={restoreDraft}
+								class="rounded-md bg-amber-600 px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-amber-700 transition-colors"
+							>
+								Pulihkan Draft
+							</button>
+							<button
+								type="button"
+								onclick={discardDraft}
+								class="rounded-md px-2 py-1 text-[11px] text-amber-700 hover:bg-amber-500/15 dark:text-amber-300 transition-colors"
+							>
+								Abaikan
+							</button>
+						</div>
+					</div>
+				{/if}
+
 				{#if aiSuccessMessage}
 					<div class="mt-2 flex items-center gap-1.5 text-xs text-emerald-700 dark:text-emerald-400 animate-in fade-in">
 						<CheckCircle2 class="h-3.5 w-3.5" />
@@ -458,166 +723,107 @@
 				{/if}
 			</div>
 
-			<!-- Main Form Content Area -->
+			<!-- Main Form Content Area (Obsidian Note Style: Lokasi Otomatis + Judul + Isi Konten Saja) -->
 			<form onsubmit={handleSubmit} class="flex flex-col flex-1 overflow-hidden">
 				<div class="flex-1 overflow-y-auto p-6 space-y-4">
-					<!-- Section Selector Row (SAP / SAC / WEB) -->
-					<div class="space-y-1.5">
-						<span class="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-							Bagian Utama (Section) <span class="text-destructive">*</span>
-						</span>
-						<div class="grid grid-cols-3 gap-2">
-							<button
-								type="button"
-								onclick={() => selectSection('SAP')}
-								class="flex items-center justify-center gap-2 rounded-xl border py-2 text-xs font-semibold transition-all {section === 'SAP'
-									? 'border-blue-600 bg-blue-50/80 text-blue-700 dark:border-blue-500 dark:bg-blue-950/60 dark:text-blue-300 ring-2 ring-blue-500/20 shadow-xs'
-									: 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400'}"
-							>
-								<span class="text-sm">🏢</span>
-								<span>SAP Enterprise</span>
-							</button>
-							<button
-								type="button"
-								onclick={() => selectSection('SAC')}
-								class="flex items-center justify-center gap-2 rounded-xl border py-2 text-xs font-semibold transition-all {section === 'SAC'
-									? 'border-purple-600 bg-purple-50/80 text-purple-700 dark:border-purple-500 dark:bg-purple-950/60 dark:text-purple-300 ring-2 ring-purple-500/20 shadow-xs'
-									: 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400'}"
-							>
-								<span class="text-sm">📊</span>
-								<span>SAC Analytics</span>
-							</button>
-							<button
-								type="button"
-								onclick={() => selectSection('WEB')}
-								class="flex items-center justify-center gap-2 rounded-xl border py-2 text-xs font-semibold transition-all {section === 'WEB'
-									? 'border-emerald-600 bg-emerald-50/80 text-emerald-700 dark:border-emerald-500 dark:bg-emerald-950/60 dark:text-emerald-300 ring-2 ring-emerald-500/20 shadow-xs'
-									: 'border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400'}"
-							>
-								<span class="text-sm">🌐</span>
-								<span>WEB Stack</span>
-							</button>
-						</div>
-					</div>
-
-					<!-- Title & Category Row -->
-					<div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-						<div class="sm:col-span-2 space-y-1.5">
-							<label for="doc-title" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-								Judul Dokumen <span class="text-destructive">*</span>
-							</label>
-							<input
+					<!-- Automatic Context Badge & Note Title -->
+					<div class="flex flex-col gap-3 rounded-xl border border-border bg-muted/30 p-3.5 sm:flex-row sm:items-center sm:justify-between">
+						<div class="flex-1 space-y-1.5">
+							<div class="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+								<span class="font-semibold text-foreground">Lokasi File Otomatis:</span>
+								<Badge variant="secondary" class="text-[10px] font-bold">
+									{section}
+								</Badge>
+								<span>/</span>
+								<Badge variant="outline" class="text-[10px]">
+									📁 {category === 'custom' ? customCategory || 'General' : category}
+								</Badge>
+								{#if subcategory}
+									<span>/</span>
+									<Badge variant="outline" class="text-[10px] border-indigo-500/30 text-indigo-600 dark:text-indigo-400">
+										📂 {subcategory}
+									</Badge>
+								{/if}
+							</div>
+							<Input
 								id="doc-title"
 								type="text"
 								bind:value={title}
 								required
-								placeholder="Contoh: Arsitektur SAP ERP & Integrasi S/4HANA"
-								class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-xs focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
+								placeholder="Judul Catatan..."
+								class="h-9 text-sm font-bold"
 							/>
-						</div>
-
-						<div class="space-y-1.5">
-							<label for="doc-category" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-								Kategori ({section})
-							</label>
-							<div class="flex gap-2">
-								<select
-									id="doc-category"
-									bind:value={category}
-									class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm text-zinc-900 shadow-xs focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
-								>
-									{#each SECTION_CATEGORIES[section] as cat}
-										<option value={cat}>{cat}</option>
-									{/each}
-									<option value="custom">+ Kategori Lainnya...</option>
-								</select>
-							</div>
-							{#if category === 'custom'}
-								<input
-									type="text"
-									bind:value={customCategory}
-									placeholder="Nama kategori baru..."
-									class="mt-1.5 w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 shadow-xs focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
-								/>
-							{/if}
 						</div>
 					</div>
 
-					<!-- SAC Story Live Link (Only shown when Section is SAC) -->
-					{#if section === 'SAC'}
-						<div class="space-y-1.5 rounded-xl border border-purple-200/80 bg-purple-50/40 p-3 dark:border-purple-900/40 dark:bg-purple-950/20">
-							<label for="doc-sac-url" class="text-xs font-semibold text-purple-800 dark:text-purple-300 flex items-center justify-between">
-								<span>Tautan Langsung Story SAC Production (URL)</span>
-								<span class="text-[10px] font-normal text-purple-600 dark:text-purple-400">Tenant 6c653</span>
-							</label>
+					<!-- 1-Click Ready Templates Bar & Import File -->
+					<div class="rounded-xl border border-zinc-200/80 bg-zinc-50/70 p-3 dark:border-zinc-800 dark:bg-zinc-900/50">
+						<div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+							<div class="flex items-center gap-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+								<LayoutTemplate class="h-3.5 w-3.5 text-indigo-500" />
+								<span>Template Pencatatan Cepat (1-Klik)</span>
+							</div>
+							<button
+								type="button"
+								onclick={() => mdFileInputRef?.click()}
+								class="inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-2.5 py-1 text-[11px] font-semibold text-zinc-700 shadow-2xs hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700 transition-colors"
+							>
+								<FileUp class="h-3.5 w-3.5 text-indigo-500" />
+								<span>Import File (.md / .txt)</span>
+							</button>
 							<input
-								id="doc-sac-url"
-								type="url"
-								bind:value={sacUrl}
-								placeholder="https://sacprod-jhonlin.ap11.analytics.cloud.sap/sap/fpa/ui/tenants/6c653/..."
-								class="w-full rounded-lg border border-purple-300 bg-white px-3 py-1.5 text-xs text-zinc-900 shadow-xs focus:border-purple-500 focus:outline-none dark:border-purple-900/60 dark:bg-zinc-900 dark:text-zinc-50 font-mono"
-							/>
-						</div>
-					{/if}
-
-					<!-- Description & Tags Row -->
-					<div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-						<div class="space-y-1.5">
-							<label for="doc-desc" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-								Ringkasan Singkat / Deskripsi
-							</label>
-							<input
-								id="doc-desc"
-								type="text"
-								bind:value={description}
-								placeholder="Deskripsi 1-2 kalimat untuk preview dan pencarian..."
-								class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 shadow-xs focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
+								type="file"
+								bind:this={mdFileInputRef}
+								accept=".md,.txt,text/markdown,text/plain"
+								class="hidden"
+								onchange={handleMdFileChange}
 							/>
 						</div>
 
-						<div class="space-y-1.5">
-							<label for="doc-tags" class="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
-								Tags (Pisahkan dengan koma)
-							</label>
-							<input
-								id="doc-tags"
-								type="text"
-								bind:value={tagsString}
-								placeholder="Architecture, MVC, Controller, Best Practice"
-								class="w-full rounded-lg border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-900 shadow-xs focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-50"
-							/>
+						<div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+							{#each DOC_TEMPLATES as tpl}
+								<button
+									type="button"
+									onclick={() => applyTemplate(tpl)}
+									class="flex flex-col items-start rounded-lg border border-zinc-200 bg-white p-2 text-left transition-all hover:border-indigo-500/60 hover:bg-indigo-50/30 dark:border-zinc-800 dark:bg-zinc-950 dark:hover:border-indigo-500/50 dark:hover:bg-indigo-950/20"
+								>
+									<div class="flex w-full items-center justify-between">
+										<span class="text-[11px] font-bold text-zinc-900 dark:text-zinc-100 truncate">{tpl.name}</span>
+										<span class="rounded bg-indigo-500/10 px-1.5 py-0.2 text-[9px] font-bold text-indigo-600 dark:text-indigo-400">
+											{tpl.badge}
+										</span>
+									</div>
+									<span class="mt-0.5 line-clamp-1 text-[10px] text-zinc-500 dark:text-zinc-400">
+										{tpl.description}
+									</span>
+								</button>
+							{/each}
 						</div>
 					</div>
 
 					<!-- Editor & Preview Tabs with Toolbar -->
 					<div class="space-y-2">
-						<div class="flex flex-wrap items-center justify-between gap-2 border-b border-zinc-200 pb-2 dark:border-zinc-800">
-							<!-- Tab switch -->
-							<div class="flex items-center gap-1 rounded-lg bg-zinc-100 p-0.5 dark:bg-zinc-900">
-								<button
-									type="button"
-									onclick={() => (activeTab = 'edit')}
-									class="flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all {activeTab === 'edit'
-										? 'bg-white text-zinc-900 shadow-xs dark:bg-zinc-800 dark:text-zinc-100'
-										: 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'}"
-								>
-									<Edit3 class="h-3.5 w-3.5" />
-									<span>Editor</span>
-								</button>
-								<button
-									type="button"
-									onclick={() => (activeTab = 'preview')}
-									class="flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all {activeTab === 'preview'
-										? 'bg-white text-zinc-900 shadow-xs dark:bg-zinc-800 dark:text-zinc-100'
-										: 'text-zinc-500 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-200'}"
-								>
-									<Eye class="h-3.5 w-3.5" />
-									<span>Live Preview</span>
-								</button>
-							</div>
+						<div class="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-2">
+							<!-- Tab switch (Shadcn Tabs) -->
+							<Tabs bind:value={activeTab} class="w-auto">
+								<TabsList class="h-8 bg-muted/60 p-0.5">
+									<TabsTrigger value="edit" class="gap-1.5 px-3 py-1 text-xs">
+										<Edit3 class="h-3.5 w-3.5" />
+										<span>Editor</span>
+									</TabsTrigger>
+									<TabsTrigger value="split" class="gap-1.5 px-3 py-1 text-xs">
+										<Columns2 class="h-3.5 w-3.5" />
+										<span>Split View</span>
+									</TabsTrigger>
+									<TabsTrigger value="preview" class="gap-1.5 px-3 py-1 text-xs">
+										<Eye class="h-3.5 w-3.5" />
+										<span>Live Preview</span>
+									</TabsTrigger>
+								</TabsList>
+							</Tabs>
 
 							<!-- Formatting Toolbar -->
-							{#if activeTab === 'edit'}
+							{#if activeTab !== 'preview'}
 								<div class="flex flex-wrap items-center gap-1 text-zinc-600 dark:text-zinc-300">
 									<button
 										type="button"
@@ -658,6 +864,24 @@
 										class="rounded p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800"
 									>
 										<List class="h-4 w-4" />
+									</button>
+									<button
+										type="button"
+										title="Checklist Langkah Kerja"
+										onclick={() => insertSnippet(MARKDOWN_CHECKLIST_SNIPPET, '')}
+										class="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800"
+									>
+										<CheckSquare class="h-3.5 w-3.5 text-emerald-500" />
+										<span class="hidden md:inline">Checklist</span>
+									</button>
+									<button
+										type="button"
+										title="Sisipkan Tabel Markdown Otomatis"
+										onclick={() => insertSnippet(MARKDOWN_TABLE_SNIPPET, '')}
+										class="flex items-center gap-1 rounded px-1.5 py-0.5 text-[11px] font-medium hover:bg-zinc-100 dark:hover:bg-zinc-800"
+									>
+										<Table class="h-3.5 w-3.5 text-indigo-500" />
+										<span class="hidden md:inline">Tabel</span>
 									</button>
 									<button
 										type="button"
@@ -731,7 +955,7 @@
 
 						<!-- Editor Body -->
 						{#if activeTab === 'edit'}
-							<textarea
+							<Textarea
 								id="doc-editor-textarea"
 								bind:value={content}
 								onpaste={handlePaste}
@@ -740,10 +964,44 @@
 								required
 								rows={16}
 								placeholder="Tuliskan isi dokumentasi di sini... Mendukung Markdown, Heading H2/H3, tabel, code block, dan alert [!NOTE] / [!TIP]."
-								class="w-full rounded-xl border border-zinc-300 bg-white p-4 font-mono text-xs leading-relaxed text-zinc-900 shadow-inner focus:border-indigo-500 focus:outline-none dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-100"
-							></textarea>
+								class="rounded-xl p-4 font-mono text-xs leading-relaxed shadow-inner"
+							/>
+							<div class="flex flex-wrap items-center justify-between gap-1 text-[11px] text-muted-foreground px-1 pt-0.5">
+								<span>💡 Tips Gambar: Tekan <strong class="text-foreground">Ctrl + V</strong> untuk langsung paste screenshot, atau seret (drag & drop) file gambar ke editor.</span>
+								{#if isUploadingImage}
+									<span class="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-semibold animate-pulse">
+										<Loader2 class="h-3 w-3 animate-spin" /> Sedang mengunggah gambar...
+									</span>
+								{/if}
+							</div>
+						{:else if activeTab === 'split'}
+							<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+								<div class="flex flex-col">
+									<Textarea
+										id="doc-editor-textarea"
+										bind:value={content}
+										onpaste={handlePaste}
+										ondrop={handleDrop}
+										ondragover={(e) => e.preventDefault()}
+										required
+										rows={17}
+										placeholder="Tuliskan isi dokumentasi di sini... Mendukung Markdown, Heading H2/H3, tabel, code block, dan alert [!NOTE] / [!TIP]."
+										class="h-[420px] resize-none rounded-xl p-4 font-mono text-xs leading-relaxed shadow-inner"
+									/>
+								</div>
+								<div class="h-[420px] overflow-y-auto rounded-xl border border-zinc-200 bg-zinc-50/50 p-5 dark:border-zinc-800 dark:bg-zinc-900/40">
+									<div class="mb-3">
+										<Badge variant="secondary" class="mb-1.5 text-[10px]">{category === 'custom' ? customCategory : category}</Badge>
+										<h1 class="text-xl font-bold text-zinc-900 dark:text-white">{title || 'Judul Dokumen'}</h1>
+									</div>
+									<Separator class="my-3" />
+									<div class="prose prose-zinc dark:prose-invert max-w-none text-xs leading-relaxed">
+										{@html renderedPreview}
+									</div>
+								</div>
+							</div>
 							<div class="flex flex-wrap items-center justify-between gap-1 text-[11px] text-zinc-500 dark:text-zinc-400 px-1 pt-0.5">
-								<span>💡 Tips Gambar: Tekan <strong class="text-zinc-700 dark:text-zinc-200">Ctrl + V</strong> untuk langsung paste screenshot, atau seret (drag & drop) file gambar ke editor.</span>
+								<span>💡 Mode Split View Aktif: Ketik di kiri (mendukung <strong class="text-zinc-700 dark:text-zinc-200">Ctrl + V</strong> paste gambar) dan lihat hasil secara real-time di kanan.</span>
 								{#if isUploadingImage}
 									<span class="flex items-center gap-1 text-indigo-600 dark:text-indigo-400 font-semibold animate-pulse">
 										<Loader2 class="h-3 w-3 animate-spin" /> Sedang mengunggah gambar...
@@ -769,9 +1027,15 @@
 				</div>
 
 				<!-- Footer Actions -->
-				<div class="flex items-center justify-between px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80">
-					<div class="text-xs text-zinc-500 dark:text-zinc-400">
-						<span>Format tersimpan otomatis dalam basis data JSON. Tidak memerlukan file .md manual.</span>
+				<div class="flex flex-wrap items-center justify-between gap-2 px-6 py-4 border-t border-zinc-200 dark:border-zinc-800 bg-zinc-50/80 dark:bg-zinc-900/80">
+					<div class="flex items-center gap-3 text-xs text-zinc-500 dark:text-zinc-400">
+						<span>Format tersimpan otomatis dalam basis data JSON.</span>
+						{#if lastAutoSavedAt}
+							<span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400">
+								<CheckCircle2 class="h-3 w-3" />
+								<span>Draft tersimpan otomatis ({lastAutoSavedAt})</span>
+							</span>
+						{/if}
 					</div>
 
 					<div class="flex items-center gap-2">

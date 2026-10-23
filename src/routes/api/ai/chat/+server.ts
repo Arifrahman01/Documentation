@@ -13,7 +13,17 @@ import {
 export const POST: RequestHandler = async ({ request }) => {
 	try {
 		const body = await request.json();
-		const { messages, documentContext, model, currentRoute, query, context, history } = body;
+		const {
+			messages,
+			documentContext,
+			model,
+			currentRoute,
+			query,
+			context,
+			history,
+			strictDocScope,
+			docMeta
+		} = body;
 
 		let messageList = messages;
 		if (!messageList && (query || history)) {
@@ -27,21 +37,58 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ error: 'Messages array atau parameter query diperlukan' }, { status: 400 });
 		}
 
-		// Extract user query for RAG semantic knowledge retrieval
-		const lastUserQuery =
-			query || messageList.filter((m: any) => m.role === 'user').pop()?.content || '';
-		const relevantKnowledge = retrieveRelevantKnowledge(lastUserQuery);
+		const docCtx = documentContext || context || '';
+		let contextualPrompt = '';
 
-		let contextualPrompt = SYSTEM_PROMPT_BASE;
-		if (currentRoute) {
-			contextualPrompt += `\nLOKASI PENGGUNA SAAT INI DI PORTAL: ${currentRoute}`;
-		}
-		const docCtx = documentContext || context;
-		if (docCtx && docCtx.trim()) {
-			contextualPrompt += `\n\n[KONTEKS DOKUMEN AKTIF SAAT INI]:\n"""\n${docCtx.substring(0, 3500)}\n"""`;
-		}
-		if (relevantKnowledge) {
-			contextualPrompt += `\n\n${relevantKnowledge}\n\nIngat: Jawab HANYA berdasarkan fakta di atas. Dilarang mengarang fakta di luar dokumen!`;
+		if (strictDocScope) {
+			// STRICT SINGLE-DOCUMENT AI ASSISTANT SCOPE
+			const docTitle = docMeta?.title || currentRoute || 'Dokumen Aktif';
+			const docSection = docMeta?.section || 'Dokumentasi';
+			const docCategory = docMeta?.category || 'Umum';
+			const docSlug = docMeta?.slug ? `/docs/${docMeta.slug}` : '';
+
+			contextualPrompt = `Anda adalah "AI Assistant Dokumen", asisten analisis khusus yang HANYA bertugas menjelaskan, merangkum, dan menjawab pertanyaan berdasarkan SATU dokumen yang sedang dibuka pengguna.
+
+==================================================
+ATURAN LINGKUP DOKUMEN TUNGGAL (STRICT DOCUMENT SCOPE):
+==================================================
+1. LINGKUP TERKUNCI:
+   - Anda HANYA boleh menggunakan informasi yang tertulis di dalam [ISI LENGKAP DOKUMEN AKTIF] di bawah ini.
+   - DILARANG mengambil, mencampur, atau mengarang informasi di luar isi dokumen "${docTitle}" ini.
+2. JIKA TIDAK ADA DI DOKUMEN INI:
+   - Apabila pengguna menanyakan topik yang tidak dibahas di dalam dokumen "${docTitle}", jawab dengan sopan:
+     "Topik tersebut tidak dibahas di dalam dokumen **${docTitle}** ini. Silakan gunakan **Chat AI Copilot (Global)** di pojok kanan atas jika ingin mencari informasi lintas seluruh dokumen portal."
+3. GAYA JAWABAN:
+   - Gunakan Bahasa Indonesia yang terstruktur, jelas, dan mudah dipahami.
+   - Gunakan format Markdown (poin-poin, tabel, bold, atau blok kode sesuai isi dokumen).
+   - Jangan pernah menyebutkan nama model AI teknis di balik layar.
+
+[METADATA DOKUMEN AKTIF]:
+- Judul: ${docTitle}
+- Bagian: ${docSection}
+- Kategori: ${docCategory}
+${docSlug ? `- Path: ${docSlug}` : ''}
+
+[ISI LENGKAP DOKUMEN AKTIF]:
+"""
+${docCtx.substring(0, 12000)}
+"""`;
+		} else {
+			// GLOBAL PORTAL CHAT AI COPILOT SCOPE
+			const lastUserQuery =
+				query || messageList.filter((m: any) => m.role === 'user').pop()?.content || '';
+			const relevantKnowledge = retrieveRelevantKnowledge(lastUserQuery);
+
+			contextualPrompt = SYSTEM_PROMPT_BASE;
+			if (currentRoute) {
+				contextualPrompt += `\nLOKASI PENGGUNA SAAT INI DI PORTAL: ${currentRoute}`;
+			}
+			if (docCtx && docCtx.trim()) {
+				contextualPrompt += `\n\n[KONTEKS DOKUMEN AKTIF SAAT INI]:\n"""\n${docCtx.substring(0, 3500)}\n"""`;
+			}
+			if (relevantKnowledge) {
+				contextualPrompt += `\n\n${relevantKnowledge}\n\nIngat: Jawab HANYA berdasarkan fakta di atas. Dilarang mengarang fakta di luar dokumen!`;
+			}
 		}
 
 		const fullMessages = [{ role: 'system', content: contextualPrompt }, ...messageList];

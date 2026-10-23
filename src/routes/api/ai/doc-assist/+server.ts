@@ -85,6 +85,23 @@ Balas HANYA dalam format blok kode Markdown dengan sedikit penjelasan.`
 					content: `Judul: ${currentDoc?.title || ''}\n\nIsi Dokumen:\n${(currentDoc?.content || '').slice(0, 4500)}`
 				}
 			];
+		} else if (action === 'format') {
+			messages = [
+				{
+					role: 'system',
+					content: `Anda adalah Formatter Dokumentasi Teknis Enterprise (${targetSection}).
+Tugas Anda adalah merapikan catatan mentah/kasar pengguna menjadi format Markdown yang sangat rapi, bersih, dan terstruktur:
+1. PERTAHANKAN 100% FAKTA ASLI: Jangan menghapus detail teknis, nama tabel, rumus, ukuran, T-Code, atau langkah yang ditulis pengguna, dan jangan mengarang fakta baru di luar catatan pengguna.
+2. Gunakan Heading H2 (##) dan H3 (###) secara proporsional.
+3. Ubah daftar parameter, perbandingan, atau ukuran menjadi Tabel Markdown (| Kolom |) jika cocok.
+4. Bungkus rumus, query, atau kode ke dalam blok kode (\`\`\`) dan sorot informasi penting dengan Callout (> [!NOTE] atau > [!TIP]).
+5. Balas HANYA teks Markdown yang sudah dirapikan tanpa kata pengantar.`
+				},
+				{
+					role: 'user',
+					content: `Judul Dokumen: ${currentDoc?.title || prompt || 'Catatan Dokumentasi'}\n\nCatatan Mentah yang Perlu Dirapikan:\n${currentDoc?.content || prompt || ''}`
+				}
+			];
 		} else {
 			return json({ error: `Aksi '${action}' tidak dikenali` }, { status: 400 });
 		}

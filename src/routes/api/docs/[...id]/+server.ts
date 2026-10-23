@@ -26,7 +26,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 
 	try {
 		const body = await request.json();
-		const { title, category, content, description, tags, section, sacUrl } = body;
+		const { title, category, subcategory, content, description, tags, section, sacUrl } = body;
 		const doc = docs[index];
 
 		if (section && ['SAP', 'SAC', 'WEB'].includes(section.toUpperCase())) {
@@ -34,16 +34,29 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		}
 		if (title) doc.title = title.trim();
 		if (category) doc.category = category.trim();
-		if (content) doc.content = content.trim();
+		if (subcategory !== undefined) {
+			doc.subcategory = subcategory ? String(subcategory).trim() : undefined;
+		}
+		if (content !== undefined) {
+			doc.content = String(content).trim();
+		}
 		if (sacUrl !== undefined) doc.sacUrl = sacUrl ? sacUrl.trim() : undefined;
 		if (description) {
 			doc.description = description.trim();
 			doc.snippet = description.trim();
-		} else if (content) {
-			doc.description = content.slice(0, 160).replace(/[#*`\n]/g, ' ').trim();
+		} else if (doc.content) {
+			doc.description = doc.content
+				.slice(0, 160)
+				.replace(/[#*`\n>-]/g, ' ')
+				.replace(/\s+/g, ' ')
+				.trim();
 			doc.snippet = doc.description;
 		}
-		if (tags && Array.isArray(tags)) doc.tags = tags;
+		if (tags && Array.isArray(tags)) {
+			doc.tags = tags;
+		} else if (!doc.tags || doc.tags.length === 0) {
+			doc.tags = [doc.section || 'SAP', doc.category, ...(doc.subcategory ? [doc.subcategory] : [])];
+		}
 		doc.updatedAt = new Date().toISOString();
 
 		saveDocuments(docs);

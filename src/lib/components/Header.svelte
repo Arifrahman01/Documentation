@@ -78,41 +78,34 @@
 					</a>
 
 					<!-- Dropdown Flyout Panel -->
-					<div class="invisible group-hover:visible group-focus-within:visible opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-150 absolute top-full left-0 mt-1 w-80 rounded-xl border border-border bg-background/95 backdrop-blur-md p-2 shadow-xl z-50">
-						<div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-							Bagian Utama Dokumentasi
-						</div>
-						<div class="mt-1 space-y-1">
-							{#each docSections as sec}
-								<a
-									href={sec.href}
-									class="flex items-start gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted"
-								>
-									<div class="mt-0.5 flex h-7 w-7 items-center justify-center rounded-md {sec.color}">
-										<sec.icon class="h-4 w-4" />
-									</div>
-									<div class="flex-1">
-										<div class="text-xs font-semibold text-foreground flex items-center justify-between">
-											<span>{sec.name}</span>
-											<span class="text-[9px] opacity-70">Buka &rarr;</span>
+					<div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-150 absolute top-full left-0 pt-1.5 w-80 z-50">
+						<div class="rounded-xl border border-border bg-background/95 backdrop-blur-md p-2 shadow-xl">
+							<div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+								Bagian Utama Dokumentasi
+							</div>
+							<div class="mt-1 space-y-1">
+								{#each docSections as sec}
+									<a
+										href={sec.href}
+										onclick={(e) => (e.currentTarget as HTMLElement).blur()}
+										class="flex items-start gap-3 rounded-lg p-2.5 transition-colors hover:bg-muted"
+									>
+										<div class="mt-0.5 flex h-7 w-7 items-center justify-center rounded-md {sec.color}">
+											<sec.icon class="h-4 w-4" />
 										</div>
-										<div class="text-[11px] text-muted-foreground mt-0.5 leading-snug">{sec.desc}</div>
-									</div>
-								</a>
-							{/each}
+										<div class="flex-1">
+											<div class="text-xs font-semibold text-foreground flex items-center justify-between">
+												<span>{sec.name}</span>
+												<span class="text-[9px] opacity-70">Buka &rarr;</span>
+											</div>
+											<div class="text-[11px] text-muted-foreground mt-0.5 leading-snug">{sec.desc}</div>
+										</div>
+									</a>
+								{/each}
+							</div>
 						</div>
 					</div>
 				</div>
-
-				<a
-					href="/api-reference"
-					class="flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors {isActive('/api-reference') 
-						? 'bg-muted text-foreground' 
-						: 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'}"
-				>
-					<Terminal class="h-4 w-4 opacity-70" />
-					<span>API Reference</span>
-				</a>
 
 				<a
 					href="/apps"
@@ -221,17 +214,6 @@
 						{/each}
 					</div>
 				</div>
-
-				<a
-					href="/api-reference"
-					onclick={() => (mobileMenuOpen = false)}
-					class="flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium {isActive('/api-reference') 
-						? 'bg-muted text-foreground' 
-						: 'text-muted-foreground'}"
-				>
-					<Terminal class="h-4 w-4" />
-					<span>API Reference</span>
-				</a>
 
 				<a
 					href="/apps"

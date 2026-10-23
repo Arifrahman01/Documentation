@@ -184,6 +184,22 @@
   border: 1px solid hsl(var(--border) / 0.6);
 }
 
+/* Syntax Highlighting Tokens inside Code Blocks */
+.prose pre .tok-keyword {
+  color: #c084fc;
+  font-weight: 600;
+}
+.prose pre .tok-string {
+  color: #86efac;
+}
+.prose pre .tok-comment {
+  color: #71717a;
+  font-style: italic;
+}
+.prose pre .tok-number {
+  color: #fbbf24;
+}
+
 /* Enhanced Documentation Tables & Formulas */
 .prose table {
   width: 100%;
