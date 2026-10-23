@@ -10,7 +10,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			return json({ error: 'Content diperlukan untuk diringkas' }, { status: 400 });
 		}
 
-		const cacheKey = `summary_${hashString(title + content.slice(0, 500))}`;
+		const cacheKey = `summary_${hashString(`${title || ''}::${content}`)}`;
 		const cached = getCache(cacheKey);
 		if (cached) {
 			return json({ ...cached, cached: true });

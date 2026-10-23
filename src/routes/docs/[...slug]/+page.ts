@@ -26,7 +26,7 @@ export const load: PageLoad = async ({ params, fetch }) => {
 		doc = (localDocs as any[]).find((d: any) => d.slug === slug || d.id === slug);
 	}
 
-	if (!doc) {
+	if (!doc && (!params.slug || slug === 'sap/overview')) {
 		doc = localDocs[0];
 	}
 

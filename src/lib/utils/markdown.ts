@@ -100,6 +100,23 @@ function highlightCodeSyntax(escapedCode: string): string {
 		.replace(/\b(\d+(?:\.\d+)?)\b/g, '<span class="tok-number">$1</span>');
 }
 
+function escapeHtmlAttr(str: string): string {
+	return str
+		.replace(/&/g, '&amp;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#39;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;');
+}
+
+export function sanitizeRenderedHtml(html: string): string {
+	return html
+		.replace(/<\s*(script|iframe|object|embed|form|meta|link|style)\b[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, '')
+		.replace(/<\s*(script|iframe|object|embed|form|meta|link|style)\b[^>]*\/?>/gi, '')
+		.replace(/\s+on[a-z]+\s*=\s*(?:"[^"]*"|'[^']*'|[^\s>]+)/gi, '')
+		.replace(/\b(href|src|action)\s*=\s*(["'])\s*(?:javascript:|vbscript:|data:text\/html)[^"']*\2/gi, '$1=$2#$2');
+}
+
 export function renderMarkdown(content: string): string {
 	if (!content) return '';
 
@@ -108,23 +125,23 @@ export function renderMarkdown(content: string): string {
 	// Transform GitHub-style Alerts: [!NOTE], [!TIP], [!IMPORTANT], [!WARNING], [!CAUTION]
 	raw = raw.replace(
 		/>\s*\[!NOTE\]\s*(.*?)(?=(\n\n|\n>|$))/gs,
-		'<div class="my-4 rounded-xl border-l-4 border-border bg-muted/50 p-4 text-xs leading-relaxed text-foreground"><strong class="block mb-1 font-bold text-foreground">Catatan (Note)</strong>$1</div>'
+		'<div role="note" class="my-4 rounded-xl border border-border bg-muted/40 p-4 text-xs leading-relaxed text-foreground"><strong class="mb-1 flex items-center gap-1.5 font-semibold tracking-wide text-foreground">Catatan (Note)</strong>$1</div>'
 	);
 	raw = raw.replace(
 		/>\s*\[!TIP\]\s*(.*?)(?=(\n\n|\n>|$))/gs,
-		'<div class="my-4 rounded-xl border-l-4 border-border bg-muted/50 p-4 text-xs leading-relaxed text-foreground"><strong class="block mb-1 font-bold text-foreground">Tips Best Practice</strong>$1</div>'
+		'<div role="note" class="my-4 rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-4 text-xs leading-relaxed text-foreground"><strong class="mb-1 flex items-center gap-1.5 font-semibold tracking-wide text-emerald-600 dark:text-emerald-400">Tips Best Practice</strong>$1</div>'
 	);
 	raw = raw.replace(
 		/>\s*\[!IMPORTANT\]\s*(.*?)(?=(\n\n|\n>|$))/gs,
-		'<div class="my-4 rounded-xl border-l-4 border-border bg-muted/50 p-4 text-xs leading-relaxed text-foreground"><strong class="block mb-1 font-bold text-foreground">Penting (Important)</strong>$1</div>'
+		'<div role="note" class="my-4 rounded-xl border border-blue-500/30 bg-blue-500/5 p-4 text-xs leading-relaxed text-foreground"><strong class="mb-1 flex items-center gap-1.5 font-semibold tracking-wide text-blue-600 dark:text-blue-400">Penting (Important)</strong>$1</div>'
 	);
 	raw = raw.replace(
 		/>\s*\[!WARNING\]\s*(.*?)(?=(\n\n|\n>|$))/gs,
-		'<div class="my-4 rounded-xl border-l-4 border-border bg-muted/50 p-4 text-xs leading-relaxed text-foreground"><strong class="block mb-1 font-bold text-foreground">Perhatian (Warning)</strong>$1</div>'
+		'<div role="alert" class="my-4 rounded-xl border border-amber-500/35 bg-amber-500/10 p-4 text-xs leading-relaxed text-foreground"><strong class="mb-1 flex items-center gap-1.5 font-semibold tracking-wide text-amber-600 dark:text-amber-400">Perhatian (Warning)</strong>$1</div>'
 	);
 	raw = raw.replace(
 		/>\s*\[!CAUTION\]\s*(.*?)(?=(\n\n|\n>|$))/gs,
-		'<div class="my-4 rounded-xl border-l-4 border-destructive bg-destructive/10 p-4 text-xs leading-relaxed text-foreground"><strong class="block mb-1 font-bold text-destructive">Peringatan Kritis (Caution)</strong>$1</div>'
+		'<div role="alert" class="my-4 rounded-xl border border-destructive/40 bg-destructive/10 p-4 text-xs leading-relaxed text-foreground"><strong class="mb-1 flex items-center gap-1.5 font-semibold tracking-wide text-destructive">Peringatan Kritis (Caution)</strong>$1</div>'
 	);
 
 	let parsed = marked.parse(raw) as string;
@@ -150,7 +167,8 @@ export function renderMarkdown(content: string): string {
 	parsed = parsed.replace(
 		/<pre><code(?:\s+class="language-([^"]+)")?>([\s\S]*?)<\/code><\/pre>/g,
 		(_match, lang, codeContent) => {
-			const languageLabel = (lang || 'code').toUpperCase();
+			const safeLang = escapeHtmlAttr((lang || 'text').replace(/[^a-zA-Z0-9_-]/g, ''));
+			const languageLabel = safeLang.toUpperCase();
 			const encodedRaw = encodeURIComponent(
 				codeContent
 					.replace(/&lt;/g, '<')
@@ -168,16 +186,20 @@ export function renderMarkdown(content: string): string {
 						<span>Salin Kode</span>
 					</button>
 				</div>
-				<pre class="!my-0 !rounded-none !border-0 !bg-transparent p-4 overflow-x-auto"><code class="language-${lang || 'text'}">${highlighted}</code></pre>
+				<pre class="!my-0 !rounded-none !border-0 !bg-transparent p-4 overflow-x-auto"><code class="language-${safeLang}">${highlighted}</code></pre>
 			</div>`;
 		}
 	);
 
-	// Make images zoomable on click
-	parsed = parsed.replace(
-		/<img\s+([^>]*?)src="([^"]+)"([^>]*?)>/g,
-		'<img $1src="$2"$3 data-zoomable="true" class="cursor-zoom-in" title="Klik untuk memperbesar gambar">'
-	);
+	// Make images zoomable on click & lazy-loaded
+	const imgTagPattern = new RegExp('<' + 'img\\s+([^>]*?)src="([^"]+)"([^>]*?)>', 'g');
+	parsed = parsed.replace(imgTagPattern, (_match, before, srcVal, after) => {
+		const safeSrc = escapeHtmlAttr(srcVal);
+		return (
+			'<' +
+			`img ${before}src="${safeSrc}"${after} loading="lazy" decoding="async" data-zoomable="true" class="cursor-zoom-in" title="Klik untuk memperbesar gambar">`
+		);
+	});
 
-	return parsed;
+	return sanitizeRenderedHtml(parsed);
 }
