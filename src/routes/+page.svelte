@@ -34,26 +34,26 @@
 		{
 			step: '01',
 			title: 'Pilih Modul, Folder & Sub-Folder',
-			desc: 'Gunakan File Explorer di sisi kiri untuk memfilter modul (SAP, SAC, WEB). Buat Folder atau File Catatan baru secara instan seperti di Obsidian.',
+			desc: 'Gunakan File Explorer di sisi kiri untuk memilih modul (SAP, SAC, WEB). Buat Folder atau File Catatan baru secara instan dan rapi.',
 			badge: 'File Explorer'
 		},
 		{
 			step: '02',
-			title: 'Klik Kanan atau Double-Click (Gaya Obsidian)',
-			desc: 'Klik kanan di mana saja pada halaman dokumen atau pohon Explorer untuk membuka menu aksi: Buat File, Buat Folder, Edit Catatan, Duplikat, atau Hapus.',
-			badge: 'Context Menu'
+			title: 'Aksi Cepat Klik Kanan & Double-Click',
+			desc: 'Klik kanan di mana saja pada daftar file atau artikel untuk menu aksi: Buat File, Buat Folder, Edit Catatan, Duplikat, atau Hapus.',
+			badge: 'Menu Konteks'
 		},
 		{
 			step: '03',
-			title: 'Tulis Langsung dengan Template & Paste Gambar',
-			desc: 'Fokus menulis isi catatan saja (metadata modul & folder terisi otomatis). Gunakan Template 1-Klik, Split-View, atau tekan Ctrl+V untuk menempel screenshot.',
-			badge: 'In-Page Editor'
+			title: 'Tulis Leluasa: Mode Penuh & Split Pratinjau',
+			desc: 'Ruang tulis luas dan leluasa. Beralih instan antara mode [Tulis Penuh] untuk mengetik tanpa batas atau [Split Pratinjau] untuk melihat hasil Markdown.',
+			badge: 'Editor Fleksibel'
 		},
 		{
 			step: '04',
-			title: 'Rapikan Catatan Mentah & Analisis dengan AI',
-			desc: 'Tempel catatan kasar lalu klik "Rapikan Format". Gunakan "AI Assistant (Ctrl+I)" untuk analisis 1 dokumen aktif, atau "AI Copilot (Ctrl+J)" untuk tanya-jawab global.',
-			badge: 'Dual AI System'
+			title: 'Rapikan Otomatis & Instruksi Manual AI',
+			desc: 'Tempel catatan mentah lalu klik "Rapikan Format", atau berikan instruksi manual khusus ke AI untuk memformat tabel, heading, atau kode.',
+			badge: 'AI Assistant'
 		}
 	];
 
@@ -63,9 +63,9 @@
 			title: 'Menu Klik Kanan & Double-Click Edit',
 			category: 'Navigasi & Aksi',
 			points: [
-				'Klik kanan pada nama file/folder di Explorer atau isi artikel untuk membuka menu aksi cepat.',
-				'Klik 2x (Double-Click) langsung pada paragraf artikel untuk masuk ke mode Edit.',
-				'Mendukung fitur "Duplikat File Catatan" untuk menggandakan struktur dokumen yang mirip dalam 1 detik.'
+				'Klik kanan pada file/folder di Explorer atau artikel dokumen untuk membuka menu aksi cepat.',
+				'Klik 2x (Double-Click) langsung pada paragraf artikel untuk masuk ke mode Edit seketika.',
+				'Mendukung fitur "Duplikat File Catatan" untuk menggandakan struktur dokumen dalam 1 detik.'
 			]
 		},
 		{
@@ -73,49 +73,49 @@
 			title: 'File Explorer Folder & Sub-Folder',
 			category: 'Organisasi File',
 			points: [
-				'Kelompokkan dokumen ke dalam 3 pilar utama (SAP, SAC, WEB), Folder Kategori, hingga Sub-Folder.',
+				'Kelompokkan dokumen ke dalam 3 pilar utama (SAP, SAC, WEB), Folder Kategori, hingga Sub-Folder bertingkat.',
 				'Klik tombol (+) di samping nama Folder untuk langsung menambah file catatan baru di dalam folder tersebut.',
-				'Detail lokasi (SAP/SAC/WEB & Folder) terisi 100% otomatis sesuai tempat Anda membuat file.'
+				'Detail lokasi modul dan folder terisi 100% otomatis sesuai tempat Anda membuat file.'
 			]
 		},
 		{
 			icon: LayoutTemplate,
-			title: '4 Template Instan & Import File (.md / .txt)',
-			category: 'Pencatatan Cepat',
+			title: 'Editor Leluasa (Tulis Penuh & Split Pratinjau)',
+			category: 'Pencatatan Fleksibel',
 			points: [
-				'4 Template 1-Klik: Template SAC Story, Template SAP/ABAP, Template Web & API, serta Template SOP/Troubleshooting.',
-				'Import file .md atau .txt dari komputer langsung ke dalam kotak ketik.',
-				'Toolbar Markdown 1-Klik untuk membuat Tabel otomatis, Checklist langkah kerja, Heading, Callout Box, dan Blok Kode.'
+				'Pilihan tampilan fleksibel: Mode [Tulis Penuh] untuk ruang menulis ekstra lega atau [Split Pratinjau] berdampingan.',
+				'Template terpadu 1-klik yang bersih dan terstruktur untuk memulai dokumentasi tanpa kebingungan format.',
+				'Toolbar Markdown lengkap untuk membuat Tabel otomatis, Checklist langkah kerja, Callout Box, dan Blok Kode.'
 			]
 		},
 		{
 			icon: ImageIcon,
-			title: 'Sisipkan Gambar Instan & Lightbox Zoom',
+			title: 'Sisipkan Gambar Instan (Ctrl+V) & Lightbox Zoom',
 			category: 'Media & Visual',
 			points: [
-				'Tekan Ctrl+V langsung di dalam editor untuk menempelkan gambar/screenshot dari clipboard.',
+				'Tekan Ctrl+V langsung di dalam editor untuk menempelkan gambar atau screenshot dari clipboard.',
 				'Mendukung Drag & Drop file gambar dari komputer atau klik tombol "+ Gambar" di toolbar.',
-				'Setiap gambar di dalam artikel dapat diklik untuk diperbesar (Full-Screen Lightbox Zoom).'
+				'Setiap gambar di dalam artikel dapat diklik untuk diperbesar penuh (Full-Screen Lightbox Zoom).'
 			]
 		},
 		{
-			icon: Lock,
-			title: 'AI Assistant Dokumen (Ctrl+I) vs Chat AI Global (Ctrl+J)',
+			icon: Wand2,
+			title: 'Perapian Format & Instruksi Manual AI',
 			category: 'Kecerdasan Buatan',
 			points: [
-				'AI Assistant Dokumen (Ctrl+I): Berbentuk Modal Spotlight yang lingkupnya 100% terkunci hanya pada isi dokumen yang sedang dibuka.',
-				'Dilengkapi fitur "Sematkan di Artikel" agar hasil rangkuman AI menempel di atas dokumen sambil Anda membaca.',
-				'Tombol "Rapikan Format" di Editor mengubah catatan mentah menjadi struktur Heading & Tabel rapi tanpa mengubah fakta.'
+				'Tombol "Rapikan Format" merapikan catatan mentah menjadi struktur Heading & Tabel standar profesional.',
+				'Fitur "Instruksi Manual AI" memungkinkan Anda memberi arahan bebas (misal: "Ubah ke format SOP", "Perjelas langkah solusi").',
+				'Tersedia tombol "Urungkan AI" untuk mengembalikan draf asli jika ingin disesuaikan kembali.'
 			]
 		},
 		{
 			icon: Save,
-			title: 'Ekspor Markdown & Integrasi Apps & My Docs',
-			category: 'Keamanan Data',
+			title: 'Aplikasi PWA, Ruang My Docs & Ekspor',
+			category: 'Akses & Integrasi',
 			points: [
-				'Setiap dokumentasi dapat disalin tautannya, disalin Raw Markdown-nya, atau diunduh sebagai file .md.',
-				'Terhubung langsung dengan direktori Apps dan ruang catatan pribadi My Docs.',
-				'Seluruh antarmuka menggunakan komponen standar Shadcn UI yang seragam dan bebas distraksi.'
+				'Dapat diinstal langsung sebagai aplikasi desktop/mobile (PWA) dengan dukungan caching dan offline mode.',
+				'Ruang catatan pribadi "My Docs" dengan kenyamanan editor dan manajemen file yang sama persis.',
+				'Setiap dokumen dapat disalin tautannya, disalin Raw Markdown-nya, atau diunduh sebagai file .md.'
 			]
 		}
 	];
@@ -125,12 +125,12 @@
 		{ keys: 'Double-Click', action: 'Klik 2x pada teks artikel untuk langsung mengedit dokumen aktif' },
 		{ keys: 'Alt + N', action: 'Membuat File Catatan Baru di File Explorer' },
 		{ keys: 'Alt + Shift + F', action: 'Membuat Folder Baru di File Explorer' },
-		{ keys: 'Ctrl + E', action: 'Membuka Editor untuk dokumen yang sedang aktif (Ctrl+S untuk Simpan)' },
-		{ keys: 'Ctrl + I', action: 'Membuka Modal AI Assistant Khusus Dokumen Ini (Lingkup Terkunci 1 Dokumen)' },
-		{ keys: 'Ctrl + J', action: 'Membuka laci Chat AI Copilot Global (SAP, SAC, Web & 7 Aplikasi)' },
+		{ keys: 'Ctrl + E', action: 'Membuka / menutup Mode Editor untuk dokumen aktif (Ctrl+S untuk Simpan)' },
+		{ keys: 'Ctrl + I', action: 'Membuka AI Assistant Khusus Dokumen Ini (Lingkup Terkunci 1 Dokumen)' },
+		{ keys: 'Ctrl + J', action: 'Membuka Chat AI Copilot Global (SAP, SAC, Web, & Apps)' },
 		{ keys: 'Ctrl + K', action: 'Membuka Pencarian Cepat Global (Dokumentasi, Apps & My Docs)' },
 		{ keys: 'Ctrl + V', action: 'Menempelkan (Paste) gambar/screenshot langsung ke dalam Editor' },
-		{ keys: 'ESC', action: 'Menutup editor, AI Assistant, pencarian, atau pratinjau gambar' }
+		{ keys: 'ESC', action: 'Menutup editor, AI Assistant, modal pencarian, atau pratinjau gambar' }
 	];
 </script>
 
@@ -150,7 +150,7 @@
 			</h1>
 
 			<p class="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-				Pusat pencatatan dokumentasi teknis SAP, SAC Analytics, dan Web Stack dengan pengalaman menulis cepat bergaya Obsidian & komponen Shadcn UI yang seragam.
+				Pusat pencatatan dokumentasi teknis SAP, SAC Analytics, dan Web Stack dengan pengalaman menulis leluasa, organisasi file terstruktur, dan asisten AI terintegrasi.
 			</p>
 
 			<div class="mt-10 flex flex-wrap items-center justify-center gap-3">
@@ -298,17 +298,16 @@
 								<Compass class="h-4 w-4" />
 							</div>
 							<Badge variant="secondary">Panduan Penggunaan Program</Badge>
-							<Badge variant="outline" class="text-[11px]">Obsidian Style</Badge>
+							<Badge variant="outline" class="text-[11px]">Panduan Resmi</Badge>
 						</div>
 						<CardTitle class="text-2xl font-extrabold tracking-tight pt-1">
 							Dokumentasi Penggunaan & Fitur Lengkap Portal
 						</CardTitle>
 						<CardDescription class="text-sm max-w-3xl">
-							Program ini dirancang khusus untuk mempermudah pencatatan, pengorganisasian, dan pencarian dokumentasi teknis enterprise dengan menggabungkan kecepatan <strong>Obsidian File Explorer</strong> dan keseragaman <strong>Shadcn UI</strong>.
+							Program ini dirancang khusus untuk mempermudah pencatatan, pengorganisasian, dan pencarian dokumentasi teknis enterprise dengan File Explorer bertingkat, ruang editor luas yang fleksibel, serta asisten AI cerdas terintegrasi.
 						</CardDescription>
 					</div>
 
-					<!-- Shadcn Tabs List Inside Overview Card -->
 					<Tabs bind:value={activeGuideTab} class="w-auto">
 						<TabsList>
 							<TabsTrigger value="workflow" class="text-xs">1. Alur Penggunaan</TabsTrigger>
@@ -375,15 +374,15 @@
 								<ul class="space-y-2 text-xs text-muted-foreground leading-relaxed">
 									<li class="flex items-start gap-2">
 										<CheckCircle2 class="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-										<span><strong>Pakai Template 1-Klik:</strong> Buka menu <em>Template & AI</em> di editor lalu pilih <em>SAC Story</em>, <em>SAP/ABAP</em>, <em>Web/API</em>, atau <em>SOP</em>.</span>
+										<span><strong>Ruang Tulis Leluasa:</strong> Beralih instan antara mode <em>Tulis Penuh</em> (leluasa tanpa batasan) atau <em>Split Pratinjau</em> (pratinjau live berdampingan).</span>
 									</li>
 									<li class="flex items-start gap-2">
 										<CheckCircle2 class="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-										<span><strong>Paste Catatan Kasar + Rapikan AI:</strong> Tempel catatan mentah lalu klik tombol <strong>Rapikan Catatan</strong> (dilengkapi tombol <em>Urungkan AI</em>).</span>
+										<span><strong>Rapikan Otomatis & Instruksi Manual:</strong> Tempel catatan kasar lalu klik <strong>Rapikan Format</strong>, atau berikan <em>Instruksi Manual AI</em> untuk perapian khusus.</span>
 									</li>
 									<li class="flex items-start gap-2">
 										<CheckCircle2 class="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-										<span><strong>Import File (.md / .txt):</strong> Klik tombol <em>Import (.md)</em> di dalam panel <em>Template & AI</em> editor.</span>
+										<span><strong>Tempel Gambar (Ctrl+V) & Import File:</strong> Tempel screenshot langsung dari clipboard atau import file (.md/.txt) dari komputer.</span>
 									</li>
 								</ul>
 							</Card>

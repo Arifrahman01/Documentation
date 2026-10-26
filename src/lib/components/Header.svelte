@@ -43,8 +43,41 @@
 		<!-- Brand & Logo -->
 		<div class="flex items-center gap-6">
 			<a href="/" class="group flex items-center gap-3 transition-opacity hover:opacity-90">
-				<div class="relative flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-foreground shadow-2xs">
-					<img src="/logo.png" alt="Logo" class="h-6 w-6 object-contain" />
+				<div class="relative flex size-9 items-center justify-center rounded-xl border border-border/80 bg-card/90 text-foreground shadow-2xs overflow-hidden transition-all group-hover:border-foreground/40 group-hover:shadow-xs">
+					<div class="absolute inset-0 bg-gradient-to-br from-foreground/5 via-transparent to-foreground/10 pointer-events-none"></div>
+					<!-- Bold Monochrome BookUser Logo with Grey Gradient -->
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="relative size-5.5 transition-transform duration-200 group-hover:scale-105" aria-hidden="true">
+						<defs>
+							<!-- Dark Theme: Bold Silver / Platinum Metallic Gradient -->
+							<linearGradient id="headerLogoSilver" x1="0%" y1="0%" x2="100%" y2="100%">
+								<stop offset="0%" stop-color="#ffffff"/>
+								<stop offset="50%" stop-color="#e2e8f0"/>
+								<stop offset="100%" stop-color="#94a3b8"/>
+							</linearGradient>
+							<!-- Light Theme: Bold Charcoal Grey Gradient -->
+							<linearGradient id="headerLogoCharcoal" x1="0%" y1="0%" x2="100%" y2="100%">
+								<stop offset="0%" stop-color="#09090b"/>
+								<stop offset="50%" stop-color="#27272a"/>
+								<stop offset="100%" stop-color="#52525b"/>
+							</linearGradient>
+						</defs>
+						<!-- Book Cover & Spine -->
+						<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" 
+							fill="none" 
+							class="stroke-[url(#headerLogoCharcoal)] dark:stroke-[url(#headerLogoSilver)]" 
+							stroke-width="2.25" 
+							stroke-linecap="round" 
+							stroke-linejoin="round" />
+						<!-- User Head (Solid filled for bold iconic presence) -->
+						<circle cx="12" cy="8" r="2.2" 
+							class="fill-[url(#headerLogoCharcoal)] dark:fill-[url(#headerLogoSilver)]" />
+						<!-- User Shoulders -->
+						<path d="M15.5 13.5a3.5 3.5 0 1 0-7 0" 
+							fill="none" 
+							class="stroke-[url(#headerLogoCharcoal)] dark:stroke-[url(#headerLogoSilver)]" 
+							stroke-width="2.25" 
+							stroke-linecap="round" />
+					</svg>
 				</div>
 				<div class="flex flex-col">
 					<div class="flex items-center gap-2">

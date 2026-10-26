@@ -12,6 +12,13 @@
 	$effect(() => {
 		auth.init(data.userName);
 		ui.applyTheme();
+
+		// Register PWA Service Worker for offline support & installability
+		if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/service-worker.js').catch((err) => {
+				console.warn('PWA Service Worker registration:', err);
+			});
+		}
 	});
 </script>
 

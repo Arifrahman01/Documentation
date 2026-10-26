@@ -15,5 +15,9 @@
 		"src/**/*.svelte",
 		".svelte-kit/types/**/$types.d.ts",
 		"vite.config.ts"
+	],
+	"exclude": [
+		"src/service-worker.ts",
+		"src/service-worker/**/*"
 	]
 }

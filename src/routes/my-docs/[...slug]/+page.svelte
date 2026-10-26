@@ -1350,10 +1350,10 @@
 							variant="outline"
 							size="sm"
 							onclick={() => (viewMode = 'view')}
-							class="h-7.5 gap-1.5 px-2.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+							class="h-8 gap-1.5 px-3 text-xs font-medium text-muted-foreground hover:text-foreground"
 							title="Beralih ke tampilan membaca layar penuh (Ctrl+E)"
 						>
-							<Eye class="h-3.5 w-3.5" />
+							<Eye class="size-3.5" />
 							<span class="hidden sm:inline">Mode Baca</span>
 						</Button>
 
@@ -1361,14 +1361,14 @@
 							size="sm"
 							onclick={handleSave}
 							disabled={isSaving}
-							class="h-7.5 gap-1.5 px-3 text-xs font-semibold shadow-xs"
+							class="h-8 gap-1.5 px-3 text-xs font-semibold shadow-xs"
 							title="Simpan perubahan catatan (Ctrl+S)"
 						>
 							{#if isSaving}
-								<Loader2 class="h-3.5 w-3.5 animate-spin" />
+								<Loader2 class="size-3.5 animate-spin" />
 								<span>Menyimpan...</span>
 							{:else}
-								<Save class="h-3.5 w-3.5" />
+								<Save class="size-3.5" />
 								<span>Simpan</span>
 							{/if}
 						</Button>
@@ -1377,10 +1377,10 @@
 							variant="default"
 							size="sm"
 							onclick={() => (viewMode = 'split')}
-							class="h-7.5 gap-1.5 px-3 text-xs font-semibold shadow-xs"
+							class="h-8 gap-1.5 px-3 text-xs font-semibold shadow-xs"
 							title="Beralih ke mode editor catatan (Ctrl+E)"
 						>
-							<Edit3 class="h-3.5 w-3.5" />
+							<Edit3 class="size-3.5" />
 							<span>Edit Catatan</span>
 						</Button>
 					{/if}
@@ -1388,27 +1388,29 @@
 					<!-- Focus Mode Toggle -->
 					<Button
 						variant="ghost"
-						size="icon"
+						size="sm"
 						onclick={() => (isFocusMode = !isFocusMode)}
-						class="hidden lg:inline-flex h-7.5 w-7.5 text-muted-foreground hover:text-foreground"
-						title={isFocusMode ? 'Keluar Mode Fokus' : 'Mode Fokus'}
+						class="hidden lg:inline-flex h-8 gap-1.5 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+						title={isFocusMode ? 'Keluar Mode Fokus' : 'Mode Fokus (Sembunyikan Menu)'}
 					>
 						{#if isFocusMode}
-							<Minimize2 class="h-3.5 w-3.5" />
+							<Minimize2 class="size-3.5" />
+							<span>Keluar Fokus</span>
 						{:else}
-							<Maximize2 class="h-3.5 w-3.5" />
+							<Maximize2 class="size-3.5" />
+							<span>Mode Fokus</span>
 						{/if}
 					</Button>
 
 					<!-- Copy Markdown -->
 					<Button
 						variant="ghost"
-						size="icon"
+						size="sm"
 						onclick={copyMarkdown}
-						class="h-7.5 w-7.5 text-muted-foreground hover:text-foreground"
+						class="size-8 p-0 text-muted-foreground hover:text-foreground"
 						title="Salin isi Markdown"
 					>
-						<Copy class="h-3.5 w-3.5" />
+						<Copy class="size-3.5" />
 					</Button>
 
 					<!-- AI Copilot Modal (Fokus Dokumen Ini) -->
@@ -1416,33 +1418,34 @@
 						variant="outline"
 						size="sm"
 						onclick={() => askAiAboutDoc()}
-						class="h-7.5 gap-1.5 px-2.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10"
+						class="h-8 gap-1.5 px-2.5 text-xs font-semibold text-primary border-primary/30 hover:bg-primary/10"
 						title="Tanya AI Copilot khusus dokumen ini (Ctrl+I)"
 					>
-						<Sparkles class="h-3.5 w-3.5 text-primary" />
+						<Sparkles class="size-3.5 text-primary" />
 						<span class="hidden sm:inline">AI Dokumen</span>
 					</Button>
 
 					<!-- Delete Document -->
 					<Button
 						variant="ghost"
-						size="icon"
+						size="sm"
 						onclick={openDeleteDocDialog}
-						class="h-7.5 w-7.5 text-destructive hover:bg-destructive/10"
+						class="size-8 p-0 text-destructive hover:bg-destructive/10"
 						title="Hapus Catatan"
 					>
-						<Trash2 class="h-3.5 w-3.5" />
+						<Trash2 class="size-3.5" />
 					</Button>
 
 					<!-- More Actions (Context Menu Trigger) -->
 					<Button
+						type="button"
 						variant="ghost"
-						size="icon"
+						size="sm"
 						onclick={(e) => openContextMenu(e, currentDoc)}
-						class="h-7.5 w-7.5 text-muted-foreground hover:text-foreground"
+						class="size-8 p-0 text-muted-foreground hover:text-foreground"
 						title="Opsi Catatan Lengkap (Klik Kanan)"
 					>
-						<MoreHorizontal class="h-3.5 w-3.5" />
+						<MoreHorizontal class="size-4" />
 					</Button>
 				</div>
 			</div>
@@ -1472,84 +1475,93 @@
 			{:else}
 				<!-- Mode Tulis Langsung (Split View: Editor di Kiri, Live Preview di Kanan) -->
 				<div class="space-y-2.5">
-					<!-- Formatting Toolbar -->
-					<div class="flex flex-wrap items-center justify-between gap-1 rounded-xl border border-border bg-card p-1 shadow-2xs">
-						<div class="flex flex-wrap items-center gap-0.5">
-							<Button variant="ghost" size="sm" onclick={() => insertSnippet('## ', '', 'Heading 2')} class="h-7 w-7 p-0" title="Heading 2">
-								<Heading2 class="h-3.5 w-3.5" />
-							</Button>
-							<Button variant="ghost" size="sm" onclick={() => insertSnippet('### ', '', 'Heading 3')} class="h-7 w-7 p-0" title="Heading 3">
-								<Heading3 class="h-3.5 w-3.5" />
-							</Button>
-							<Button variant="ghost" size="sm" onclick={() => insertSnippet('**', '**', 'teks tebal')} class="h-7 w-7 p-0" title="Tebal (Bold)">
-								<Bold class="h-3.5 w-3.5" />
-							</Button>
-							<Button variant="ghost" size="sm" onclick={() => insertSnippet('*', '*', 'teks miring')} class="h-7 w-7 p-0" title="Miring (Italic)">
-								<Italic class="h-3.5 w-3.5" />
-							</Button>
-							<Separator orientation="vertical" class="mx-1 h-4" />
-							<Button variant="ghost" size="sm" onclick={() => insertSnippet('- ', '', 'poin')} class="h-7 w-7 p-0" title="Daftar Poin">
-								<List class="h-3.5 w-3.5" />
-							</Button>
-							<Button variant="ghost" size="sm" onclick={() => insertSnippet('- [ ] ', '', 'tugas')} class="h-7 w-7 p-0" title="Daftar Checklist">
-								<CheckSquare class="h-3.5 w-3.5" />
-							</Button>
-							<Button variant="ghost" size="sm" onclick={() => insertSnippet('```typescript\n', '\n```', '// kode di sini')} class="h-7 w-7 p-0" title="Blok Kode">
-								<Code class="h-3.5 w-3.5" />
-							</Button>
-							<Button variant="ghost" size="sm" onclick={() => insertSnippet('| Kolom 1 | Kolom 2 |\n| --- | --- |\n| Baris 1 | Baris 2 |')} class="h-7 w-7 p-0" title="Tabel">
-								<Table class="h-3.5 w-3.5" />
-							</Button>
-							<Button variant="ghost" size="sm" onclick={() => insertSnippet('![Deskripsi](', ')', 'https://')} class="h-7 w-7 p-0" title="Sisipkan Gambar">
-								<ImageIcon class="h-3.5 w-3.5" />
-							</Button>
-							<Separator orientation="vertical" class="mx-1 h-4" />
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								disabled={isAiAssistLoading || !editorContent.trim()}
-								onclick={runAiFormatNote}
-								class="h-7 gap-1.5 px-2.5 text-xs font-medium"
-								title="Rapikan catatan mentah menjadi Markdown yang rapi dan terstruktur secara otomatis"
-							>
-								{#if isAiAssistLoading && aiActionType === 'format'}
-									<Loader2 class="h-3.5 w-3.5 animate-spin" />
-									<span>Merapikan...</span>
-								{:else}
-									<Sparkles class="h-3.5 w-3.5 text-primary" />
-									<span>Rapikan</span>
-								{/if}
-							</Button>
-							<Button
-								type="button"
-								variant={showCustomAiPrompt ? 'secondary' : 'outline'}
-								size="sm"
-								disabled={isAiAssistLoading}
-								onclick={() => (showCustomAiPrompt = !showCustomAiPrompt)}
-								class="h-7 gap-1.5 px-2.5 text-xs font-medium"
-								title="Beri instruksi manual untuk memodifikasi atau menambah isi catatan"
-							>
-								<Wand2 class="h-3.5 w-3.5 text-primary" />
-								<span>Instruksi AI</span>
-							</Button>
-							{#if aiUndoContent !== null}
+					<!-- Formatting Toolbar: Sleek Semantic Grouping & Pixel-Perfect Alignment -->
+					<div class="flex flex-wrap items-center justify-between gap-1.5 rounded-xl border border-border/80 bg-card p-1.5 shadow-2xs">
+						<div class="flex flex-wrap items-center gap-1.5">
+							<!-- Group 1: Text Formatting -->
+							<div class="flex items-center rounded-lg border border-border/60 bg-muted/40 p-0.5 shadow-2xs">
+								<Button variant="ghost" size="sm" onclick={() => insertSnippet('## ', '', 'Heading 2')} class="size-7 p-0 rounded-md" title="Heading 2">
+									<Heading2 class="size-3.5" />
+								</Button>
+								<Button variant="ghost" size="sm" onclick={() => insertSnippet('### ', '', 'Heading 3')} class="size-7 p-0 rounded-md" title="Heading 3">
+									<Heading3 class="size-3.5" />
+								</Button>
+								<Button variant="ghost" size="sm" onclick={() => insertSnippet('**', '**', 'teks tebal')} class="size-7 p-0 rounded-md" title="Tebal (Bold)">
+									<Bold class="size-3.5" />
+								</Button>
+								<Button variant="ghost" size="sm" onclick={() => insertSnippet('*', '*', 'teks miring')} class="size-7 p-0 rounded-md" title="Miring (Italic)">
+									<Italic class="size-3.5" />
+								</Button>
+							</div>
+
+							<!-- Group 2: Insert Elements -->
+							<div class="flex items-center rounded-lg border border-border/60 bg-muted/40 p-0.5 shadow-2xs">
+								<Button variant="ghost" size="sm" onclick={() => insertSnippet('- ', '', 'poin')} class="size-7 p-0 rounded-md" title="Daftar Poin">
+									<List class="size-3.5" />
+								</Button>
+								<Button variant="ghost" size="sm" onclick={() => insertSnippet('- [ ] ', '', 'tugas')} class="size-7 p-0 rounded-md" title="Daftar Checklist">
+									<CheckSquare class="size-3.5" />
+								</Button>
+								<Button variant="ghost" size="sm" onclick={() => insertSnippet('```typescript\n', '\n```', '// kode di sini')} class="size-7 p-0 rounded-md" title="Blok Kode">
+									<Code class="size-3.5" />
+								</Button>
+								<Button variant="ghost" size="sm" onclick={() => insertSnippet('| Kolom 1 | Kolom 2 |\n| --- | --- |\n| Baris 1 | Baris 2 |')} class="size-7 p-0 rounded-md" title="Tabel">
+									<Table class="size-3.5" />
+								</Button>
+								<Button variant="ghost" size="sm" onclick={() => insertSnippet('![Deskripsi](', ')', 'https://')} class="size-7 p-0 rounded-md" title="Sisipkan Gambar">
+									<ImageIcon class="size-3.5" />
+								</Button>
+							</div>
+
+							<!-- Group 3: AI Actions -->
+							<div class="flex items-center gap-1">
 								<Button
 									type="button"
-									variant="ghost"
+									variant="outline"
 									size="sm"
-									onclick={undoAiChanges}
-									class="h-7 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 dark:text-amber-400"
-									title="Batalkan perubahan AI terakhir"
+									disabled={isAiAssistLoading || !editorContent.trim()}
+									onclick={runAiFormatNote}
+									class="h-7 gap-1.5 px-2.5 text-xs font-medium"
+									title="Rapikan catatan mentah menjadi Markdown yang rapi dan terstruktur secara otomatis"
 								>
-									<RotateCcw class="h-3 w-3" />
-									<span>Undo</span>
+									{#if isAiAssistLoading && aiActionType === 'format'}
+										<Loader2 class="size-3.5 animate-spin" />
+										<span>Merapikan...</span>
+									{:else}
+										<Sparkles class="size-3.5 text-primary" />
+										<span>Rapikan</span>
+									{/if}
 								</Button>
-							{/if}
+								<Button
+									type="button"
+									variant={showCustomAiPrompt ? 'secondary' : 'outline'}
+									size="sm"
+									disabled={isAiAssistLoading}
+									onclick={() => (showCustomAiPrompt = !showCustomAiPrompt)}
+									class="h-7 gap-1.5 px-2.5 text-xs font-medium"
+									title="Beri instruksi manual untuk memodifikasi atau menambah isi catatan"
+								>
+									<Wand2 class="size-3.5 text-primary" />
+									<span>Instruksi AI</span>
+								</Button>
+								{#if aiUndoContent !== null}
+									<Button
+										type="button"
+										variant="ghost"
+										size="sm"
+										onclick={undoAiChanges}
+										class="h-7 gap-1 px-2 text-xs text-amber-600 hover:text-amber-700 dark:text-amber-400"
+										title="Batalkan perubahan AI terakhir"
+									>
+										<RotateCcw class="size-3" />
+										<span>Undo</span>
+									</Button>
+								{/if}
+							</div>
 						</div>
 
 						<div class="flex items-center gap-2">
-							<!-- Segmented Editor Layout Switcher: Tulis Penuh (100%) vs Split View (50:50) -->
+							<!-- Group 4: Segmented Editor Layout Switcher -->
 							<div class="flex items-center rounded-lg border border-border/70 bg-muted/50 p-0.5">
 								<button
 									type="button"
@@ -1562,7 +1574,7 @@
 									)}
 									title="Tulis Penuh: Area tulis 100% lebar layar, sangat lega dan leluasa"
 								>
-									<Maximize2 class="h-3 w-3" />
+									<Maximize2 class="size-3" />
 									<span class="hidden sm:inline">Tulis Penuh</span>
 									<span class="sm:hidden">Penuh</span>
 								</button>
@@ -1577,13 +1589,13 @@
 									)}
 									title="Split View: Tampilkan pratinjau langsung di samping kanan (50:50)"
 								>
-									<Columns2 class="h-3 w-3" />
+									<Columns2 class="size-3" />
 									<span class="hidden sm:inline">Split Pratinjau</span>
 									<span class="sm:hidden">Split</span>
 								</button>
 							</div>
 
-							<div class="hidden md:flex items-center gap-1.5 pr-2 text-[10px] text-muted-foreground">
+							<div class="hidden md:flex items-center gap-1.5 pr-1 text-[10px] text-muted-foreground">
 								<span>{wordCount} kata</span>
 								<span>•</span>
 								<span>Tempel screenshot (Ctrl+V) langsung</span>
