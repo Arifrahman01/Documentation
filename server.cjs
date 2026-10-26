@@ -10,11 +10,33 @@ const app = express();
 const PORT = process.env.PORT || 8088;
 const FRONTEND_STATIC = path.join(__dirname, 'static');
 
-// Local AI Endpoint Configuration (supports env variables or defaults)
+// Load .env if present
+try {
+  const envPath = path.join(__dirname, '.env');
+  if (fs.existsSync(envPath)) {
+    const content = fs.readFileSync(envPath, 'utf8');
+    for (const line of content.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eqIdx = trimmed.indexOf('=');
+      if (eqIdx === -1) continue;
+      const key = trimmed.slice(0, eqIdx).trim();
+      let val = trimmed.slice(eqIdx + 1).trim();
+      if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+        val = val.slice(1, -1);
+      }
+      if (process.env[key] === undefined) {
+        process.env[key] = val;
+      }
+    }
+  }
+} catch (_) {}
+
+// Local AI Endpoint Configuration (supports env variables)
 const AI_CONFIG = {
   host: process.env.AI_HOST || '127.0.0.1',
   port: parseInt(process.env.AI_PORT, 10) || 8045,
-  apiKey: process.env.AI_API_KEY || 'sk-33246260e7334a429cde6487acca5479',
+  apiKey: process.env.AI_API_KEY || '',
   defaultModel: process.env.AI_MODEL || 'gemini-3.8-flash-medium',
   fallbackModel: 'gemini-3.8-flash'
 };
@@ -51,10 +73,22 @@ function hashString(str) {
 
 app.use(express.json({ limit: '10mb' }));
 
-// Enable CORS for all assets
+// Restricted CORS & Security Headers
+const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'http://localhost:8088,http://127.0.0.1:8088')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
 app.use((req, res, next) => {
-  res.header('Access-Control-Allow-Origin', '*');
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Vary', 'Origin');
+  }
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  res.header('X-Content-Type-Options', 'nosniff');
+  res.header('X-Frame-Options', 'SAMEORIGIN');
+  res.header('Referrer-Policy', 'strict-origin-when-cross-origin');
   next();
 });
 

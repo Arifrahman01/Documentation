@@ -8,6 +8,7 @@ import {
 	inferSection,
 	buildDocTree
 } from '$lib/server/docs';
+import { verifyWriteAccess } from '$lib/server/auth';
 
 export const GET: RequestHandler = async () => {
 	const docs = loadDocuments();
@@ -15,7 +16,10 @@ export const GET: RequestHandler = async () => {
 	return json(tree);
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { request } = event;
 	try {
 		const body = await request.json();
 

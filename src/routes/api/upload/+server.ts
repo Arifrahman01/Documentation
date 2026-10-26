@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import fs from 'node:fs';
 import path from 'node:path';
+import { verifyWriteAccess } from '$lib/server/auth';
 
 const UPLOAD_DIR = path.resolve(process.cwd(), 'static/uploads');
 const MAX_UPLOAD_BYTES = 5 * 1024 * 1024; // 5 MB
@@ -13,7 +14,10 @@ const ALLOWED_MIME_EXT: Record<string, string> = {
 	webp: 'webp'
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { request } = event;
 	try {
 		const body = await request.json();
 		const rawImage = body.image || body.data;

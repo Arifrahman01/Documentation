@@ -7,21 +7,14 @@ import {
 	getUserDocStorage,
 	buildUserDocTree
 } from '$lib/server/userDocs';
+import { resolveSessionUser, verifyWriteAccess } from '$lib/server/auth';
 
-function resolveUserName(cookies: any): string {
-	const raw = cookies.get('user_name');
-	if (raw) {
-		try {
-			return decodeURIComponent(raw);
-		} catch {
-			return raw;
-		}
+export const GET: RequestHandler = async ({ params, cookies, url }) => {
+	const userName = resolveSessionUser(cookies, url);
+	if (!userName) {
+		return json({ error: 'Sesi login tidak ditemukan' }, { status: 401 });
 	}
-	return 'Arif Rahman';
-}
 
-export const GET: RequestHandler = async ({ params, cookies }) => {
-	const userName = resolveUserName(cookies);
 	const doc = getUserDoc(userName, params.id);
 
 	if (!doc) {
@@ -31,14 +24,17 @@ export const GET: RequestHandler = async ({ params, cookies }) => {
 	return json(doc);
 };
 
-export const PUT: RequestHandler = async ({ params, request, cookies }) => {
-	const userName = resolveUserName(cookies);
+export const PUT: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { userName } = authCheck;
+
 	try {
-		const body = await request.json();
+		const body = await event.request.json();
 		const updatedDoc = saveUserDoc(userName, {
 			...body,
-			id: params.id,
-			slug: body.slug || params.id
+			id: event.params.id,
+			slug: body.slug || event.params.id
 		});
 
 		const storage = getUserDocStorage(userName);
@@ -54,9 +50,12 @@ export const PUT: RequestHandler = async ({ params, request, cookies }) => {
 	}
 };
 
-export const DELETE: RequestHandler = async ({ params, cookies }) => {
-	const userName = resolveUserName(cookies);
-	const success = deleteUserDoc(userName, params.id);
+export const DELETE: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { userName } = authCheck;
+
+	const success = deleteUserDoc(userName, event.params.id);
 
 	if (!success) {
 		return json({ error: 'Dokumen tidak ditemukan untuk dihapus' }, { status: 404 });

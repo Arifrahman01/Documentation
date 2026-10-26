@@ -2,11 +2,14 @@ import http from 'node:http';
 import crypto from 'node:crypto';
 import Fuse from 'fuse.js';
 import { loadDocuments, loadApps, getDataVersion, type DocumentItem } from './docs';
+import { ensureEnvLoaded } from './auth';
+
+ensureEnvLoaded();
 
 export const AI_CONFIG = {
 	host: process.env.AI_HOST || '127.0.0.1',
 	port: parseInt(process.env.AI_PORT || '8045', 10),
-	apiKey: process.env.AI_API_KEY || 'sk-33246260e7334a429cde6487acca5479',
+	apiKey: process.env.AI_API_KEY || '',
 	defaultModel: process.env.AI_MODEL || 'gemini-3.8-flash-medium',
 	fallbackModel: 'gemini-3.8-flash'
 };

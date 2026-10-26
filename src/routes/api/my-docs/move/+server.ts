@@ -5,23 +5,15 @@ import {
 	getUserDocStorage,
 	buildUserDocTree
 } from '$lib/server/userDocs';
+import { verifyWriteAccess } from '$lib/server/auth';
 
-function resolveUserName(cookies: any): string {
-	const raw = cookies.get('user_name');
-	if (raw) {
-		try {
-			return decodeURIComponent(raw);
-		} catch {
-			return raw;
-		}
-	}
-	return 'Arif Rahman';
-}
+export const POST: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { userName } = authCheck;
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
-	const userName = resolveUserName(cookies);
 	try {
-		const body = await request.json();
+		const body = await event.request.json();
 		const { id, category, subcategory } = body;
 
 		if (!id || !category) {

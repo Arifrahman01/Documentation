@@ -335,7 +335,7 @@
 								</div>
 							</div>
 
-							<div class="prose prose-xs dark:prose-invert max-w-none leading-relaxed">
+							<div class="prose prose-xs dark:prose-invert max-w-none text-[12.5px] leading-relaxed [&>p]:text-[12.5px] [&>p]:leading-relaxed [&>li]:text-[12.5px] [&>h1]:text-[13.5px] [&>h2]:text-[13px] [&>h3]:text-[12.5px] [&>pre]:text-[11px] [&>code]:text-[11px]">
 								{@html renderMarkdown(msg.content)}
 							</div>
 						</Card.Root>

@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { loadApps, saveApps } from '$lib/server/docs';
+import { verifyWriteAccess } from '$lib/server/auth';
 
 const CATEGORY_LABELS: Record<string, string> = {
 	operations: 'Operations & Logistics',
@@ -19,7 +20,10 @@ export const GET: RequestHandler = async () => {
 	});
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { request } = event;
 	try {
 		const body = await request.json();
 		const { title, subtitle, description, url, category, status, tags, docSlug } = body;
@@ -67,7 +71,10 @@ export const POST: RequestHandler = async ({ request }) => {
 	}
 };
 
-export const PUT: RequestHandler = async ({ request }) => {
+export const PUT: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { request } = event;
 	try {
 		const body = await request.json();
 		const { id, title, subtitle, description, url, category, status, tags, docSlug } = body;
@@ -106,7 +113,10 @@ export const PUT: RequestHandler = async ({ request }) => {
 	}
 };
 
-export const DELETE: RequestHandler = async ({ url }) => {
+export const DELETE: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { url } = event;
 	try {
 		const id = url.searchParams.get('id');
 		if (!id) {

@@ -223,12 +223,12 @@
 							</div>
 						{/if}
 
-						<div class="group relative max-w-[85%] rounded-xl px-4 py-3 text-xs leading-relaxed {msg.role === 'user'
+						<div class="group relative max-w-[85%] rounded-xl px-3.5 py-2.5 text-[12px] leading-relaxed {msg.role === 'user'
 							? 'bg-primary text-primary-foreground'
 							: 'bg-muted/60 text-foreground border border-border'}">
 							
 							{#if msg.role === 'assistant'}
-								<div class="prose prose-xs dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-4 [&>pre]:my-2 [&>pre]:p-2.5 [&>pre]:rounded-lg [&>pre]:bg-zinc-950 [&>pre]:text-zinc-100 [&>code]:bg-muted [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded">
+								<div class="prose prose-xs dark:prose-invert max-w-none break-words text-[12px] leading-relaxed [&>p]:text-[12px] [&>p]:leading-relaxed [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-4 [&>ul]:my-1.5 [&>ol]:list-decimal [&>ol]:pl-4 [&>ol]:my-1.5 [&>li]:text-[12px] [&>li]:leading-relaxed [&>li]:my-0.5 [&>h1]:text-[13px] [&>h1]:font-bold [&>h1]:mb-1.5 [&>h1]:mt-2 [&>h2]:text-[12.5px] [&>h2]:font-bold [&>h2]:mb-1.5 [&>h2]:mt-2 [&>h3]:text-[12px] [&>h3]:font-bold [&>h3]:mb-1 [&>h3]:mt-1.5 [&>h4]:text-[12px] [&>h4]:font-semibold [&>pre]:my-2 [&>pre]:p-2.5 [&>pre]:text-[11px] [&>pre]:rounded-lg [&>pre]:bg-zinc-950 [&>pre]:text-zinc-100 [&>code]:bg-muted [&>code]:text-[11px] [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded [&>strong]:font-semibold">
 									{@html sanitizeRenderedHtml(marked.parse(msg.content) as string)}
 								</div>
 								
@@ -247,7 +247,7 @@
 									{/if}
 								</Button>
 							{:else}
-								<div class="whitespace-pre-wrap">{msg.content}</div>
+								<div class="whitespace-pre-wrap text-[12px] leading-relaxed">{msg.content}</div>
 							{/if}
 						</div>
 

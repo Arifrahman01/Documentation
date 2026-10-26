@@ -1,6 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { loadDocuments, saveDocuments, inferSection } from '$lib/server/docs';
+import { verifyWriteAccess } from '$lib/server/auth';
 
 export const GET: RequestHandler = async ({ params }) => {
 	const id = params.id;
@@ -15,7 +16,10 @@ export const GET: RequestHandler = async ({ params }) => {
 	return json(doc);
 };
 
-export const PUT: RequestHandler = async ({ params, request }) => {
+export const PUT: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { params, request } = event;
 	const id = params.id;
 	const docs = loadDocuments();
 	const index = docs.findIndex((d) => d.id === id || d.slug === id);
@@ -69,8 +73,10 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 	}
 };
 
-export const DELETE: RequestHandler = async ({ params }) => {
-	const id = params.id;
+export const DELETE: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const id = event.params.id;
 	let docs = loadDocuments();
 	const initialLen = docs.length;
 	docs = docs.filter((d) => d.id !== id && d.slug !== id);

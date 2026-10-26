@@ -6,16 +6,12 @@ import {
 	buildUserDocTree,
 	sanitizeUserName
 } from '$lib/server/userDocs';
+import { resolveSessionUser } from '$lib/server/auth';
 
-export const load: PageServerLoad = async ({ params, cookies }) => {
-	const raw = cookies.get('user_name');
-	let userName = 'Arif Rahman';
-	if (raw) {
-		try {
-			userName = decodeURIComponent(raw);
-		} catch {
-			userName = raw;
-		}
+export const load: PageServerLoad = async ({ params, cookies, url }) => {
+	const userName = resolveSessionUser(cookies, url);
+	if (!userName) {
+		throw error(401, 'Sesi pengguna tidak ditemukan. Silakan login melalui portal utama terlebih dahulu.');
 	}
 
 	const storage = getUserDocStorage(userName);

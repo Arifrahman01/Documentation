@@ -7,22 +7,14 @@ import {
 	deleteUserFolder,
 	buildUserDocTree
 } from '$lib/server/userDocs';
+import { resolveSessionUser, verifyWriteAccess } from '$lib/server/auth';
 
-function resolveUserName(cookies: any): string {
-	const raw = cookies.get('user_name');
-	if (raw) {
-		try {
-			return decodeURIComponent(raw);
-		} catch {
-			return raw;
-		}
+export const GET: RequestHandler = async ({ cookies, url }) => {
+	const userName = resolveSessionUser(cookies, url);
+	if (!userName) {
+		return json({ error: 'Sesi login tidak ditemukan' }, { status: 401 });
 	}
-	// Fallback lokal default ke 'Arif Rahman'
-	return 'Arif Rahman';
-}
 
-export const GET: RequestHandler = async ({ cookies }) => {
-	const userName = resolveUserName(cookies);
 	const storage = getUserDocStorage(userName);
 	const treeData = buildUserDocTree(storage.documents, storage.folders);
 
@@ -38,10 +30,13 @@ export const GET: RequestHandler = async ({ cookies }) => {
 	});
 };
 
-export const POST: RequestHandler = async ({ request, cookies }) => {
-	const userName = resolveUserName(cookies);
+export const POST: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { userName } = authCheck;
+
 	try {
-		const body = await request.json();
+		const body = await event.request.json();
 
 		// Action: Add new category/folder
 		if (body.action === 'add-folder') {
@@ -85,11 +80,14 @@ export const POST: RequestHandler = async ({ request, cookies }) => {
 		const storage = getUserDocStorage(userName);
 		const treeData = buildUserDocTree(storage.documents, storage.folders);
 
-		return json({
-			success: true,
-			doc: newDoc,
-			treeData
-		}, { status: 201 });
+		return json(
+			{
+				success: true,
+				doc: newDoc,
+				treeData
+			},
+			{ status: 201 }
+		);
 	} catch (e: any) {
 		return json({ error: e?.message || 'Gagal menyimpan dokumen' }, { status: 500 });
 	}
