@@ -1,7 +1,7 @@
 import http from 'node:http';
 import crypto from 'node:crypto';
 import Fuse from 'fuse.js';
-import { loadDocuments, loadApps } from './docs';
+import { loadDocuments, loadApps, getDataVersion, type DocumentItem } from './docs';
 
 export const AI_CONFIG = {
 	host: process.env.AI_HOST || '127.0.0.1',
@@ -150,36 +150,51 @@ export function callAiChat(
 	});
 }
 
+let fuseCacheVersion = -1;
+let cachedDocFuse: Fuse<DocumentItem> | null = null;
+let cachedAppFuse: Fuse<any> | null = null;
+
+function getSearchIndices() {
+	const docs = loadDocuments();
+	const apps = loadApps();
+	const currentVersion = getDataVersion();
+
+	if (!cachedDocFuse || !cachedAppFuse || fuseCacheVersion !== currentVersion) {
+		cachedDocFuse = new Fuse(docs, {
+			keys: [
+				{ name: 'title', weight: 0.35 },
+				{ name: 'section', weight: 0.25 },
+				{ name: 'category', weight: 0.2 },
+				{ name: 'tags', weight: 0.2 },
+				{ name: 'snippet', weight: 0.15 },
+				{ name: 'content', weight: 0.1 }
+			],
+			threshold: 0.45,
+			ignoreLocation: true
+		});
+
+		cachedAppFuse = new Fuse(apps, {
+			keys: [
+				{ name: 'title', weight: 0.4 },
+				{ name: 'subtitle', weight: 0.3 },
+				{ name: 'description', weight: 0.2 },
+				{ name: 'tags', weight: 0.1 }
+			],
+			threshold: 0.4,
+			ignoreLocation: true
+		});
+
+		fuseCacheVersion = currentVersion;
+	}
+
+	return { docFuse: cachedDocFuse, appFuse: cachedAppFuse };
+}
+
 export function retrieveRelevantKnowledge(query: string): string {
 	if (!query || typeof query !== 'string' || query.trim().length < 2) return '';
 
 	const cleanQuery = query.trim();
-	const docs = loadDocuments();
-	const apps = loadApps();
-
-	const docFuse = new Fuse(docs, {
-		keys: [
-			{ name: 'title', weight: 0.35 },
-			{ name: 'section', weight: 0.25 },
-			{ name: 'category', weight: 0.2 },
-			{ name: 'tags', weight: 0.2 },
-			{ name: 'snippet', weight: 0.15 },
-			{ name: 'content', weight: 0.1 }
-		],
-		threshold: 0.45,
-		ignoreLocation: true
-	});
-
-	const appFuse = new Fuse(apps, {
-		keys: [
-			{ name: 'title', weight: 0.4 },
-			{ name: 'subtitle', weight: 0.3 },
-			{ name: 'description', weight: 0.2 },
-			{ name: 'tags', weight: 0.1 }
-		],
-		threshold: 0.4,
-		ignoreLocation: true
-	});
+	const { docFuse, appFuse } = getSearchIndices();
 
 	const matchedDocs = docFuse.search(cleanQuery).slice(0, 2).map((r) => r.item);
 	const matchedApps = appFuse.search(cleanQuery).slice(0, 2).map((r) => r.item);

@@ -27,7 +27,7 @@
 		<!-- Top Controls -->
 		<div class="mb-3 flex w-full max-w-6xl items-center justify-between px-2 text-white">
 			<div class="flex items-center gap-2 text-xs font-medium text-zinc-300 truncate">
-				<ZoomIn class="h-4 w-4 text-indigo-400 shrink-0" />
+				<ZoomIn class="h-4 w-4 text-zinc-300 shrink-0" />
 				<span class="truncate">{alt || 'Detail Gambar Dokumentasi'}</span>
 			</div>
 
@@ -46,6 +46,8 @@
 					size="icon"
 					onclick={onClose}
 					class="h-8 w-8 rounded-lg bg-zinc-800/90 text-white hover:bg-zinc-700"
+					title="Tutup (ESC)"
+					aria-label="Tutup pratinjau gambar"
 				>
 					<X class="h-4 w-4" />
 				</Button>

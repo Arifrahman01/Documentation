@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { ui } from '$lib/stores/ui.svelte';
 	import { marked } from 'marked';
+	import { sanitizeRenderedHtml } from '$lib/utils/markdown';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge';
@@ -14,8 +15,7 @@
 		User, 
 		Loader2, 
 		Copy, 
-		Check,
-		ArrowRight
+		Check
 	} from '@lucide/svelte';
 
 	interface Message {
@@ -26,7 +26,7 @@
 	let messages = $state<Message[]>([
 		{
 			role: 'assistant',
-			content: 'Halo! Saya adalah **AI Copilot**, asisten resmi untuk Portal Dokumentasi & Program Navigator Enterprise.\n\nSaya siap membantu Anda memahami arsitektur sistem, navigasi 7 aplikasi enterprise, implementasi kode teknis, maupun merangkum dokumen yang sedang dibuka.\n\nSilakan pilih salah satu pertanyaan cepat di bawah atau ketik pertanyaan Anda!'
+			content: 'Halo! Saya adalah **AI Copilot**, asisten resmi untuk Portal Dokumentasi & Program Navigator Enterprise.\n\nSaya siap membantu Anda memahami arsitektur sistem, navigasi 7 aplikasi enterprise, implementasi kode teknis, maupun merangkum dokumen yang sedang dibuka.\n\nSilakan ketik pertanyaan Anda di bawah!'
 		}
 	]);
 
@@ -35,42 +35,6 @@
 	let messagesContainer = $state<HTMLDivElement | null>(null);
 	let inputEl = $state<HTMLInputElement | null>(null);
 	let copiedIndex = $state<number | null>(null);
-
-	const contextualPrompts = $derived.by(() => {
-		const ctx = ui.currentContext;
-		if (ctx.type === 'docs' && ctx.title) {
-			return [
-				`Rangkum konsep utama "${ctx.title}"`,
-				'Buatkan contoh kode implementasi lengkap',
-				'Apa potensi kendala teknis & solusinya?',
-				'Jelaskan arsitektur data binding & modelnya'
-			];
-		}
-		if (ctx.type === 'apps') {
-			return [
-				'Jelaskan alur kerja Fuel Management System (FMS)',
-				'Bagaimana cara integrasi CDS Views ke SAC?',
-				'Alur approval di Marketing System (JMS)',
-				'Fitur pelaporan insiden di KPI Safety (SHE)',
-				'Mekanisme notifikasi penagihan di PPPN'
-			];
-		}
-		if (ctx.type === 'api') {
-			return [
-				'Jelaskan endpoint /api/ai/chat dan format payloadnya',
-				'Cara kerja in-memory response cache TTL',
-				'Best practice CSRF & Bearer token authorization',
-				'Contoh request cURL untuk pencarian semantik'
-			];
-		}
-		return [
-			'Apa fungsi Fuel Management System (FMS)?',
-			'Bagaimana integrasi CDS Views ke SAC Dev & Prod?',
-			'Modul apa saja yang ada di KPI Safety?',
-			'Apa tujuan aplikasi penagihan PPPN?',
-			'Akses dokumen di File Manager Enterprise'
-		];
-	});
 
 	$effect(() => {
 		if (ui.isAiOpen) {
@@ -175,15 +139,15 @@
 	});
 </script>
 
-<!-- Floating Trigger Pill (Bottom Right) -->
+<!-- Floating Trigger Pill (Bottom Right - Mobile Only since Desktop Header already has AI Copilot button) -->
 {#if !ui.isAiOpen}
 	<Button
 		onclick={() => ui.openAi()}
-		class="fixed bottom-6 right-6 z-40 h-10 gap-2 rounded-full px-4 text-xs font-semibold shadow-xl transition-transform hover:scale-105"
+		class="fixed bottom-5 right-5 z-40 h-10 gap-2 rounded-full px-4 text-xs font-semibold shadow-xl md:hidden"
+		aria-label="Buka AI Copilot"
 	>
 		<Sparkles class="h-3.5 w-3.5" />
-		<span>Ask AI Copilot</span>
-		<Badge variant="outline" class="px-1.5 py-0 text-[9px] bg-background text-foreground">Ctrl J</Badge>
+		<span>AI Copilot</span>
 	</Button>
 {/if}
 
@@ -223,6 +187,7 @@
 						size="icon"
 						onclick={clearChat}
 						title="Bersihkan chat"
+						aria-label="Bersihkan riwayat chat"
 						class="h-8 w-8 text-muted-foreground"
 					>
 						<Trash2 class="h-4 w-4" />
@@ -232,6 +197,7 @@
 						size="icon"
 						onclick={() => ui.closeAi()}
 						title="Tutup (ESC)"
+						aria-label="Tutup AI Copilot"
 						class="h-8 w-8 text-muted-foreground"
 					>
 						<X class="h-4 w-4" />
@@ -262,16 +228,17 @@
 							: 'bg-muted/60 text-foreground border border-border'}">
 							
 							{#if msg.role === 'assistant'}
-								<div class="prose prose-xs dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-4 [&>pre]:my-2 [&>pre]:p-2.5 [&>pre]:rounded-lg [&>pre]:bg-zinc-950 [&>pre]:text-zinc-100 [&>code]:bg-zinc-200/60 dark:[&>code]:bg-zinc-800/80 [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded">
-									{@html marked.parse(msg.content)}
+								<div class="prose prose-xs dark:prose-invert max-w-none break-words [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-4 [&>pre]:my-2 [&>pre]:p-2.5 [&>pre]:rounded-lg [&>pre]:bg-zinc-950 [&>pre]:text-zinc-100 [&>code]:bg-muted [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded">
+									{@html sanitizeRenderedHtml(marked.parse(msg.content) as string)}
 								</div>
 								
 								<Button
 									variant="ghost"
 									size="icon"
 									onclick={() => copyMessage(msg.content, idx)}
-									class="absolute right-1.5 top-1.5 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
+									class="absolute right-1.5 top-1.5 h-6 w-6 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 focus-visible:opacity-100 transition-opacity text-muted-foreground hover:text-foreground"
 									title="Salin jawaban"
+									aria-label="Salin jawaban AI"
 								>
 									{#if copiedIndex === idx}
 										<Check class="h-3 w-3" />
@@ -305,27 +272,6 @@
 				{/if}
 			</div>
 
-			<!-- Prompt Suggestion Chips -->
-			<div class="border-t border-border bg-muted/20 p-3">
-				<div class="mb-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-					Pertanyaan Cepat
-				</div>
-				<div class="flex flex-wrap gap-1.5 max-h-24 overflow-y-auto">
-					{#each contextualPrompts as prompt}
-						<Button
-							variant="outline"
-							size="sm"
-							onclick={() => sendMessage(prompt)}
-							disabled={isLoading}
-							class="h-7 gap-1 px-2.5 text-[11px] font-normal"
-						>
-							<span>{prompt}</span>
-							<ArrowRight class="h-2.5 w-2.5 opacity-50" />
-						</Button>
-					{/each}
-				</div>
-			</div>
-
 			<!-- Input Form -->
 			<div class="border-t border-border p-4">
 				<div class="relative flex items-center">
@@ -342,6 +288,8 @@
 						onclick={() => sendMessage()}
 						disabled={!inputQuery.trim() || isLoading}
 						class="absolute right-1.5 h-7 w-7"
+						title="Kirim pesan"
+						aria-label="Kirim pesan ke AI Copilot"
 					>
 						<Send class="h-3.5 w-3.5" />
 					</Button>

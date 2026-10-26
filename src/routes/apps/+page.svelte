@@ -20,6 +20,24 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Tabs, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import {
+		AlertDialog,
+		AlertDialogContent,
+		AlertDialogHeader,
+		AlertDialogTitle,
+		AlertDialogDescription,
+		AlertDialogFooter,
+		AlertDialogAction,
+		AlertDialogCancel
+	} from '$lib/components/ui/alert-dialog';
+	import {
+		Dialog,
+		DialogContent,
+		DialogHeader,
+		DialogTitle,
+		DialogDescription,
+		DialogFooter
+	} from '$lib/components/ui/dialog';
+	import {
 		Search,
 		ExternalLink,
 		Sparkles,
@@ -34,7 +52,9 @@
 		X,
 		Save,
 		Loader2,
-		FolderPlus
+		FolderPlus,
+		MoreHorizontal,
+		AlertCircle
 	} from '@lucide/svelte';
 
 	interface ProgramItem {
@@ -67,6 +87,8 @@
 	let isProgramModalOpen = $state(false);
 	let programModalMode = $state<'create' | 'edit'>('create');
 	let isSavingProgram = $state(false);
+	let programErrorMsg = $state('');
+	let pageToastMsg = $state('');
 	let progForm = $state({
 		id: '',
 		title: '',
@@ -90,7 +112,7 @@
 	$effect(() => {
 		ui.currentContext = {
 			type: 'apps',
-			title: `Program Navigator (${programs.length} Apps Enterprise)`
+			title: `Apps (${programs.length} Enterprise Apps)`
 		};
 	});
 
@@ -261,9 +283,17 @@ ${app.description}
 		}
 	}
 
+	function showPageToast(msg: string) {
+		pageToastMsg = msg;
+		setTimeout(() => {
+			if (pageToastMsg === msg) pageToastMsg = '';
+		}, 3000);
+	}
+
 	function openCreateProgramModal() {
 		contextMenu = { open: false, x: 0, y: 0, app: null };
 		programModalMode = 'create';
+		programErrorMsg = '';
 		progForm = {
 			id: '',
 			title: '',
@@ -281,6 +311,7 @@ ${app.description}
 	function openEditProgramModal(app: ProgramItem) {
 		contextMenu = { open: false, x: 0, y: 0, app: null };
 		programModalMode = 'edit';
+		programErrorMsg = '';
 		progForm = {
 			id: app.id,
 			title: app.title,
@@ -297,8 +328,12 @@ ${app.description}
 
 	async function handleSaveProgram(e: SubmitEvent) {
 		e.preventDefault();
-		if (!progForm.title.trim() || !progForm.url.trim()) return;
+		if (!progForm.title.trim() || !progForm.url.trim()) {
+			programErrorMsg = 'Nama program dan URL aplikasi wajib diisi.';
+			return;
+		}
 		isSavingProgram = true;
+		programErrorMsg = '';
 
 		const tags = progForm.tagsInput
 			.split(',')
@@ -326,28 +361,74 @@ ${app.description}
 				const data = await res.json();
 				if (data.programs) programs = data.programs;
 				isProgramModalOpen = false;
+				showPageToast(
+					programModalMode === 'edit'
+						? `Program "${progForm.title}" berhasil diperbarui`
+						: `Program "${progForm.title}" berhasil ditambahkan`
+				);
+			} else {
+				const errData = await res.json().catch(() => null);
+				programErrorMsg = errData?.error || `Gagal menyimpan program (HTTP ${res.status}).`;
 			}
+		} catch (err: any) {
+			programErrorMsg = err?.message || 'Gagal menghubungi server saat menyimpan program.';
 		} finally {
 			isSavingProgram = false;
 		}
 	}
 
-	async function handleDeleteProgram(app: ProgramItem) {
-		contextMenu = { open: false, x: 0, y: 0, app: null };
-		if (!confirm(`Apakah Anda yakin ingin menghapus program "${app.title}" dari navigator?`)) return;
+	let deleteProgramTarget = $state<{
+		open: boolean;
+		app: ProgramItem | null;
+		isDeleting?: boolean;
+	}>({
+		open: false,
+		app: null
+	});
 
-		const res = await fetch(`/api/apps?id=${encodeURIComponent(app.id)}`, { method: 'DELETE' });
-		if (res.ok) {
-			const data = await res.json();
-			if (data.programs) programs = data.programs;
+	function handleDeleteProgram(app: ProgramItem) {
+		contextMenu = { open: false, x: 0, y: 0, app: null };
+		deleteProgramTarget = {
+			open: true,
+			app,
+			isDeleting: false
+		};
+	}
+
+	async function confirmDeleteProgram() {
+		if (!deleteProgramTarget.app || deleteProgramTarget.isDeleting) return;
+		const app = deleteProgramTarget.app;
+		deleteProgramTarget.isDeleting = true;
+
+		try {
+			const res = await fetch(`/api/apps?id=${encodeURIComponent(app.id)}`, { method: 'DELETE' });
+			if (res.ok) {
+				const data = await res.json();
+				if (data.programs) programs = data.programs;
+				deleteProgramTarget.open = false;
+				showPageToast(`Program "${app.title}" telah dihapus`);
+			} else {
+				showPageToast(`Gagal menghapus program "${app.title}"`);
+			}
+		} catch (_) {
+			showPageToast(`Gagal menghubungi server saat menghapus "${app.title}"`);
+		} finally {
+			deleteProgramTarget.isDeleting = false;
 		}
 	}
 
 	function openCardContextMenu(e: MouseEvent, app: ProgramItem) {
 		e.preventDefault();
 		e.stopPropagation();
-		const x = Math.min(e.clientX, window.innerWidth - 260);
-		const y = Math.min(e.clientY, window.innerHeight - 260);
+		let rawX = e.clientX;
+		let rawY = e.clientY;
+		if (!rawX && !rawY && e.currentTarget instanceof HTMLElement) {
+			const rect = e.currentTarget.getBoundingClientRect();
+			rawX = rect.left;
+			rawY = rect.bottom + 4;
+		}
+		const x = Math.min(rawX, window.innerWidth - 260);
+		const y = Math.min(rawY, window.innerHeight - 260);
 		contextMenu = { open: true, x: Math.max(10, x), y: Math.max(10, y), app };
 	}
 
@@ -369,7 +450,7 @@ ${app.description}
 </script>
 
 <svelte:head>
-	<title>Program Navigator - Ekosistem Aplikasi & Dokumentasi Enterprise</title>
+	<title>Apps - Ekosistem Aplikasi & Dokumentasi Enterprise</title>
 </svelte:head>
 
 <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
@@ -381,10 +462,10 @@ ${app.description}
 				<span>Enterprise Application Suite</span>
 			</Badge>
 			<h1 class="mt-3 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
-				Program Navigator
+				Apps
 			</h1>
 			<p class="mt-2 text-sm text-muted-foreground max-w-2xl">
-				Katalog peluncuran sistem aplikasi enterprise terintegrasi beserta pencatatan dokumentasi teknisnya. Klik kanan pada kartu aplikasi untuk membuat/mengedit dokumentasi atau mengelola program.
+				Katalog peluncuran sistem aplikasi enterprise terintegrasi beserta pencatatan dokumentasi teknisnya. Klik tombol menu (<strong>•••</strong>) atau klik kanan pada kartu aplikasi untuk membuat/mengedit dokumentasi dan mengelola program.
 			</p>
 		</div>
 
@@ -442,12 +523,31 @@ ${app.description}
 					size="icon"
 					onclick={() => (searchQuery = '')}
 					class="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+					title="Bersihkan pencarian"
+					aria-label="Bersihkan pencarian"
 				>
 					<X class="h-3.5 w-3.5" />
 				</Button>
 			{/if}
 		</div>
 	</div>
+
+	{#if pageToastMsg}
+		<div class="mt-4 flex items-center justify-between rounded-lg border border-border bg-muted/50 px-3.5 py-2 text-xs text-foreground">
+			<div class="flex items-center gap-2">
+				<Check class="h-3.5 w-3.5 text-emerald-500" />
+				<span>{pageToastMsg}</span>
+			</div>
+			<button
+				type="button"
+				onclick={() => (pageToastMsg = '')}
+				class="text-muted-foreground hover:text-foreground"
+				aria-label="Tutup notifikasi"
+			>
+				<X class="h-3.5 w-3.5" />
+			</button>
+		</div>
+	{/if}
 
 	<!-- App Cards Grid -->
 	<div class="mt-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -472,6 +572,16 @@ ${app.description}
 								<Badge variant={app.status === 'Production' || app.status === 'Active' ? 'default' : 'secondary'} class="text-[10px]">
 									{app.status}
 								</Badge>
+								<Button
+									variant="ghost"
+									size="icon"
+									onclick={(e) => openCardContextMenu(e, app)}
+									class="h-7 w-7 text-muted-foreground hover:text-foreground"
+									title="Kelola program & dokumentasi (Edit / Hapus)"
+									aria-label="Kelola program {app.title}"
+								>
+									<MoreHorizontal class="h-4 w-4" />
+								</Button>
 							</div>
 						</div>
 
@@ -506,6 +616,7 @@ ${app.description}
 								onclick={() => copyUrl(app)}
 								class="h-8 px-2 text-xs text-muted-foreground"
 								title="Salin tautan aplikasi"
+								aria-label="Salin tautan aplikasi {app.title}"
 							>
 								{#if copiedAppId === app.id}
 									<Check class="h-3.5 w-3.5" />
@@ -655,162 +766,193 @@ ${app.description}
 	</div>
 {/if}
 
-<!-- Modal: Add / Edit Program Item in Program Navigator -->
-{#if isProgramModalOpen}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-	<div
-		class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm animate-in fade-in duration-150"
-		onclick={(e) => {
-			if (e.target === e.currentTarget) isProgramModalOpen = false;
-		}}
-		role="dialog"
-		aria-modal="true"
-		tabindex="-1"
-	>
-		<Card class="w-full max-w-lg overflow-hidden py-0 gap-0 border-border bg-background shadow-2xl">
-			<div class="flex items-center justify-between border-b border-border px-5 py-4 bg-muted/30">
+<!-- SHADCN DIALOG: Add / Edit Program Item in Program Navigator -->
+<Dialog bind:open={isProgramModalOpen}>
+	<DialogContent class="max-w-lg sm:max-w-lg p-0 gap-0 overflow-hidden">
+		<div class="flex items-center justify-between border-b border-border px-5 py-4 bg-muted/30">
+			<DialogHeader class="text-left sm:text-left gap-1">
 				<div class="flex items-center gap-2.5">
 					<div class="flex h-8 w-8 items-center justify-center rounded-lg border border-border bg-muted text-foreground">
 						<Layers class="h-4 w-4" />
 					</div>
 					<div>
-						<h3 class="text-sm font-bold text-foreground">
+						<DialogTitle class="text-sm font-bold text-foreground">
 							{programModalMode === 'edit' ? 'Edit Program Enterprise' : 'Tambah Program Baru'}
-						</h3>
-						<p class="text-[11px] text-muted-foreground">Simpan ke daftar Program Navigator</p>
+						</DialogTitle>
+						<DialogDescription class="text-[11px] text-muted-foreground">
+							Simpan ke direktori Apps
+						</DialogDescription>
 					</div>
 				</div>
-				<Button
-					variant="ghost"
-					size="icon"
-					onclick={() => (isProgramModalOpen = false)}
-					class="h-8 w-8 text-muted-foreground hover:text-foreground"
-				>
-					<X class="h-4 w-4" />
-				</Button>
-			</div>
+			</DialogHeader>
+			<Button
+				variant="ghost"
+				size="icon"
+				onclick={() => (isProgramModalOpen = false)}
+				class="h-8 w-8 text-muted-foreground hover:text-foreground"
+				title="Tutup"
+				aria-label="Tutup modal program"
+			>
+				<X class="h-4 w-4" />
+			</Button>
+		</div>
 
-			<form onsubmit={handleSaveProgram} class="p-5 space-y-3.5 text-xs">
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-					<div class="space-y-1.5">
-						<Label for="prog-title" class="text-xs font-semibold">Nama Program / Aplikasi *</Label>
-						<Input
-							id="prog-title"
-							type="text"
-							required
-							bind:value={progForm.title}
-							placeholder="Contoh: Fleet Telemetry System"
-							class="h-9 text-xs"
-						/>
-					</div>
-					<div class="space-y-1.5">
-						<Label for="prog-sub" class="text-xs font-semibold">Sub-Judul / Fungsi Singkat</Label>
-						<Input
-							id="prog-sub"
-							type="text"
-							bind:value={progForm.subtitle}
-							placeholder="Contoh: Real-Time Fleet Monitoring"
-							class="h-9 text-xs"
-						/>
-					</div>
+		<form onsubmit={handleSaveProgram} class="p-5 space-y-3.5 text-xs">
+			{#if programErrorMsg}
+				<div class="flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+					<AlertCircle class="h-4 w-4 shrink-0" />
+					<span>{programErrorMsg}</span>
 				</div>
+			{/if}
 
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-					<div class="space-y-1.5">
-						<Label for="prog-url" class="text-xs font-semibold">URL Aplikasi *</Label>
-						<Input
-							id="prog-url"
-							type="url"
-							required
-							bind:value={progForm.url}
-							placeholder="https://..."
-							class="h-9 text-xs font-mono"
-						/>
-					</div>
-					<div class="grid grid-cols-2 gap-2">
-						<div class="space-y-1.5">
-							<Label for="prog-cat" class="text-xs font-semibold">Kategori</Label>
-							<select
-								id="prog-cat"
-								bind:value={progForm.category}
-								class="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs text-foreground shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] focus:outline-none dark:bg-input/30"
-							>
-								<option value="operations">Operations</option>
-								<option value="analytics">Analytics & BI</option>
-								<option value="commercial">Marketing & CRM</option>
-								<option value="safety">Safety & SHE</option>
-								<option value="finance">Finance & Plant</option>
-								<option value="storage">Storage & Infra</option>
-							</select>
-						</div>
-						<div class="space-y-1.5">
-							<Label for="prog-status" class="text-xs font-semibold">Status</Label>
-							<select
-								id="prog-status"
-								bind:value={progForm.status}
-								class="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs text-foreground shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] focus:outline-none dark:bg-input/30"
-							>
-								<option value="Production">Production</option>
-								<option value="Active">Active</option>
-								<option value="Development">Development</option>
-							</select>
-						</div>
-					</div>
-				</div>
-
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
 				<div class="space-y-1.5">
-					<Label for="prog-desc" class="text-xs font-semibold">Deskripsi Aplikasi</Label>
-					<Textarea
-						id="prog-desc"
-						rows={3}
-						bind:value={progForm.description}
-						placeholder="Jelaskan kegunaan dan modul utama aplikasi ini..."
-						class="text-xs"
+					<Label for="prog-title" class="text-xs font-semibold">Nama Program / Aplikasi *</Label>
+					<Input
+						id="prog-title"
+						type="text"
+						required
+						bind:value={progForm.title}
+						placeholder="Contoh: Fleet Telemetry System"
+						class="h-9 text-xs"
 					/>
 				</div>
+				<div class="space-y-1.5">
+					<Label for="prog-sub" class="text-xs font-semibold">Sub-Judul / Fungsi Singkat</Label>
+					<Input
+						id="prog-sub"
+						type="text"
+						bind:value={progForm.subtitle}
+						placeholder="Contoh: Real-Time Fleet Monitoring"
+						class="h-9 text-xs"
+					/>
+				</div>
+			</div>
 
-				<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+				<div class="space-y-1.5">
+					<Label for="prog-url" class="text-xs font-semibold">URL Aplikasi *</Label>
+					<Input
+						id="prog-url"
+						type="url"
+						required
+						bind:value={progForm.url}
+						placeholder="https://..."
+						class="h-9 text-xs font-mono"
+					/>
+				</div>
+				<div class="grid grid-cols-2 gap-2">
 					<div class="space-y-1.5">
-						<Label for="prog-tags" class="text-xs font-semibold">Tags (Pisahkan koma)</Label>
-						<Input
-							id="prog-tags"
-							type="text"
-							bind:value={progForm.tagsInput}
-							placeholder="FMS, Logistics, Real-Time"
-							class="h-9 text-xs"
-						/>
+						<Label for="prog-cat" class="text-xs font-semibold">Kategori</Label>
+						<select
+							id="prog-cat"
+							bind:value={progForm.category}
+							class="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs text-foreground shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] focus:outline-none dark:bg-input/30"
+						>
+							<option value="operations">Operations</option>
+							<option value="analytics">Analytics & BI</option>
+							<option value="commercial">Marketing & CRM</option>
+							<option value="safety">Safety & SHE</option>
+							<option value="finance">Finance & Plant</option>
+							<option value="storage">Storage & Infra</option>
+						</select>
 					</div>
 					<div class="space-y-1.5">
-						<Label for="prog-doc" class="text-xs font-semibold">Slug Dokumentasi Terkait (Opsional)</Label>
-						<Input
-							id="prog-doc"
-							type="text"
-							bind:value={progForm.docSlug}
-							placeholder="Contoh: web/architecture"
-							class="h-9 text-xs font-mono"
-						/>
+						<Label for="prog-status" class="text-xs font-semibold">Status</Label>
+						<select
+							id="prog-status"
+							bind:value={progForm.status}
+							class="flex h-9 w-full rounded-md border border-input bg-background px-2.5 py-1.5 text-xs text-foreground shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] focus:outline-none dark:bg-input/30"
+						>
+							<option value="Production">Production</option>
+							<option value="Active">Active</option>
+							<option value="Development">Development</option>
+						</select>
 					</div>
 				</div>
+			</div>
 
-				<div class="flex items-center justify-end gap-2 pt-3 border-t border-border">
-					<Button type="button" variant="outline" size="sm" onclick={() => (isProgramModalOpen = false)}>
-						Batal
-					</Button>
-					<Button type="submit" size="sm" disabled={isSavingProgram} class="gap-1.5">
-						{#if isSavingProgram}
-							<Loader2 class="h-3.5 w-3.5 animate-spin" />
-							<span>Menyimpan...</span>
-						{:else}
-							<Save class="h-3.5 w-3.5" />
-							<span>Simpan Program</span>
-						{/if}
-					</Button>
+			<div class="space-y-1.5">
+				<Label for="prog-desc" class="text-xs font-semibold">Deskripsi Aplikasi</Label>
+				<Textarea
+					id="prog-desc"
+					rows={3}
+					bind:value={progForm.description}
+					placeholder="Jelaskan kegunaan dan modul utama aplikasi ini..."
+					class="text-xs"
+				/>
+			</div>
+
+			<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+				<div class="space-y-1.5">
+					<Label for="prog-tags" class="text-xs font-semibold">Tags (Pisahkan koma)</Label>
+					<Input
+						id="prog-tags"
+						type="text"
+						bind:value={progForm.tagsInput}
+						placeholder="FMS, Logistics, Real-Time"
+						class="h-9 text-xs"
+					/>
 				</div>
-			</form>
-		</Card>
-	</div>
-{/if}
+				<div class="space-y-1.5">
+					<Label for="prog-doc" class="text-xs font-semibold">Slug Dokumentasi Terkait (Opsional)</Label>
+					<Input
+						id="prog-doc"
+						type="text"
+						bind:value={progForm.docSlug}
+						placeholder="Contoh: web/architecture"
+						class="h-9 text-xs font-mono"
+					/>
+				</div>
+			</div>
+
+			<DialogFooter class="border-t border-border pt-3">
+				<Button type="button" variant="outline" size="sm" onclick={() => (isProgramModalOpen = false)}>
+					Batal
+				</Button>
+				<Button type="submit" size="sm" disabled={isSavingProgram} class="gap-1.5">
+					{#if isSavingProgram}
+						<Loader2 class="h-3.5 w-3.5 animate-spin" />
+						<span>Menyimpan...</span>
+					{:else}
+						<Save class="h-3.5 w-3.5" />
+						<span>Simpan Program</span>
+					{/if}
+				</Button>
+			</DialogFooter>
+		</form>
+	</DialogContent>
+</Dialog>
+
+<!-- SHADCN ALERT DIALOG: Konfirmasi Hapus Program -->
+<AlertDialog bind:open={deleteProgramTarget.open}>
+	<AlertDialogContent>
+		<AlertDialogHeader>
+			<div class="flex items-center gap-2 text-destructive">
+				<Trash2 class="h-5 w-5" />
+				<AlertDialogTitle>Hapus Program?</AlertDialogTitle>
+			</div>
+			<AlertDialogDescription>
+				Apakah Anda yakin ingin menghapus program <strong>"{deleteProgramTarget.app?.title}"</strong> dari Apps? Tindakan ini bersifat permanen.
+			</AlertDialogDescription>
+		</AlertDialogHeader>
+		<AlertDialogFooter>
+			<AlertDialogCancel onclick={() => (deleteProgramTarget.open = false)}>Batal</AlertDialogCancel>
+			<AlertDialogAction
+				variant="destructive"
+				disabled={deleteProgramTarget.isDeleting}
+				onclick={confirmDeleteProgram}
+			>
+				{#if deleteProgramTarget.isDeleting}
+					<Loader2 class="h-3.5 w-3.5 animate-spin mr-1.5" />
+					<span>Menghapus...</span>
+				{:else}
+					<span>Hapus Program</span>
+				{/if}
+			</AlertDialogAction>
+		</AlertDialogFooter>
+	</AlertDialogContent>
+</AlertDialog>
 
 <DocEditorModal
 	bind:isOpen={isDocEditorOpen}

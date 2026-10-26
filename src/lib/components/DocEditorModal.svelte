@@ -6,6 +6,16 @@
 	import { Separator } from '$lib/components/ui/separator';
 	import { Tabs, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
 	import * as Card from '$lib/components/ui/card';
+	import {
+		AlertDialog,
+		AlertDialogContent,
+		AlertDialogHeader,
+		AlertDialogTitle,
+		AlertDialogDescription,
+		AlertDialogFooter,
+		AlertDialogAction,
+		AlertDialogCancel
+	} from '$lib/components/ui/alert-dialog';
 	import { renderMarkdown } from '$lib/utils/markdown';
 	import {
 		DOC_TEMPLATES,
@@ -90,6 +100,9 @@
 	let isSaving = $state(false);
 	let aiSuccessMessage = $state('');
 	let errorMessage = $state('');
+	let aiUndoContent = $state<string | null>(null);
+	let showMetadataEditor = $state(false);
+	let debouncedPreview = $state('');
 
 	let draftStorageKey = $derived(
 		`portal_doc_draft_${mode}_${initialDoc?.slug || initialDoc?.id || 'new'}`
@@ -142,6 +155,8 @@
 			aiPrompt = '';
 			errorMessage = '';
 			aiSuccessMessage = '';
+			aiUndoContent = null;
+			showMetadataEditor = mode === 'create';
 
 			if (typeof window !== 'undefined') {
 				try {
@@ -235,18 +250,32 @@
 		}
 	}
 
+	let templateConfirm = $state<{
+		open: boolean;
+		tpl: DocTemplate | null;
+	}>({
+		open: false,
+		tpl: null
+	});
+
 	function applyTemplate(tpl: DocTemplate) {
 		if (content.trim() && content.trim().length > 40) {
-			const replace = confirm(
-				`Terapkan "${tpl.name}"?\nKlik OK untuk mengganti isi saat ini dengan kerangka template, atau Cancel untuk membatalkan.`
-			);
-			if (!replace) return;
+			templateConfirm = {
+				open: true,
+				tpl
+			};
+			return;
 		}
+		executeApplyTemplate(tpl);
+	}
+
+	function executeApplyTemplate(tpl: DocTemplate) {
 		if (!title.trim()) {
 			title = tpl.defaultTitle;
 		}
 		content = tpl.content;
 		aiSuccessMessage = `Kerangka "${tpl.name}" siap diisi.`;
+		templateConfirm.open = false;
 	}
 
 	async function importMarkdownFile(file: File) {
@@ -278,22 +307,36 @@
 		}
 	}
 
-	const renderedPreview = $derived.by(() => {
-		if (!content) return '<p class="text-muted-foreground italic">Konten dokumen masih kosong. Mulai menulis atau gunakan generator AI.</p>';
-		return renderMarkdown(content);
+	$effect(() => {
+		if (!isOpen || activeTab === 'edit') return;
+		const currentText = content;
+		const timer = setTimeout(() => {
+			debouncedPreview = currentText
+				? renderMarkdown(currentText)
+				: '<p class="text-muted-foreground italic">Konten dokumen masih kosong. Mulai menulis atau gunakan generator AI.</p>';
+		}, 160);
+		return () => clearTimeout(timer);
 	});
 
-	function insertSnippet(before: string, after: string = '') {
+	function undoAiAction() {
+		if (aiUndoContent === null) return;
+		content = aiUndoContent;
+		aiUndoContent = null;
+		aiSuccessMessage = 'Perubahan AI berhasil diurungkan (dikembalikan ke teks sebelumnya).';
+	}
+
+	function insertSnippet(before: string, after: string = '', defaultPlaceholder: string = '') {
 		const textarea = document.getElementById('doc-editor-textarea') as HTMLTextAreaElement | null;
 		if (!textarea) return;
 		const start = textarea.selectionStart;
 		const end = textarea.selectionEnd;
-		const selected = content.substring(start, end) || 'Teks';
-		const replacement = before + selected + after;
+		const selected = content.substring(start, end);
+		const contentToWrap = selected || defaultPlaceholder;
+		const replacement = before + contentToWrap + after;
 		content = content.substring(0, start) + replacement + content.substring(end);
 		setTimeout(() => {
 			textarea.focus();
-			textarea.setSelectionRange(start + before.length, start + before.length + selected.length);
+			textarea.setSelectionRange(start + before.length, start + before.length + contentToWrap.length);
 		}, 10);
 	}
 
@@ -429,6 +472,10 @@
 			const data = await res.json();
 			if (!data.success) {
 				throw new Error(data.error || 'Gagal memproses bantuan AI');
+			}
+
+			if (action !== 'summarize') {
+				aiUndoContent = content;
 			}
 
 			if (action === 'generate') {
@@ -686,27 +733,40 @@
 				{/if}
 
 				{#if aiSuccessMessage}
-					<div class="mt-2 flex items-center gap-1.5 text-xs text-foreground animate-in fade-in">
-						<CheckCircle2 class="h-3.5 w-3.5 text-muted-foreground" />
-						<span>{aiSuccessMessage}</span>
+					<div class="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs text-foreground animate-in fade-in">
+						<div class="flex items-center gap-1.5">
+							<CheckCircle2 class="h-3.5 w-3.5 text-muted-foreground" />
+							<span>{aiSuccessMessage}</span>
+						</div>
+						{#if aiUndoContent !== null}
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onclick={undoAiAction}
+								class="h-6 px-2 text-[11px]"
+							>
+								Urungkan Perubahan AI (Undo)
+							</Button>
+						{/if}
 					</div>
 				{/if}
 				{#if errorMessage}
-					<div class="mt-2 flex items-center gap-1.5 text-xs text-destructive animate-in fade-in">
+					<div role="alert" class="mt-2 flex items-center gap-1.5 text-xs text-destructive animate-in fade-in">
 						<AlertCircle class="h-3.5 w-3.5" />
 						<span>{errorMessage}</span>
 					</div>
 				{/if}
 			</div>
 
-			<!-- Main Form Content Area (Obsidian Note Style: Lokasi Otomatis + Judul + Isi Konten Saja) -->
+			<!-- Main Form Content Area -->
 			<form onsubmit={handleSubmit} class="flex flex-col flex-1 overflow-hidden">
 				<div class="flex-1 overflow-y-auto p-6 space-y-4">
-					<!-- Automatic Context Badge & Note Title -->
-					<div class="flex flex-col gap-3 rounded-xl border border-border bg-muted/20 p-3.5 sm:flex-row sm:items-center sm:justify-between">
-						<div class="flex-1 space-y-1.5">
+					<!-- Context Badge, Metadata Selector & Note Title -->
+					<div class="flex flex-col gap-3 rounded-xl border border-border bg-muted/20 p-3.5">
+						<div class="flex flex-wrap items-center justify-between gap-2">
 							<div class="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
-								<span class="font-semibold text-foreground">Lokasi File Otomatis:</span>
+								<span class="font-semibold text-foreground">Lokasi File:</span>
 								<Badge variant="secondary" class="text-[10px] font-bold">
 									{section}
 								</Badge>
@@ -723,6 +783,94 @@
 									</Badge>
 								{/if}
 							</div>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								onclick={() => (showMetadataEditor = !showMetadataEditor)}
+								class="h-6 px-2 text-[11px]"
+							>
+								{showMetadataEditor ? 'Sembunyikan Lokasi & Tag' : 'Ubah Lokasi / Kategori / Tag'}
+							</Button>
+						</div>
+
+						{#if showMetadataEditor}
+							<div class="grid grid-cols-1 gap-2.5 pt-1 sm:grid-cols-3 border-t border-border/60">
+								<div class="space-y-1">
+									<label for="doc-modal-section" class="text-[11px] font-medium text-muted-foreground">Modul Utama</label>
+									<select
+										id="doc-modal-section"
+										bind:value={section}
+										onchange={() => {
+											const avail = SECTION_CATEGORIES[section] || [];
+											if (avail.length > 0 && !avail.includes(category)) {
+												category = avail[0];
+											}
+										}}
+										class="flex h-8 w-full rounded-md border border-input bg-background px-2.5 text-xs text-foreground"
+									>
+										<option value="SAP">SAP (ERP & S/4HANA)</option>
+										<option value="SAC">SAC (Analytics Cloud)</option>
+										<option value="WEB">WEB (Web & Architecture)</option>
+									</select>
+								</div>
+								<div class="space-y-1">
+									<label for="doc-modal-category" class="text-[11px] font-medium text-muted-foreground">Folder Kategori</label>
+									<select
+										id="doc-modal-category"
+										bind:value={category}
+										class="flex h-8 w-full rounded-md border border-input bg-background px-2.5 text-xs text-foreground"
+									>
+										{#each SECTION_CATEGORIES[section] || [] as catOpt}
+											<option value={catOpt}>{catOpt}</option>
+										{/each}
+										<option value="custom">+ Kategori Baru...</option>
+									</select>
+									{#if category === 'custom'}
+										<Input
+											type="text"
+											aria-label="Nama kategori baru"
+											bind:value={customCategory}
+											placeholder="Ketik nama kategori..."
+											class="mt-1 h-8 text-xs"
+										/>
+									{/if}
+								</div>
+								<div class="space-y-1">
+									<label for="doc-modal-subcategory" class="text-[11px] font-medium text-muted-foreground">Sub-Folder (Opsional)</label>
+									<Input
+										id="doc-modal-subcategory"
+										type="text"
+										bind:value={subcategory}
+										placeholder="Contoh: Modul MM / Procurement"
+										class="h-8 text-xs"
+									/>
+								</div>
+								<div class="space-y-1 sm:col-span-2">
+									<label for="doc-modal-tags" class="text-[11px] font-medium text-muted-foreground">Tags (pisahkan dengan koma)</label>
+									<Input
+										id="doc-modal-tags"
+										type="text"
+										bind:value={tagsString}
+										placeholder="SAP, BAPI, Integration..."
+										class="h-8 text-xs"
+									/>
+								</div>
+								<div class="space-y-1">
+									<label for="doc-modal-sacurl" class="text-[11px] font-medium text-muted-foreground">URL Story SAC (Opsional)</label>
+									<Input
+										id="doc-modal-sacurl"
+										type="url"
+										bind:value={sacUrl}
+										placeholder="https://..."
+										class="h-8 text-xs"
+									/>
+								</div>
+							</div>
+						{/if}
+
+						<div>
+							<label for="doc-title" class="sr-only">Judul Catatan</label>
 							<Input
 								id="doc-title"
 								type="text"
@@ -963,6 +1111,7 @@
 						{#if activeTab === 'edit'}
 							<Textarea
 								id="doc-editor-textarea"
+								aria-label="Isi dokumentasi Markdown"
 								bind:value={content}
 								onpaste={handlePaste}
 								ondrop={handleDrop}
@@ -970,7 +1119,7 @@
 								required
 								rows={16}
 								placeholder="Tuliskan isi dokumentasi di sini... Mendukung Markdown, Heading H2/H3, tabel, code block, dan alert [!NOTE] / [!TIP]."
-								class="rounded-xl p-4 font-mono text-xs leading-relaxed shadow-inner"
+								class="rounded-xl p-4 font-mono text-sm leading-relaxed shadow-inner"
 							/>
 							<div class="flex flex-wrap items-center justify-between gap-1 text-[11px] text-muted-foreground px-1 pt-0.5">
 								<span>Tekan <strong class="text-foreground">Ctrl + V</strong> untuk langsung menempel screenshot gambar, atau seret (drag & drop) file ke editor.</span>
@@ -985,6 +1134,7 @@
 								<div class="flex flex-col">
 									<Textarea
 										id="doc-editor-textarea"
+										aria-label="Isi dokumentasi Markdown"
 										bind:value={content}
 										onpaste={handlePaste}
 										ondrop={handleDrop}
@@ -992,7 +1142,7 @@
 										required
 										rows={17}
 										placeholder="Tuliskan isi dokumentasi di sini... Mendukung Markdown, Heading H2/H3, tabel, code block, dan alert [!NOTE] / [!TIP]."
-										class="h-[420px] resize-none rounded-xl p-4 font-mono text-xs leading-relaxed shadow-inner"
+										class="h-[420px] resize-none rounded-xl p-4 font-mono text-sm leading-relaxed shadow-inner"
 									/>
 								</div>
 								<Card.Root class="h-[420px] overflow-y-auto p-5 py-5 gap-0 bg-muted/15 shadow-none">
@@ -1002,7 +1152,7 @@
 									</div>
 									<Separator class="my-3" />
 									<div class="prose prose-zinc dark:prose-invert max-w-none text-xs leading-relaxed">
-										{@html renderedPreview}
+										{@html debouncedPreview}
 									</div>
 								</Card.Root>
 							</div>
@@ -1025,7 +1175,7 @@
 								</div>
 								<Separator class="my-4" />
 								<div class="prose prose-zinc dark:prose-invert max-w-none text-xs leading-relaxed">
-									{@html renderedPreview}
+									{@html debouncedPreview}
 								</div>
 							</Card.Root>
 						{/if}
@@ -1075,3 +1225,25 @@
 		</Card.Root>
 	</div>
 {/if}
+
+<!-- SHADCN ALERT DIALOG: Konfirmasi Terapkan Kerangka Template -->
+<AlertDialog bind:open={templateConfirm.open}>
+	<AlertDialogContent>
+		<AlertDialogHeader>
+			<AlertDialogTitle>Terapkan Template "{templateConfirm.tpl?.name}"?</AlertDialogTitle>
+			<AlertDialogDescription>
+				Tindakan ini akan mengganti isi catatan saat ini dengan kerangka template. Tulisan yang ada saat ini akan ditimpa.
+			</AlertDialogDescription>
+		</AlertDialogHeader>
+		<AlertDialogFooter>
+			<AlertDialogCancel onclick={() => (templateConfirm.open = false)}>Batal</AlertDialogCancel>
+			<AlertDialogAction
+				onclick={() => {
+					if (templateConfirm.tpl) executeApplyTemplate(templateConfirm.tpl);
+				}}
+			>
+				Terapkan Kerangka
+			</AlertDialogAction>
+		</AlertDialogFooter>
+	</AlertDialogContent>
+</AlertDialog>

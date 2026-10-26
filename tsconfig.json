@@ -9,10 +9,11 @@
 		"types": ["node", "$app/types"]
 	},
 	"include": [
-		"src",
-		"*"
-	],
-	"exclude": [
-		"src/service-worker"
+		"src/**/*.d.ts",
+		"src/**/*.ts",
+		"src/**/*.js",
+		"src/**/*.svelte",
+		".svelte-kit/types/**/$types.d.ts",
+		"vite.config.ts"
 	]
 }

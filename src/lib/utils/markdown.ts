@@ -28,6 +28,19 @@ export function slugifyHeading(text: string): string {
 		.replace(/\s+/g, '-');
 }
 
+export function extractTitleFromMarkdown(markdownContent: string, fallback = 'Catatan Baru'): string {
+	if (!markdownContent) return fallback;
+	const lines = markdownContent.split('\n');
+	for (const line of lines) {
+		const trimmed = line.trim();
+		if (trimmed.startsWith('# ')) {
+			const clean = trimmed.replace(/^#\s+/, '').trim();
+			if (clean) return decodeHtmlEntities(clean.replace(/<[^>]+>/g, '').replace(/[*_`~]/g, ''));
+		}
+	}
+	return fallback;
+}
+
 export function extractOutlineTree(markdownContent: string): OutlineNode[] {
 	if (!markdownContent) return [];
 	const lines = markdownContent.split('\n');

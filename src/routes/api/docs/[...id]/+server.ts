@@ -26,7 +26,7 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 
 	try {
 		const body = await request.json();
-		const { title, category, subcategory, content, description, tags, section, sacUrl } = body;
+		const { title, category, subcategory, content, builderContent, description, tags, section, sacUrl } = body;
 		const doc = docs[index];
 
 		if (section && ['SAP', 'SAC', 'WEB'].includes(section.toUpperCase())) {
@@ -39,6 +39,9 @@ export const PUT: RequestHandler = async ({ params, request }) => {
 		}
 		if (content !== undefined) {
 			doc.content = String(content).trim();
+		}
+		if (builderContent !== undefined) {
+			doc.builderContent = String(builderContent).trim() || undefined;
 		}
 		if (sacUrl !== undefined) doc.sacUrl = sacUrl ? sacUrl.trim() : undefined;
 		if (description) {

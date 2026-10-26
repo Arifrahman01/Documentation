@@ -28,19 +28,53 @@ export interface DocumentItem {
 	description?: string;
 	snippet?: string;
 	content: string;
+	builderContent?: string;
 	tags?: string[];
 	sacUrl?: string;
 	updatedAt?: string;
 }
 
+let docsCache: { mtimeMs: number; data: DocumentItem[] } | null = null;
+let appsCache: { mtimeMs: number; data: any[] } | null = null;
+let foldersCache: { mtimeMs: number; data: FolderItem[] } | null = null;
+let dataVersion = 1;
+
+export function getDataVersion(): number {
+	return dataVersion;
+}
+
+function atomicWriteJson(targetPath: string, payload: unknown) {
+	const content = JSON.stringify(payload, null, 2);
+	const tmpPath = `${targetPath}.tmp`;
+	try {
+		fs.writeFileSync(tmpPath, content, 'utf8');
+		fs.renameSync(tmpPath, targetPath);
+	} catch {
+		fs.writeFileSync(targetPath, content, 'utf8');
+		try {
+			if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+		} catch {}
+	}
+}
+
 export function loadDocuments(): DocumentItem[] {
 	try {
-		if (fs.existsSync(DOCS_FILE)) {
-			return JSON.parse(fs.readFileSync(DOCS_FILE, 'utf8'));
+		const targetFile = fs.existsSync(DOCS_FILE)
+			? DOCS_FILE
+			: fs.existsSync(ROOT_DOCS_FILE)
+				? ROOT_DOCS_FILE
+				: null;
+		if (!targetFile) return [];
+
+		const stat = fs.statSync(targetFile);
+		if (docsCache && docsCache.mtimeMs === stat.mtimeMs) {
+			return docsCache.data.map((d) => ({ ...d }));
 		}
-		if (fs.existsSync(ROOT_DOCS_FILE)) {
-			return JSON.parse(fs.readFileSync(ROOT_DOCS_FILE, 'utf8'));
-		}
+
+		const parsed = JSON.parse(fs.readFileSync(targetFile, 'utf8')) as DocumentItem[];
+		docsCache = { mtimeMs: stat.mtimeMs, data: parsed };
+		dataVersion++;
+		return parsed.map((d) => ({ ...d }));
 	} catch (e: any) {
 		console.error('Error reading documents database:', e?.message);
 	}
@@ -79,14 +113,23 @@ export function inferSection(doc: Partial<DocumentItem>): string {
 
 export function loadApps(): any[] {
 	try {
-		if (fs.existsSync(APPS_FILE)) {
-			const data = JSON.parse(fs.readFileSync(APPS_FILE, 'utf8'));
-			return data.programs || [];
+		const targetFile = fs.existsSync(APPS_FILE)
+			? APPS_FILE
+			: fs.existsSync(ROOT_APPS_FILE)
+				? ROOT_APPS_FILE
+				: null;
+		if (!targetFile) return [];
+
+		const stat = fs.statSync(targetFile);
+		if (appsCache && appsCache.mtimeMs === stat.mtimeMs) {
+			return appsCache.data.map((a) => ({ ...a }));
 		}
-		if (fs.existsSync(ROOT_APPS_FILE)) {
-			const data = JSON.parse(fs.readFileSync(ROOT_APPS_FILE, 'utf8'));
-			return data.programs || [];
-		}
+
+		const data = JSON.parse(fs.readFileSync(targetFile, 'utf8'));
+		const programs = data.programs || [];
+		appsCache = { mtimeMs: stat.mtimeMs, data: programs };
+		dataVersion++;
+		return programs.map((a: any) => ({ ...a }));
 	} catch (e: any) {
 		console.error('Error reading apps file:', e?.message);
 	}
@@ -104,11 +147,13 @@ export function saveApps(programs: any[]) {
 		active: programs.filter((p) => p.status === 'Active' || p.status === 'Production').length
 	};
 	const payload = { stats, programs };
-	fs.writeFileSync(APPS_FILE, JSON.stringify(payload, null, 2), 'utf8');
+	atomicWriteJson(APPS_FILE, payload);
+	appsCache = null;
+	dataVersion++;
 
 	if (fs.existsSync(path.dirname(ROOT_APPS_FILE))) {
 		try {
-			fs.writeFileSync(ROOT_APPS_FILE, JSON.stringify(payload, null, 2), 'utf8');
+			atomicWriteJson(ROOT_APPS_FILE, payload);
 		} catch (_) {}
 	}
 	return payload;
@@ -116,12 +161,21 @@ export function saveApps(programs: any[]) {
 
 export function loadFolders(): FolderItem[] {
 	try {
-		if (fs.existsSync(FOLDERS_FILE)) {
-			return JSON.parse(fs.readFileSync(FOLDERS_FILE, 'utf8'));
+		const targetFile = fs.existsSync(FOLDERS_FILE)
+			? FOLDERS_FILE
+			: fs.existsSync(ROOT_FOLDERS_FILE)
+				? ROOT_FOLDERS_FILE
+				: null;
+		if (!targetFile) return [];
+
+		const stat = fs.statSync(targetFile);
+		if (foldersCache && foldersCache.mtimeMs === stat.mtimeMs) {
+			return foldersCache.data.map((f) => ({ ...f }));
 		}
-		if (fs.existsSync(ROOT_FOLDERS_FILE)) {
-			return JSON.parse(fs.readFileSync(ROOT_FOLDERS_FILE, 'utf8'));
-		}
+
+		const parsed = JSON.parse(fs.readFileSync(targetFile, 'utf8')) as FolderItem[];
+		foldersCache = { mtimeMs: stat.mtimeMs, data: parsed };
+		return parsed.map((f) => ({ ...f }));
 	} catch (e: any) {
 		console.error('Error reading folders database:', e?.message);
 	}
@@ -132,18 +186,20 @@ export function saveFolders(folders: FolderItem[]) {
 	if (!fs.existsSync(DATA_DIR)) {
 		fs.mkdirSync(DATA_DIR, { recursive: true });
 	}
-	fs.writeFileSync(FOLDERS_FILE, JSON.stringify(folders, null, 2), 'utf8');
+	atomicWriteJson(FOLDERS_FILE, folders);
+	foldersCache = null;
+	dataVersion++;
 
 	if (fs.existsSync(path.dirname(ROOT_FOLDERS_FILE))) {
 		try {
-			fs.writeFileSync(ROOT_FOLDERS_FILE, JSON.stringify(folders, null, 2), 'utf8');
+			atomicWriteJson(ROOT_FOLDERS_FILE, folders);
 		} catch (_) {}
 	}
 
 	try {
 		const docs = loadDocuments();
 		const tree = buildDocTree(docs);
-		fs.writeFileSync(INDEX_FILE, JSON.stringify(tree, null, 2), 'utf8');
+		atomicWriteJson(INDEX_FILE, tree);
 	} catch (_) {}
 }
 
@@ -151,19 +207,21 @@ export function saveDocuments(docs: DocumentItem[]) {
 	if (!fs.existsSync(DATA_DIR)) {
 		fs.mkdirSync(DATA_DIR, { recursive: true });
 	}
-	fs.writeFileSync(DOCS_FILE, JSON.stringify(docs, null, 2), 'utf8');
+	atomicWriteJson(DOCS_FILE, docs);
+	docsCache = null;
+	dataVersion++;
 
 	// Also sync to root data folder if it exists
 	if (fs.existsSync(path.dirname(ROOT_DOCS_FILE))) {
 		try {
-			fs.writeFileSync(ROOT_DOCS_FILE, JSON.stringify(docs, null, 2), 'utf8');
+			atomicWriteJson(ROOT_DOCS_FILE, docs);
 		} catch (e) {}
 	}
 
 	// Update docsIndex.json
 	try {
 		const tree = buildDocTree(docs);
-		fs.writeFileSync(INDEX_FILE, JSON.stringify(tree, null, 2), 'utf8');
+		atomicWriteJson(INDEX_FILE, tree);
 	} catch (e: any) {
 		console.error('Error updating index file:', e?.message);
 	}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { ui } from '$lib/stores/ui.svelte';
+	import { auth } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
 	import { 
@@ -16,7 +17,9 @@
 		ChevronDown,
 		Building2,
 		BarChart3,
-		Globe
+		Globe,
+		User,
+		BookUser
 	} from '@lucide/svelte';
 
 	let mobileMenuOpen = $state(false);
@@ -77,7 +80,7 @@
 					</Button>
 
 					<!-- Dropdown Flyout Panel -->
-					<div class="invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all duration-150 absolute top-full left-0 pt-1.5 w-80 z-50">
+					<div class="invisible group-hover:visible group-focus-within:visible opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-all duration-150 absolute top-full left-0 pt-1.5 w-80 z-50">
 						<div class="rounded-xl border border-border bg-popover p-2 text-popover-foreground shadow-xl">
 							<div class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
 								Bagian Utama Dokumentasi
@@ -110,10 +113,20 @@
 					variant={isActive('/apps') ? 'secondary' : 'ghost'}
 					size="sm"
 					href="/apps"
-					class="h-8 gap-2 px-3 text-sm font-medium"
+					class="h-8 gap-1.5 px-3 text-sm font-medium"
 				>
 					<Layers class="h-4 w-4 text-muted-foreground" />
-					<span>Program Navigator</span>
+					<span>Apps</span>
+				</Button>
+
+				<Button
+					variant={isActive('/my-docs') ? 'secondary' : 'ghost'}
+					size="sm"
+					href="/my-docs"
+					class="h-8 gap-1.5 px-3 text-sm font-medium"
+				>
+					<BookUser class="h-4 w-4 text-muted-foreground" />
+					<span>My Docs</span>
 				</Button>
 			</nav>
 		</div>
@@ -125,11 +138,11 @@
 				variant="outline"
 				size="sm"
 				onclick={() => ui.openSearch()}
-				class="h-9 w-56 justify-between px-3 text-xs text-muted-foreground sm:w-64"
+				class="h-9 w-44 justify-between px-3 text-xs text-muted-foreground sm:w-64"
 			>
-				<span class="flex items-center gap-2">
-					<Search class="h-3.5 w-3.5" />
-					<span>Search documentation...</span>
+				<span class="flex items-center gap-2 truncate">
+					<Search class="h-3.5 w-3.5 shrink-0" />
+					<span class="truncate">Cari dokumentasi...</span>
 				</span>
 				<Badge variant="secondary" class="hidden sm:inline-flex px-1.5 py-0 text-[10px] font-mono">
 					Ctrl K
@@ -149,12 +162,26 @@
 				</Badge>
 			</Button>
 
+			<!-- User Badge (from Shared Helpdesk Session) -->
+			{#if auth.userName}
+				<a
+					href="/my-docs"
+					class="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-1 text-xs font-medium text-foreground transition-all hover:bg-muted hover:border-primary/40"
+					title="Buka My Docs ({auth.userName})"
+				>
+					<div class="flex h-5 w-5 items-center justify-center rounded-full bg-primary/15 text-primary">
+						<User class="h-3 w-3" />
+					</div>
+					<span class="max-w-[130px] truncate">{auth.userName}</span>
+				</a>
+			{/if}
+
 			<!-- Theme Toggle with Shadcn Button -->
 			<Button
 				variant="outline"
 				size="icon"
 				onclick={() => ui.toggleTheme()}
-				aria-label="Toggle theme"
+				aria-label="Ubah tema warna"
 				class="h-9 w-9 text-muted-foreground"
 			>
 				{#if ui.isDark}
@@ -168,6 +195,8 @@
 			<Button
 				variant="outline"
 				size="icon"
+				aria-label={mobileMenuOpen ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
+				aria-expanded={mobileMenuOpen}
 				onclick={() => (mobileMenuOpen = !mobileMenuOpen)}
 				class="h-9 w-9 md:hidden text-muted-foreground"
 			>
@@ -183,6 +212,18 @@
 	<!-- Mobile Menu Dropdown -->
 	{#if mobileMenuOpen}
 		<div class="border-b border-border bg-background p-4 md:hidden space-y-3">
+			{#if auth.userName}
+				<div class="flex items-center gap-2.5 rounded-lg border border-border bg-muted/40 p-2.5 text-xs font-medium text-foreground">
+					<div class="flex h-7 w-7 items-center justify-center rounded-full bg-primary/15 text-primary">
+						<User class="h-4 w-4" />
+					</div>
+					<div class="flex flex-col truncate">
+						<span class="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">User Helpdesk</span>
+						<span class="truncate font-medium">{auth.userName}</span>
+					</div>
+				</div>
+			{/if}
+
 			<div class="flex flex-col gap-1">
 				<Button
 					variant={isActive('/') ? 'secondary' : 'ghost'}
@@ -224,7 +265,18 @@
 					class="justify-start gap-2.5 text-sm font-medium"
 				>
 					<Layers class="h-4 w-4" />
-					<span>Program Navigator</span>
+					<span>Apps</span>
+				</Button>
+
+				<Button
+					variant={isActive('/my-docs') ? 'secondary' : 'ghost'}
+					size="sm"
+					href="/my-docs"
+					onclick={() => (mobileMenuOpen = false)}
+					class="justify-start gap-2.5 text-sm font-medium"
+				>
+					<BookUser class="h-4 w-4" />
+					<span>My Docs</span>
 				</Button>
 			</div>
 		</div>

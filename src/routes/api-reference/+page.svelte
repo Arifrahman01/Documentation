@@ -53,22 +53,40 @@
 }`
 		},
 		{
-			id: 'search',
-			method: 'POST',
-			path: '/api/search',
-			title: 'Full-text Documentation Search',
-			description: 'Pencarian kata kunci cepat pada 9 artikel dokumentasi dan 7 aplikasi enterprise.',
-			request: `{
-  "query": "fuel management",
-  "limit": 5
-}`,
+			id: 'quick-search',
+			method: 'GET',
+			path: '/api/ai/quick-search?q=fuel',
+			title: 'Semantic & Fuzzy Quick Search',
+			description: 'Pencarian cepat lintas seluruh artikel dokumentasi (SAP, SAC, WEB) dan katalog aplikasi enterprise.',
+			request: null,
 			response: `{
+  "query": "fuel",
   "results": [
     {
-      "title": "Fuel Management System",
-      "category": "Operations & Logistics",
-      "url": "http://jgfuel.id",
-      "type": "app"
+      "id": "sap/overview",
+      "title": "Arsitektur SAP ERP & S/4HANA",
+      "section": "SAP",
+      "category": "Architecture",
+      "slug": "sap/overview"
+    }
+  ]
+}`
+		},
+		{
+			id: 'docs-list',
+			method: 'GET',
+			path: '/api/docs',
+			title: 'List & Sync Documentation Articles',
+			description: 'Mengambil seluruh daftar artikel dokumentasi beserta struktur folder, kategori, dan metadata.',
+			request: null,
+			response: `{
+  "documents": [
+    {
+      "id": "sac/overview",
+      "slug": "sac/overview",
+      "section": "SAC",
+      "category": "Overview & BI",
+      "title": "SAP Analytics Cloud (SAC) Overview"
     }
   ]
 }`
@@ -84,15 +102,15 @@
 	<!-- Hero -->
 	<div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
 		<div>
-			<div class="inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1 text-xs text-zinc-600 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-400">
-				<Terminal class="h-3.5 w-3.5 text-indigo-500" />
+			<Badge variant="outline" class="gap-2 px-3 py-1 text-xs">
+				<Terminal class="h-3.5 w-3.5 text-foreground" />
 				<span>RESTful API Specifications</span>
-			</div>
-			<h1 class="mt-3 text-3xl font-extrabold tracking-tight text-zinc-900 sm:text-4xl dark:text-white">
+			</Badge>
+			<h1 class="mt-3 text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
 				API Reference
 			</h1>
-			<p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400 max-w-2xl">
-				Spesifikasi endpoint backend untuk layanan AI Copilot, caching respons lokal, pencarian semantik, dan interoperabilitas sistem.
+			<p class="mt-2 text-sm text-muted-foreground max-w-2xl">
+				Spesifikasi endpoint backend untuk layanan AI Copilot, caching respons lokal, pencarian cepat, dan manajemen dokumen.
 			</p>
 		</div>
 
@@ -100,7 +118,7 @@
 			variant="outline"
 			size="sm"
 			onclick={() => ui.openAi('Jelaskan cara kerja endpoint /api/ai/chat dan format payloadnya')}
-			class="gap-1.5 text-xs text-indigo-600 border-indigo-200 bg-indigo-50/50 dark:border-indigo-900 dark:bg-indigo-950/40 dark:text-indigo-300"
+			class="gap-1.5 text-xs"
 		>
 			<Sparkles class="h-3.5 w-3.5" />
 			<span>Tanyakan AI tentang API</span>
@@ -112,14 +130,14 @@
 	<!-- Endpoints List -->
 	<div class="space-y-8">
 		{#each endpoints as ep}
-			<Card class="overflow-hidden border-zinc-200 dark:border-zinc-800">
-				<CardHeader class="border-b border-zinc-100 bg-zinc-50/50 p-5 dark:border-zinc-800/80 dark:bg-zinc-900/40">
+			<Card class="overflow-hidden border-border">
+				<CardHeader class="border-b border-border bg-muted/30 p-5">
 					<div class="flex flex-wrap items-center justify-between gap-3">
 						<div class="flex items-center gap-3">
-							<Badge class={ep.method === 'POST' ? 'bg-emerald-600 hover:bg-emerald-700 text-white font-mono' : 'bg-blue-600 hover:bg-blue-700 text-white font-mono'}>
+							<Badge variant={ep.method === 'POST' ? 'default' : 'secondary'} class="font-mono">
 								{ep.method}
 							</Badge>
-							<code class="text-sm font-semibold text-zinc-900 dark:text-zinc-100 font-mono">
+							<code class="text-sm font-semibold text-foreground font-mono">
 								{ep.path}
 							</code>
 						</div>
@@ -128,7 +146,7 @@
 							variant="ghost"
 							size="sm"
 							onclick={() => copyCode(ep.path, ep.id + '-path')}
-							class="h-8 gap-1 text-xs text-zinc-500"
+							class="h-8 gap-1 text-xs text-muted-foreground"
 						>
 							{#if copiedSnippet === ep.id + '-path'}
 								<Check class="h-3.5 w-3.5 text-emerald-500" />
@@ -140,10 +158,10 @@
 						</Button>
 					</div>
 
-					<CardTitle class="mt-3 text-base font-bold text-zinc-900 dark:text-zinc-100">
+					<CardTitle class="mt-3 text-base font-bold text-foreground">
 						{ep.title}
 					</CardTitle>
-					<CardDescription class="text-xs text-zinc-500 dark:text-zinc-400">
+					<CardDescription class="text-xs text-muted-foreground">
 						{ep.description}
 					</CardDescription>
 				</CardHeader>
@@ -153,10 +171,10 @@
 					{#if ep.request}
 						<div>
 							<div class="mb-2 flex items-center justify-between">
-								<span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Request Body (JSON)</span>
+								<span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Request Body (JSON)</span>
 								<button
 									onclick={() => copyCode(ep.request!, ep.id + '-req')}
-									class="text-[11px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 flex items-center gap-1"
+									class="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1"
 								>
 									{#if copiedSnippet === ep.id + '-req'}
 										<Check class="h-3 w-3 text-emerald-500" />
@@ -166,17 +184,17 @@
 									<span>Salin</span>
 								</button>
 							</div>
-							<pre class="rounded-xl border border-zinc-200 bg-zinc-950 p-4 text-xs font-mono text-zinc-100 overflow-x-auto dark:border-zinc-800"><code>{ep.request}</code></pre>
+							<pre class="rounded-xl border border-border bg-zinc-950 p-4 text-xs font-mono text-zinc-100 overflow-x-auto"><code>{ep.request}</code></pre>
 						</div>
 					{/if}
 
 					<!-- Response Payload -->
 					<div>
 						<div class="mb-2 flex items-center justify-between">
-							<span class="text-xs font-semibold uppercase tracking-wider text-zinc-400">Response Payload (200 OK)</span>
+							<span class="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Response Payload (200 OK)</span>
 							<button
 								onclick={() => copyCode(ep.response, ep.id + '-res')}
-								class="text-[11px] text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 flex items-center gap-1"
+								class="text-[11px] text-muted-foreground hover:text-foreground flex items-center gap-1"
 							>
 								{#if copiedSnippet === ep.id + '-res'}
 									<Check class="h-3 w-3 text-emerald-500" />
@@ -186,7 +204,7 @@
 								<span>Salin</span>
 							</button>
 						</div>
-						<pre class="rounded-xl border border-zinc-200 bg-zinc-950 p-4 text-xs font-mono text-emerald-400 overflow-x-auto dark:border-zinc-800"><code>{ep.response}</code></pre>
+						<pre class="rounded-xl border border-border bg-zinc-950 p-4 text-xs font-mono text-emerald-400 overflow-x-auto"><code>{ep.response}</code></pre>
 					</div>
 				</CardContent>
 			</Card>

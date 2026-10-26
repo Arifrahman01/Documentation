@@ -21,16 +21,13 @@
 	{@const hasChildren = node.children && node.children.length > 0}
 	{@const isActive = activeHeadingId === node.id}
 
-	<div
-		oncontextmenu={(e) => onContextMenu?.(e)}
-		role="treeitem"
-		aria-selected={isActive}
-		tabindex="0"
-	>
+	<div>
 		<Button
 			variant="ghost"
 			size="sm"
+			aria-current={isActive ? 'location' : undefined}
 			onclick={() => onSelectHeading(node.id)}
+			oncontextmenu={(e: MouseEvent) => onContextMenu?.(e)}
 			class="h-7 w-full justify-start truncate px-2 text-left text-xs {isActive
 				? 'bg-secondary font-semibold text-foreground'
 				: 'font-normal text-muted-foreground hover:text-foreground'}"
@@ -51,7 +48,7 @@
 {/snippet}
 
 {#if outlineTree.length > 0}
-	<div class="border-l border-border/60 pl-3 py-1">
+	<nav aria-label="Daftar isi halaman" class="border-l border-border/60 pl-3 py-1">
 		<div class="mb-2 px-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
 			Daftar Isi
 		</div>
@@ -61,5 +58,5 @@
 				{@render renderNode(node, 0)}
 			{/each}
 		</div>
-	</div>
+	</nav>
 {/if}

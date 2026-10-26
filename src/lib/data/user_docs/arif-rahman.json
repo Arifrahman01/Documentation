@@ -1,0 +1,73 @@
+{
+  "userName": "Arif Rahman",
+  "folders": [
+    {
+      "category": "Catatan Harian",
+      "subcategory": "Harian"
+    },
+    {
+      "category": "Dokumentasi Modul",
+      "subcategory": "Draft"
+    },
+    {
+      "category": "Referensi & Panduan"
+    },
+    {
+      "category": "Dokumentasi Modul"
+    },
+    {
+      "category": "Dokumentasi Modul",
+      "subcategory": "Harian"
+    }
+  ],
+  "documents": [
+    {
+      "id": "arif-rahman/dokumentasi-modul/aa",
+      "slug": "arif-rahman/dokumentasi-modul/aa",
+      "section": "PERSONAL",
+      "category": "Dokumentasi Modul",
+      "subcategory": "Harian",
+      "title": "aaasdasdasds",
+      "description": "aaasdasdasds",
+      "snippet": "aaasdasdasds",
+      "content": "# aaasdasdasds",
+      "tags": [
+        "Pribadi"
+      ],
+      "updatedAt": "2026-10-25T15:30:40.047Z"
+    },
+    {
+      "id": "arif-rahman/catatan-harian/catatan-modul-helpdesk-sso",
+      "slug": "arif-rahman/catatan-harian/catatan-modul-helpdesk-sso",
+      "section": "PERSONAL",
+      "category": "Catatan Harian",
+      "subcategory": "Harian",
+      "title": "Catatan Modul Helpdesk & SSO",
+      "description": "Catatan Modul Helpdesk & SSO",
+      "snippet": "Catatan Modul Helpdesk & SSO",
+      "content": "# Catatan Integrasi Helpdesk\n\nIntegrasi shared cookie dan session telah aktif.",
+      "tags": [
+        "Pribadi",
+        "Helpdesk",
+        "SSO"
+      ],
+      "updatedAt": "2026-10-25T13:31:27.853Z"
+    },
+    {
+      "id": "arif-rahman/catatan-harian/selamat-datang",
+      "slug": "arif-rahman/catatan-harian/selamat-datang",
+      "section": "PERSONAL",
+      "category": "Dokumentasi Modul",
+      "title": "Selamat Datang di Ruang Catatan Arif Rahman",
+      "description": "Ruang kerja dan dokumentasi pribadi untuk Arif Rahman",
+      "snippet": "Ruang kerja dan dokumentasi pribadi untuk Arif Rahman",
+      "content": "# Ruang Kerja & Catatan Pribadi: Arif Rahman\n\nSelamat datang di portal dokumentasi pribadi Anda! Halaman ini adalah area kerja khusus untuk Anda menyusun, menyimpan, dan mengelola dokumen teknis, catatan kerja, dan draft yang **hanya dapat diakses oleh Anda**.\n\n---\n\n### 🚀 Fitur yang Tersedia:\n\n1. **Kategori & Folder Mandiri**\n   - Tambahkan folder/kategori baru sesuai kebutuhan pekerjaan harian Anda.\n   - Setiap dokumen dapat dikelompokkan ke subkategori.\n\n2. **Editor Markdown Fleksibel**\n   - Tulis catatan dengan format heading, tabel, daftar checklist, dan blok kode.\n   - Mendukung mode **Split View** (tulis dan pratinjau langsung di sebelah kanan) serta **Full Edit**.\n\n3. **Dukungan Screenshot & Gambar**\n   - Tempelkan screenshot langsung dari clipboard menggunakan shortcut keyboard `Ctrl+V`.\n   - Atau seret gambar (*drag & drop*) langsung ke dalam editor catatan.\n\n4. **AI Copilot Terintegrasi**\n   - Gunakan tombol AI di pojok kanan atas untuk merangkum (*summarize*) atau memperbaiki format catatan Anda.\n\n---\n\n### 📝 Contoh Checklist Tugas Harian:\n- [x] Sinkronisasi session Helpdesk dengan Portal Dokumentasi\n- [ ] Menulis rangkuman analisa modul hari ini\n- [ ] Mencatat panduan pemeliharaan sistem internal\n\n*Catatan ini otomatis disimpan secara aman di storage pribadi Anda.*",
+      "tags": [
+        "Pribadi",
+        "Catatan",
+        "Welcome"
+      ],
+      "updatedAt": "2026-10-25T15:10:53.084Z"
+    }
+  ]
+}

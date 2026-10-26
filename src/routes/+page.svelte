@@ -110,11 +110,11 @@
 		},
 		{
 			icon: Save,
-			title: 'Ekspor Markdown & Integrasi Program Navigator',
+			title: 'Ekspor Markdown & Integrasi Apps & My Docs',
 			category: 'Keamanan Data',
 			points: [
 				'Setiap dokumentasi dapat disalin tautannya, disalin Raw Markdown-nya, atau diunduh sebagai file .md.',
-				'Terhubung langsung dengan halaman Program Navigator untuk mendokumentasikan aplikasi operasional.',
+				'Terhubung langsung dengan direktori Apps dan ruang catatan pribadi My Docs.',
 				'Seluruh antarmuka menggunakan komponen standar Shadcn UI yang seragam dan bebas distraksi.'
 			]
 		}
@@ -123,12 +123,12 @@
 	const shortcutsList = [
 		{ keys: 'Klik Kanan', action: 'Membuka menu konteks (Buat File/Folder, Edit, Duplikat, AI Dokumen, Unduh, Hapus)' },
 		{ keys: 'Double-Click', action: 'Klik 2x pada teks artikel untuk langsung mengedit dokumen aktif' },
-		{ keys: 'Alt + N / N', action: 'Membuat File Catatan Baru di File Explorer' },
-		{ keys: 'Alt + F / F', action: 'Membuat Folder Baru di File Explorer' },
-		{ keys: 'Ctrl + E / E', action: 'Membuka Editor untuk dokumen yang sedang aktif (Ctrl+S untuk Simpan)' },
-		{ keys: 'Ctrl + I / I', action: 'Membuka Modal AI Assistant Khusus Dokumen Ini (Lingkup Terkunci 1 Dokumen)' },
+		{ keys: 'Alt + N', action: 'Membuat File Catatan Baru di File Explorer' },
+		{ keys: 'Alt + Shift + F', action: 'Membuat Folder Baru di File Explorer' },
+		{ keys: 'Ctrl + E', action: 'Membuka Editor untuk dokumen yang sedang aktif (Ctrl+S untuk Simpan)' },
+		{ keys: 'Ctrl + I', action: 'Membuka Modal AI Assistant Khusus Dokumen Ini (Lingkup Terkunci 1 Dokumen)' },
 		{ keys: 'Ctrl + J', action: 'Membuka laci Chat AI Copilot Global (SAP, SAC, Web & 7 Aplikasi)' },
-		{ keys: 'Ctrl + K', action: 'Membuka Pencarian Cepat Global (Dokumen & Program Navigator)' },
+		{ keys: 'Ctrl + K', action: 'Membuka Pencarian Cepat Global (Dokumentasi, Apps & My Docs)' },
 		{ keys: 'Ctrl + V', action: 'Menempelkan (Paste) gambar/screenshot langsung ke dalam Editor' },
 		{ keys: 'ESC', action: 'Menutup editor, AI Assistant, pencarian, atau pratinjau gambar' }
 	];
@@ -167,7 +167,7 @@
 
 				<Button variant="outline" size="lg" href="/apps" class="gap-2">
 					<Layers class="h-4 w-4 text-muted-foreground" />
-					<span>Program Navigator (7 Apps)</span>
+					<span>Apps (7 Apps)</span>
 				</Button>
 			</div>
 
@@ -354,11 +354,11 @@
 								<ul class="space-y-2 text-xs text-muted-foreground leading-relaxed">
 									<li class="flex items-start gap-2">
 										<CheckCircle2 class="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-										<span>Pilih modul (<code>SAP</code>, <code>SAC</code>, atau <code>WEB</code>) di bagian atas.</span>
+										<span>Pilih tab modul (<code>Semua</code>, <code>SAP</code>, <code>SAC</code>, atau <code>WEB</code>) di bagian atas File Explorer.</span>
 									</li>
 									<li class="flex items-start gap-2">
 										<CheckCircle2 class="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-										<span>Klik ikon <strong>Folder+</strong> atau <strong>File+</strong> di Explorer kiri untuk membuat folder atau catatan baru.</span>
+										<span>Klik tombol <strong>File</strong> atau <strong>Folder</strong> di Explorer kiri untuk membuat catatan atau folder baru.</span>
 									</li>
 									<li class="flex items-start gap-2">
 										<CheckCircle2 class="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
@@ -375,15 +375,15 @@
 								<ul class="space-y-2 text-xs text-muted-foreground leading-relaxed">
 									<li class="flex items-start gap-2">
 										<CheckCircle2 class="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-										<span><strong>Pakai Template 1-Klik:</strong> Klik <em>Template SAC Story</em>, <em>SAP/ABAP</em>, <em>Web/API</em>, atau <em>SOP</em> di dalam editor.</span>
+										<span><strong>Pakai Template 1-Klik:</strong> Buka menu <em>Template & AI</em> di editor lalu pilih <em>SAC Story</em>, <em>SAP/ABAP</em>, <em>Web/API</em>, atau <em>SOP</em>.</span>
 									</li>
 									<li class="flex items-start gap-2">
 										<CheckCircle2 class="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-										<span><strong>Paste Catatan Kasar + Rapikan AI:</strong> Tempel catatan mentah lalu klik tombol <strong>Rapikan Format</strong>.</span>
+										<span><strong>Paste Catatan Kasar + Rapikan AI:</strong> Tempel catatan mentah lalu klik tombol <strong>Rapikan Catatan</strong> (dilengkapi tombol <em>Urungkan AI</em>).</span>
 									</li>
 									<li class="flex items-start gap-2">
 										<CheckCircle2 class="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-										<span><strong>Import File (.md / .txt):</strong> Klik tombol <em>Import (.md)</em> di bar atas editor.</span>
+										<span><strong>Import File (.md / .txt):</strong> Klik tombol <em>Import (.md)</em> di dalam panel <em>Template & AI</em> editor.</span>
 									</li>
 								</ul>
 							</Card>
@@ -460,7 +460,7 @@
 					<div class="flex items-center gap-2.5 shrink-0">
 						<Button variant="outline" size="sm" href="/apps" class="gap-1.5 text-xs">
 							<Layers class="h-3.5 w-3.5" />
-							<span>Buka Program Navigator</span>
+							<span>Buka Apps</span>
 						</Button>
 						<Button size="sm" href="/docs/sap/overview" class="gap-1.5 text-xs">
 							<FileText class="h-3.5 w-3.5" />

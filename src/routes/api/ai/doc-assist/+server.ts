@@ -20,6 +20,9 @@ export const POST: RequestHandler = async ({ request }) => {
 		} else if (targetSection === 'SAC') {
 			sectionContext =
 				'Fokuskan panduan pada SAP Analytics Cloud (Stories, Responsive/Canvas Pages, Charts, Live Data Connections, Cloud Connector, Data Access Control DAC, Planning).';
+		} else if (targetSection === 'MY DOCS' || targetSection === 'MY-DOCS' || targetSection === 'PRIBADI') {
+			sectionContext =
+				'Fokuskan pada penulisan catatan teknis pribadi yang padat, rapi, terstruktur dengan format Markdown, checklist tindakan, dan penjelasan praktis.';
 		} else {
 			sectionContext =
 				'Fokuskan panduan pada Modern Web Stack (SvelteKit, Tailwind CSS, REST APIs, Microservices, Security, Node.js Express).';
@@ -49,16 +52,20 @@ Balas HANYA dalam format JSON valid (tanpa markdown fences di luar JSON) dengan 
 					content: `Buatkan dokumentasi teknis baru bagian [${targetSection}] untuk topik berikut:\n"${prompt || `Panduan Praktis Implementasi & Arsitektur ${targetSection}`}"`
 				}
 			];
-		} else if (action === 'improve') {
+		} else if (action === 'improve' || action === 'custom') {
 			messages = [
 				{
 					role: 'system',
-					content: `Anda adalah Senior Technical Editor spesialis sistem ${targetSection}. Perbaiki, rapikan, dan sempurnakan konten dokumentasi berikut agar memiliki alur logis yang jelas, tata bahasa profesional Bahasa Indonesia, format heading konsisten, dan alert ([!NOTE], [!TIP]) yang tepat.
-Balas HANYA teks konten hasil perbaikan.`
+					content: `Anda adalah Enterprise Technical Assistant & Editor AI (${targetSection}).
+Tugas Anda adalah memperbarui, memodifikasi, menyusun, atau menulis konten catatan Markdown pengguna secara langsung berdasarkan instruksi manual yang diberikan pengguna.
+1. Ikuti instruksi manual pengguna dengan cermat.
+2. Pertahankan fakta asli dan detail teknis yang relevan kecuali jika pengguna meminta untuk mengubah atau merombaknya.
+3. Gunakan format Markdown yang bersih dan terstruktur (Heading, list, tabel, atau code block jika relevan).
+4. Balas HANYA teks isi dokumen Markdown yang sudah diproses, tanpa kalimat basa-basi atau kata pengantar (tanpa "Berikut adalah...").`
 				},
 				{
 					role: 'user',
-					content: `Instruksi Khusus: ${prompt || 'Tingkatkan kualitas, struktur, dan keterbacaan teknis'}\n\nKonten Saat Ini:\n${currentDoc?.content || ''}`
+					content: `Instruksi Pengguna: ${prompt || 'Tingkatkan kualitas, struktur, dan keterbacaan teknis'}\n\nKonten Catatan Saat Ini:\n${currentDoc?.content || '(Catatan masih kosong)'}`
 				}
 			];
 		} else if (action === 'code') {

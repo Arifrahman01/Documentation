@@ -9,16 +9,14 @@ export const load: PageLoad = async ({ params, fetch }) => {
 
 	let doc: any = null;
 
-	// 1. In browser, try fetching latest version from backend API
-	if (browser) {
-		try {
-			const res = await fetch(`/api/docs/${slug}`);
-			if (res.ok) {
-				doc = await res.json();
-			}
-		} catch (e) {
-			// fallback
+	// 1. Try fetching latest version from backend API (works on both SSR and client via SvelteKit fetch)
+	try {
+		const res = await fetch(`/api/docs/${slug}`);
+		if (res.ok) {
+			doc = await res.json();
 		}
+	} catch (e) {
+		// fallback to bundled JSON
 	}
 
 	// 2. Bundled JSON database (used for SSR or API fallback)
@@ -40,19 +38,17 @@ export const load: PageLoad = async ({ params, fetch }) => {
 	let sectionStats = (docsData as any).sectionStats || { SAP: 0, SAC: 0, WEB: 0 };
 	let sections = (docsData as any).sections || ['SAP', 'SAC', 'WEB'];
 
-	if (browser) {
-		try {
-			const treeRes = await fetch('/api/docs');
-			if (treeRes.ok) {
-				const treeJson = await treeRes.json();
-				if (treeJson.treeData) treeData = treeJson.treeData;
-				if (treeJson.sectionTree) sectionTree = treeJson.sectionTree;
-				if (treeJson.sectionStats) sectionStats = treeJson.sectionStats;
-				if (treeJson.sections) sections = treeJson.sections;
-			}
-		} catch (e) {
-			// fallback to local treeData
+	try {
+		const treeRes = await fetch('/api/docs');
+		if (treeRes.ok) {
+			const treeJson = await treeRes.json();
+			if (treeJson.treeData) treeData = treeJson.treeData;
+			if (treeJson.sectionTree) sectionTree = treeJson.sectionTree;
+			if (treeJson.sectionStats) sectionStats = treeJson.sectionStats;
+			if (treeJson.sections) sections = treeJson.sections;
 		}
+	} catch (e) {
+		// fallback to local treeData
 	}
 
 	// 4. Previous & Next articles navigation (within current section)

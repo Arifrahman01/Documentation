@@ -1,5 +1,5 @@
 export interface AppContext {
-	type: 'home' | 'docs' | 'apps' | 'api';
+	type: 'home' | 'docs' | 'apps' | 'api' | 'my-docs';
 	title?: string;
 	key?: string;
 	snippet?: string;

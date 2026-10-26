@@ -76,7 +76,7 @@ export const POST: RequestHandler = async ({ request }) => {
 		}
 
 		// 3. Handle Create File / Note (Obsidian style: only title is required, content can be empty initially)
-		const { title, category, subcategory, content, description, tags, slug, section, sacUrl } = body;
+		const { title, category, subcategory, content, builderContent, description, tags, slug, section, sacUrl } = body;
 
 		if (!title || !String(title).trim()) {
 			return json({ error: 'Nama file / catatan wajib diisi' }, { status: 400 });
@@ -121,6 +121,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			description: cleanDesc,
 			snippet: cleanDesc,
 			content: rawContent,
+			builderContent: typeof builderContent === 'string' && builderContent.trim() ? builderContent.trim() : undefined,
 			tags:
 				Array.isArray(tags) && tags.length > 0
 					? tags

@@ -420,7 +420,7 @@ app.post('/api/ai/summarize', async (req, res) => {
       return res.status(400).json({ error: 'Content diperlukan untuk diringkas' });
     }
 
-    const cacheKey = `summary_${hashString(title + content.slice(0, 500))}`;
+    const cacheKey = `summary_${hashString((title || '') + content)}`;
     const cached = getCache(cacheKey);
     if (cached) {
       return res.json({ ...cached, cached: true });
@@ -580,7 +580,7 @@ app.get('/api/docs/:id(*)', (req, res) => {
 
 // 7. Create New Document
 app.post('/api/docs', (req, res) => {
-  const { title, category, subcategory, content, description, tags, slug, section, sacUrl } = req.body;
+  const { title, category, subcategory, content, builderContent, description, tags, slug, section, sacUrl } = req.body;
   if (!title || !content) {
     return res.status(400).json({ error: 'Judul dan konten dokumentasi wajib diisi' });
   }
@@ -591,7 +591,6 @@ app.post('/api/docs', (req, res) => {
 
   const cat = (category || 'General').trim();
   const subcat = subcategory ? String(subcategory).trim() : undefined;
-  const catSlug = cat.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const titleSlug = title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const finalSlug = slug || `${sec.toLowerCase()}/${titleSlug}`;
 
@@ -607,6 +606,7 @@ app.post('/api/docs', (req, res) => {
     description: cleanDesc,
     snippet: cleanDesc,
     content: content.trim(),
+    builderContent: typeof builderContent === 'string' && builderContent.trim() ? builderContent.trim() : undefined,
     tags: Array.isArray(tags) && tags.length > 0 ? tags : [sec, cat, ...(subcat ? [subcat] : []), 'Dokumentasi'],
     updatedAt: new Date().toISOString()
   };
@@ -633,7 +633,7 @@ app.put('/api/docs/:id(*)', (req, res) => {
     return res.status(404).json({ error: 'Dokumen tidak ditemukan untuk diubah' });
   }
 
-  const { title, category, subcategory, content, description, tags, section, sacUrl } = req.body;
+  const { title, category, subcategory, content, builderContent, description, tags, section, sacUrl } = req.body;
   const doc = docs[index];
 
   if (section && ['SAP', 'SAC', 'WEB'].includes(section.toUpperCase())) {
@@ -643,6 +643,7 @@ app.put('/api/docs/:id(*)', (req, res) => {
   if (category) doc.category = category.trim();
   if (subcategory !== undefined) doc.subcategory = subcategory ? String(subcategory).trim() : undefined;
   if (content) doc.content = content.trim();
+  if (builderContent !== undefined) doc.builderContent = builderContent ? String(builderContent).trim() : undefined;
   if (sacUrl !== undefined) doc.sacUrl = sacUrl ? sacUrl.trim() : undefined;
   if (description) {
     doc.description = description.trim();
@@ -672,7 +673,8 @@ app.delete('/api/docs/:id(*)', (req, res) => {
 });
 
 // 9b. Image Upload Endpoint (Base64 payload from clipboard paste, drag-and-drop, or file input)
-app.post('/api/upload-image', (req, res) => {
+const MAX_UPLOAD_BYTES = 5 * 1024 * 1024;
+app.post(['/api/upload-image', '/api/upload'], (req, res) => {
   try {
     const { filename, data } = req.body;
     if (!data) {
@@ -685,13 +687,23 @@ app.post('/api/upload-image', (req, res) => {
 
     if (matches && matches.length === 3) {
       const mime = matches[1].toLowerCase();
+      if (mime.includes('svg')) {
+        return res.status(400).json({ error: 'Format SVG tidak diizinkan demi keamanan. Gunakan PNG, JPG, GIF, atau WEBP.' });
+      }
       if (mime.includes('jpeg') || mime.includes('jpg')) ext = '.jpg';
       else if (mime.includes('gif')) ext = '.gif';
       else if (mime.includes('webp')) ext = '.webp';
-      else if (mime.includes('svg')) ext = '.svg';
+      else if (mime.includes('png')) ext = '.png';
+      else {
+        return res.status(400).json({ error: 'Format gambar tidak didukung. Gunakan PNG, JPG, GIF, atau WEBP.' });
+      }
       buffer = Buffer.from(matches[2], 'base64');
     } else {
       buffer = Buffer.from(data, 'base64');
+    }
+
+    if (buffer.byteLength > MAX_UPLOAD_BYTES) {
+      return res.status(413).json({ error: 'Ukuran gambar melebihi batas maksimum 5 MB' });
     }
 
     const uploadDir = path.join(FRONTEND_STATIC, 'img', 'uploads');

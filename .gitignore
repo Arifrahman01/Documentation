@@ -53,3 +53,4 @@ desktop.ini
 # Coverage directory used by testing tools
 coverage/
 .nyc_output/
+static/uploads/*
