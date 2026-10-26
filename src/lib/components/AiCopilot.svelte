@@ -4,7 +4,6 @@
 	import { marked } from 'marked';
 	import { sanitizeRenderedHtml } from '$lib/utils/markdown';
 	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge';
 	import { 
 		Sparkles, 
@@ -26,15 +25,16 @@
 	let messages = $state<Message[]>([
 		{
 			role: 'assistant',
-			content: 'Halo! Saya adalah **AI Copilot**, asisten resmi untuk Portal Dokumentasi & Program Navigator Enterprise.\n\nSaya siap membantu Anda memahami arsitektur sistem, navigasi 7 aplikasi enterprise, implementasi kode teknis, maupun merangkum dokumen yang sedang dibuka.\n\nSilakan ketik pertanyaan Anda di bawah!'
+			content: 'Halo! Saya adalah **AI Copilot**, asisten terpadu untuk Helpdesk & Knowledge Base Dokumen Enterprise.\n\nKarena sistem dokumentasi ini terintegrasi penuh dengan Helpdesk, Anda dapat menanyakan:\n• Panduan teknis & SOP modul (SAP, SAC, FMS, Web, dll.)\n• Kendala sistem atau status tiket Helpdesk\n• Solusi penanganan masalah (*troubleshooting*) dan perangkuman dokumen\n\nSilakan ketik pertanyaan atau kendala yang ingin Anda konsultasikan!'
 		}
 	]);
 
 	let inputQuery = $state('');
 	let isLoading = $state(false);
 	let messagesContainer = $state<HTMLDivElement | null>(null);
-	let inputEl = $state<HTMLInputElement | null>(null);
+	let inputEl = $state<HTMLTextAreaElement | null>(null);
 	let copiedIndex = $state<number | null>(null);
+	let sendOnCtrlEnter = $state(false);
 
 	$effect(() => {
 		if (ui.isAiOpen) {
@@ -55,11 +55,21 @@
 		}
 	});
 
+	function autoResize() {
+		if (!inputEl) return;
+		inputEl.style.height = 'auto';
+		const nextHeight = Math.min(Math.max(inputEl.scrollHeight, 40), 160);
+		inputEl.style.height = `${nextHeight}px`;
+	}
+
 	async function sendMessage(textToSend?: string) {
 		const query = (textToSend || inputQuery).trim();
 		if (!query || isLoading) return;
 
 		inputQuery = '';
+		if (inputEl) {
+			inputEl.style.height = '40px';
+		}
 		messages = [...messages, { role: 'user', content: query }];
 		isLoading = true;
 
@@ -101,9 +111,45 @@
 	}
 
 	function handleKeydown(e: KeyboardEvent) {
-		if (e.key === 'Enter' && !e.shiftKey) {
-			e.preventDefault();
-			sendMessage();
+		const isShift = e.shiftKey || (typeof e.getModifierState === 'function' && e.getModifierState('Shift'));
+		const isAlt = e.altKey || (typeof e.getModifierState === 'function' && e.getModifierState('Alt'));
+		const isCtrl = e.ctrlKey || e.metaKey;
+
+		if (e.key === 'Enter') {
+			if (sendOnCtrlEnter) {
+				// Mode Ctrl + Enter untuk kirim, Enter biasa untuk baris baru
+				if (isCtrl) {
+					e.preventDefault();
+					e.stopPropagation();
+					sendMessage();
+				} else {
+					// Enter biasa -> biarkan buat baris baru secara alami, lalu sesuaikan tinggi
+					setTimeout(autoResize, 0);
+				}
+			} else {
+				// Mode Standar: Shift+Enter / Alt+Enter untuk baris baru, Enter biasa untuk kirim
+				if (isShift || isAlt) {
+					e.preventDefault();
+					e.stopPropagation();
+					const target = e.currentTarget as HTMLTextAreaElement;
+					const start = target.selectionStart ?? target.value.length;
+					const end = target.selectionEnd ?? target.value.length;
+					const val = target.value;
+					inputQuery = val.substring(0, start) + '\n' + val.substring(end);
+					setTimeout(() => {
+						if (inputEl) {
+							inputEl.selectionStart = inputEl.selectionEnd = start + 1;
+							autoResize();
+						}
+					}, 0);
+					return;
+				}
+
+				// Enter biasa -> Kirim pesan
+				e.preventDefault();
+				e.stopPropagation();
+				sendMessage();
+			}
 		}
 	}
 
@@ -174,10 +220,10 @@
 						<div class="flex items-center gap-2">
 							<h3 class="text-sm font-semibold text-foreground">AI Copilot</h3>
 							<Badge variant="secondary" class="text-[10px]">
-								Enterprise
+								Helpdesk Knowledge Base
 							</Badge>
 						</div>
-						<p class="text-xs text-muted-foreground">Asisten teknis dokumentasi & sistem enterprise</p>
+						<p class="text-xs text-muted-foreground">Asisten Helpdesk, panduan dokumen & solusi sistem</p>
 					</div>
 				</div>
 
@@ -274,28 +320,44 @@
 
 			<!-- Input Form -->
 			<div class="border-t border-border p-4">
-				<div class="relative flex items-center">
-					<Input
-						bind:ref={inputEl}
-						type="text"
-						bind:value={inputQuery}
-						onkeydown={handleKeydown}
-						placeholder="Tanyakan apapun ke AI Copilot..."
-						class="pr-12 text-xs h-10"
-					/>
-					<Button
-						size="icon"
-						onclick={() => sendMessage()}
-						disabled={!inputQuery.trim() || isLoading}
-						class="absolute right-1.5 h-7 w-7"
-						title="Kirim pesan"
-						aria-label="Kirim pesan ke AI Copilot"
-					>
-						<Send class="h-3.5 w-3.5" />
-					</Button>
+				<div class="relative flex items-end gap-2">
+					<div class="relative flex-1">
+						<textarea
+							bind:this={inputEl}
+							bind:value={inputQuery}
+							onkeydown={handleKeydown}
+							oninput={autoResize}
+							rows={1}
+							placeholder="Tanyakan kendala, status tiket, atau panduan modul Helpdesk..."
+							class="w-full rounded-md border border-input bg-background px-3 py-2.5 pr-10 text-xs leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[40px] max-h-40 resize-none overflow-y-auto block whitespace-pre-wrap"
+						></textarea>
+						<Button
+							size="icon"
+							onclick={() => sendMessage()}
+							disabled={!inputQuery.trim() || isLoading}
+							class="absolute right-1.5 bottom-1.5 h-7 w-7"
+							title="Kirim pesan"
+							aria-label="Kirim pesan ke AI Copilot"
+						>
+							<Send class="h-3.5 w-3.5" />
+						</Button>
+					</div>
 				</div>
-				<div class="mt-2 text-center text-[10px] text-muted-foreground">
-					Tekan <Badge variant="outline" class="px-1 py-0 text-[9px] font-mono">Enter</Badge> untuk mengirim
+				<div class="mt-2 flex items-center justify-between text-[10px] text-muted-foreground px-1">
+					<span>
+						{#if sendOnCtrlEnter}
+							Tekan <Badge variant="outline" class="px-1 py-0 text-[9px] font-mono">Ctrl + Enter</Badge> untuk kirim, <Badge variant="outline" class="px-1 py-0 text-[9px] font-mono">Enter</Badge> untuk baris baru
+						{:else}
+							Tekan <Badge variant="outline" class="px-1 py-0 text-[9px] font-mono">Enter</Badge> untuk kirim, <Badge variant="outline" class="px-1 py-0 text-[9px] font-mono">Shift + Enter</Badge> untuk baris baru
+						{/if}
+					</span>
+					<button
+						type="button"
+						onclick={() => (sendOnCtrlEnter = !sendOnCtrlEnter)}
+						class="text-[10px] text-primary hover:underline cursor-pointer ml-2 shrink-0 font-medium"
+					>
+						{sendOnCtrlEnter ? 'Ubah: Enter kirim' : 'Ubah: Ctrl+Enter kirim'}
+					</button>
 				</div>
 			</div>
 		</div>

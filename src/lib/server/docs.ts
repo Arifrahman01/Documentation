@@ -11,6 +11,8 @@ const INDEX_FILE = path.join(DATA_DIR, 'docsIndex.json');
 const ROOT_DOCS_FILE = path.resolve(process.cwd(), 'data/documents.json');
 const ROOT_FOLDERS_FILE = path.resolve(process.cwd(), 'data/folders.json');
 const ROOT_APPS_FILE = path.resolve(process.cwd(), 'data/apps.json');
+const EXTERNAL_DOCS_FILE = path.join(DATA_DIR, 'external-documents.json');
+const ROOT_EXTERNAL_DOCS_FILE = path.resolve(process.cwd(), 'data/external-documents.json');
 
 export interface FolderItem {
 	section: string;
@@ -25,6 +27,8 @@ export interface DocumentItem {
 	category: string;
 	subcategory?: string;
 	title: string;
+	fileName?: string;
+	relativePath?: string;
 	description?: string;
 	snippet?: string;
 	content: string;
@@ -35,12 +39,36 @@ export interface DocumentItem {
 }
 
 let docsCache: { mtimeMs: number; data: DocumentItem[] } | null = null;
+let externalDocsCache: { mtimeMs: number; data: DocumentItem[] } | null = null;
 let appsCache: { mtimeMs: number; data: any[] } | null = null;
 let foldersCache: { mtimeMs: number; data: FolderItem[] } | null = null;
 let dataVersion = 1;
 
 export function getDataVersion(): number {
 	return dataVersion;
+}
+
+export function loadExternalDocuments(): DocumentItem[] {
+	try {
+		const targetFile = fs.existsSync(EXTERNAL_DOCS_FILE)
+			? EXTERNAL_DOCS_FILE
+			: fs.existsSync(ROOT_EXTERNAL_DOCS_FILE)
+				? ROOT_EXTERNAL_DOCS_FILE
+				: null;
+		if (!targetFile) return [];
+
+		const stat = fs.statSync(targetFile);
+		if (externalDocsCache && externalDocsCache.mtimeMs === stat.mtimeMs) {
+			return externalDocsCache.data.map((d) => ({ ...d }));
+		}
+
+		const parsed = JSON.parse(fs.readFileSync(targetFile, 'utf8')) as DocumentItem[];
+		externalDocsCache = { mtimeMs: stat.mtimeMs, data: parsed };
+		return parsed.map((d) => ({ ...d }));
+	} catch (e: any) {
+		console.error('Error reading external documents database:', e?.message);
+	}
+	return [];
 }
 
 function atomicWriteJson(targetPath: string, payload: unknown) {

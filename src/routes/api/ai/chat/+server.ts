@@ -9,6 +9,11 @@ import {
 	retrieveRelevantKnowledge,
 	SYSTEM_PROMPT_BASE
 } from '$lib/server/ai';
+import {
+	isDatabaseQueryIntent,
+	generateSmartQueryForQuestion,
+	executeSafeQuery
+} from '$lib/server/database';
 
 export const POST: RequestHandler = async ({ request }) => {
 	try {
@@ -79,6 +84,20 @@ ${docCtx.substring(0, 12000)}
 				query || messageList.filter((m: any) => m.role === 'user').pop()?.content || '';
 			const relevantKnowledge = retrieveRelevantKnowledge(lastUserQuery);
 
+			// Realtime Database Query Integration (Metode 2)
+			let liveDbKnowledge = '';
+			if (isDatabaseQueryIntent(lastUserQuery)) {
+				const autoSql = generateSmartQueryForQuestion(lastUserQuery);
+				if (autoSql) {
+					try {
+						const dbRes = await executeSafeQuery(autoSql);
+						if (dbRes.success && dbRes.rows.length > 0) {
+							liveDbKnowledge = `\n\n[DATA REALTIME DATABASE HELPDESK MYSQL (Query: ${dbRes.sql})]:\n${JSON.stringify(dbRes.rows, null, 2).slice(0, 3000)}\n\nInstruksi Penting: Gunakan data realtime database di atas untuk menjawab statistik atau status tiket pengguna secara akurat, faktual, dan ramah.`;
+						}
+					} catch (_) {}
+				}
+			}
+
 			contextualPrompt = SYSTEM_PROMPT_BASE;
 			if (currentRoute) {
 				contextualPrompt += `\nLOKASI PENGGUNA SAAT INI DI PORTAL: ${currentRoute}`;
@@ -86,10 +105,13 @@ ${docCtx.substring(0, 12000)}
 			if (docCtx && docCtx.trim()) {
 				contextualPrompt += `\n\n[KONTEKS DOKUMEN AKTIF SAAT INI]:\n"""\n${docCtx.substring(0, 3500)}\n"""`;
 			}
+			if (liveDbKnowledge) {
+				contextualPrompt += liveDbKnowledge;
+			}
 			if (relevantKnowledge) {
-				contextualPrompt += `\n\n[REFERENSI DOKUMENTASI & APLIKASI INTERNAL PORTAL]:\n${relevantKnowledge}\n\nCatatan Panduan: Gunakan referensi internal di atas jika relevan dengan pertanyaan pengguna. Namun jika pertanyaan pengguna lebih luas (misalnya troubleshooting SAP/SAC/Web, T-Code, arsitektur, rumus, atau kode teknis yang belum tertulis di referensi di atas), tetap jawab secara lengkap, solutif, dan mendalam sesuai keahlian teknis SAP, SAC, dan Web Anda.`;
-			} else {
-				contextualPrompt += `\n\nCatatan Panduan: Jawab pertanyaan pengguna seputar SAP, SAC, Web, dan sistem enterprise secara lengkap, praktis, dan solutif menggunakan keahlian teknis Anda.`;
+				contextualPrompt += `\n\n[REFERENSI DOKUMENTASI & PANDUAN MODUL KNOWLEDGE BASE HELPDESK]:\n${relevantKnowledge}\n\nInstruksi Integrasi Helpdesk: Pengguna memandang portal dokumentasi ini sebagai satu kesatuan resmi dari sistem Helpdesk. Rujuk panduan modul dan solusi di atas untuk membantu menjawab kendala atau tiket pengguna.`;
+			} else if (!liveDbKnowledge) {
+				contextualPrompt += `\n\nInstruksi Integrasi Helpdesk: Posisikan jawaban Anda sebagai Technical Support Helpdesk ahli. Jawab pertanyaan pengguna seputar kendala sistem, tiket, panduan modul SAP/SAC/Web, maupun arsitektur sistem secara solutif, aplikatif, dan terstruktur.`;
 			}
 		}
 

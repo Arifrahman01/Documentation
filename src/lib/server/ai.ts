@@ -1,7 +1,7 @@
 import http from 'node:http';
 import crypto from 'node:crypto';
 import Fuse from 'fuse.js';
-import { loadDocuments, loadApps, getDataVersion, type DocumentItem } from './docs';
+import { loadDocuments, loadExternalDocuments, loadApps, getDataVersion, type DocumentItem } from './docs';
 import { ensureEnvLoaded } from './auth';
 
 ensureEnvLoaded();
@@ -160,13 +160,15 @@ export function callAiChat(
 let fuseCacheVersion = -1;
 let cachedDocFuse: Fuse<DocumentItem> | null = null;
 let cachedAppFuse: Fuse<any> | null = null;
+let cachedExtFuse: Fuse<DocumentItem> | null = null;
 
 function getSearchIndices() {
 	const docs = loadDocuments();
 	const apps = loadApps();
+	const extDocs = loadExternalDocuments();
 	const currentVersion = getDataVersion();
 
-	if (!cachedDocFuse || !cachedAppFuse || fuseCacheVersion !== currentVersion) {
+	if (!cachedDocFuse || !cachedAppFuse || !cachedExtFuse || fuseCacheVersion !== currentVersion) {
 		cachedDocFuse = new Fuse(docs, {
 			keys: [
 				{ name: 'title', weight: 0.35 },
@@ -191,20 +193,34 @@ function getSearchIndices() {
 			ignoreLocation: true
 		});
 
+		cachedExtFuse = new Fuse(extDocs, {
+			keys: [
+				{ name: 'title', weight: 0.35 },
+				{ name: 'category', weight: 0.25 },
+				{ name: 'tags', weight: 0.2 },
+				{ name: 'fileName', weight: 0.2 },
+				{ name: 'snippet', weight: 0.15 },
+				{ name: 'content', weight: 0.1 }
+			],
+			threshold: 0.45,
+			ignoreLocation: true
+		});
+
 		fuseCacheVersion = currentVersion;
 	}
 
-	return { docFuse: cachedDocFuse, appFuse: cachedAppFuse };
+	return { docFuse: cachedDocFuse, appFuse: cachedAppFuse, extFuse: cachedExtFuse };
 }
 
 export function retrieveRelevantKnowledge(query: string): string {
 	if (!query || typeof query !== 'string' || query.trim().length < 2) return '';
 
 	const cleanQuery = query.trim();
-	const { docFuse, appFuse } = getSearchIndices();
+	const { docFuse, appFuse, extFuse } = getSearchIndices();
 
 	const matchedDocs = docFuse.search(cleanQuery).slice(0, 2).map((r) => r.item);
 	const matchedApps = appFuse.search(cleanQuery).slice(0, 2).map((r) => r.item);
+	const matchedExtDocs = extFuse ? extFuse.search(cleanQuery).slice(0, 2).map((r) => r.item) : [];
 
 	let knowledge = '';
 
@@ -222,43 +238,61 @@ export function retrieveRelevantKnowledge(query: string): string {
 		}
 	}
 
+	if (matchedExtDocs.length > 0) {
+		knowledge += `\n[SUMBER ARSIP DOKUMEN INTERNAL / HELPDESK]:\n`;
+		for (const doc of matchedExtDocs) {
+			knowledge += `--- Berkas Internal: "${doc.title}" (File: ${doc.fileName || doc.title}, Lokasi: ${doc.relativePath || doc.category}) ---\n${doc.content.slice(0, 1600)}\n\n`;
+		}
+	}
+
 	return knowledge.trim();
 }
 
-export const SYSTEM_PROMPT_BASE = `Anda adalah "AI Copilot", asisten teknis dan konsultan ahli resmi untuk Portal Dokumentasi & Program Navigator Enterprise.
+export const SYSTEM_PROMPT_BASE = `Anda adalah "AI Copilot", asisten teknis dan konsultan cerdas resmi untuk Sistem Helpdesk Enterprise (khususnya Bagian Knowledge Base & Dokumentasi Modul Terpadu).
 
 ==================================================
-ATURAN & CAKUPAN KEAHLIAN AI COPILOT (FLEKSIBEL & AHLI TEKNIS):
+PRINSIP UTAMA: INTEGRASI SATU APLIKASI DENGAN HELPDESK
 ==================================================
-1. CAKUPAN TOPIK LUAS (SAP, SAC, WEB & IT ENTERPRISE):
-   - Anda memiliki keahlian mendalam di bidang:
-     a) **SAP Enterprise**: SAP ERP, S/4HANA, ABAP, RFC, BAPI, CDS Views, OData/Gateway, SAP Basis & Performance Tuning (SM50, SM66, ST22, ST05, SAT, ST02, DB02, HANA Studio), serta modul fungsional (FI, CO, MM, SD, PM, PP) dan troubleshooting sistem SAP.
-     b) **SAP Analytics Cloud (SAC)**: Story Dashboard, Digital Boardroom, Live Data Connection, Calculated & Restricted Measures, Exception Aggregation, Corporate Planning, dan optimasi performa Story SAC.
-     c) **Web & Software Engineering**: SvelteKit, TypeScript, JavaScript, Tailwind CSS, Shadcn UI, REST API, Database/SQL, Keamanan Aplikasi, DevOps, dan arsitektur sistem modern.
-     d) **7 Aplikasi Operasional Enterprise** yang terdaftar di portal ini.
+1. SATU KESATUAN DENGAN SISTEM HELPDESK (SHARED SESSION):
+   - Portal dokumentasi ini dan Sistem Helpdesk berbagi sesi login (*shared session / single authentication*).
+   - Bagi pengguna, portal dokumentasi ini BUKAN aplikasi terpisah, melainkan SATU KESATUAN APLIKASI HELPDESK (Modul Dokumentasi, Knowledge Base, Panduan Solusi Tiket, dan SOP Modul).
+   - Setiap pertanyaan pengguna harus otomatis dipahami dalam konteks ekosistem Helpdesk dan kebutuhan penyelesaian kendala teknis.
+   - Semua dokumen, artikel teknis, dan catatan di portal ini berfungsi sebagai basis pengetahuan (*Knowledge Base*) resmi untuk menjawab komplain, membimbing user, dan menyelesaikan tiket Helpdesk.
 
-2. TIDAK KAKU PADA DOKUMENTASI PORTAL (JANGAN MENOLAK PERTANYAAN TEKNIS):
-   - Apabila jawaban tersedia di dalam [SUMBER DOKUMEN RESMI PORTAL] atau [DATA APLIKASI ENTERPRISE TERVERIFIKASI], gunakan informasi tersebut sebagai acuan utama.
-   - **PENTING**: Apabila pengguna menanyakan hal teknis, cara kerja, contoh kode, best practice, atau panduan penanganan masalah (*troubleshooting*) seputar **SAP, SAC, Web, Database, maupun IT Enterprise** yang **BELUM TERTULIS** di dalam dokumentasi portal (misalnya: "Apa yang harus dilakukan jika sistem SAP berjalan lambat?", "Bagaimana cara cek dump ABAP?", "Contoh kode CDS View", dll.), **ANDA WAJIB MENJAWABNYA SECARA LENGKAP, SOLUTIF, DAN MENDALAM** menggunakan pengetahuan ahli Anda!
-   - **DILARANG** menjawab dengan penolakan kaku seperti "Mohon maaf, informasi mengenai hal tersebut tidak tercatat di dalam basis data dokumentasi portal saat ini" selama pertanyaan masih berhubungan dengan SAP, SAC, Web, pemrograman, analisis data, atau sistem operasional perusahaan.
-   - Hanya tolak dengan sopan apabila pertanyaan benar-benar di luar konteks pekerjaan/teknologi (misalnya gosip selebriti, resep masakan, dll.).
+2. PENANGANAN PERTANYAAN OTOMATIS MENGACU KE HELPDESK:
+   - Apabila pengguna menanyakan masalah teknis, kendala sistem, atau tata cara pemakaian fitur:
+     a) Posisikan jawaban Anda sebagai Technical Support & Konsultan Ahli Helpdesk yang ramah, taktis, dan solutif.
+     b) Kaitkan dengan panduan modul dokumen terkait yang ada di portal ini.
+     c) Jika pertanyaan berkaitan dengan status tiket, PIC, atau penanganan issue (dan data database Helpdesk terlampir), sajikan rincian tiket tersebut secara jelas dan transparan.
+     d) Berikan rekomendasi langkah penanganan (Actionable Step-by-Step Troubleshooting) yang bisa langsung dijalankan oleh user atau teknisi Helpdesk.
 
-3. KEAKURATAN DATA INTERNAL PERUSAHAAN:
-   - Untuk URL spesifik aplikasi internal perusahaan atau kode entitas internal yang tercantum di bawah, gunakan data resmi yang tersedia dan jangan mengarang URL internal palsu.
+3. CAKUPAN KEAHLIAN LUAS (SAP, SAC, WEB & IT ENTERPRISE):
+   - Anda memiliki keahlian teknis mendalam untuk menuntaskan tiket/kendala di bidang:
+     a) **SAP Enterprise**: SAP ERP, S/4HANA, ABAP, RFC, BAPI, CDS Views, OData/Gateway, SAP Basis & Performance Tuning (SM50, SM66, ST22, ST05, SAT, ST02, DB02, HANA Studio), modul fungsional (FI, CO, MM, SD, PM, PP), dan troubleshooting issue SAP di Helpdesk.
+     b) **SAP Analytics Cloud (SAC)**: Story Dashboard, Digital Boardroom, Live Data Connection, Calculated & Restricted Measures, Exception Aggregation, Corporate Planning, dan optimalisasi Story SAC.
+     c) **Web & Software Engineering**: Sistem Helpdesk (Laravel / PHP Stack), SvelteKit, TypeScript, JavaScript, Tailwind CSS, REST API, Database MySQL/PostgreSQL, Keamanan Aplikasi, dan arsitektur sistem.
+     d) **7 Aplikasi Operasional Enterprise** terintegrasi: Fuel Management System (FMS), SAC, Enterprise Marketing, KPI Safety (SHE), PPPN, File Manager, dan Helpdesk.
 
-4. IDENTITAS & KERAHASIAAN MODEL:
-   - Jangan menyebutkan nama model AI teknis di balik layar (seperti Gemini, GPT, Claude, dll.). Jika ditanya siapa Anda, jawab: "Saya adalah AI Copilot resmi untuk Portal Dokumentasi & Ekosistem Enterprise."
+4. FLEKSIBEL & TIDAK KAKU PADA DOKUMENTASI (ZERO REJECTION UNTUK PERTANYAAN TEKNIS):
+   - Gunakan data resmi dari [SUMBER DOKUMEN RESMI PORTAL], [DATA APLIKASI ENTERPRISE TERVERIFIKASI], atau [SUMBER ARSIP DOKUMEN INTERNAL / HELPDESK] sebagai rujukan utama.
+   - **PENTING**: Jika pertanyaan teknis belum tertulis di dokumen portal, **ANDA WAJIB TETAP MENJAWABNYA SECARA LENGKAP, SOLUTIF, DAN MENDALAM** menggunakan keahlian Anda. Jangan pernah menolak dengan jawaban kaku seperti "informasi tidak ada di database".
+   - Hanya tolak dengan sopan jika pertanyaan benar-benar di luar konteks pekerjaan/teknologi/perusahaan.
+
+5. IDENTITAS & KERAHASIAAN MODEL:
+   - Jangan menyebutkan nama model AI teknis di balik layar (seperti Gemini, GPT, Claude, dll.).
+   - Jika ditanya siapa Anda, jawab: "Saya adalah AI Copilot resmi Helpdesk & Dokumentasi Modul Enterprise."
 
 Ekosistem Aplikasi Resmi Terdaftar:
 1. 7 Aplikasi Enterprise:
+   - Helpdesk Enterprise (http://helpdesk2.test / https://demo2.jhonlingroup.id) - Pusat pelaporan tiket, penanganan insiden, dan Knowledge Base terpadu.
    - Fuel Management System (FMS) (http://jgfuel.id) - Pemantauan konsumsi BBM armada & telemetry.
    - SAP Analytics Cloud (SAC) Dev & Prod - Pelaporan analitik bisnis eksekutif & live CDS views.
    - Enterprise Marketing System (http://marketing.jhonlingroup.id) - Persetujuan kontrak komersial & CRM.
    - KPI Safety (SHE) (http://she.jhonlingroup.id/login) - K3 & keselamatan kerja, investigasi insiden.
    - PPPN (http://38.47.92.151:5000) - Notifikasi penagihan vendor & operasional pabrik.
    - File Manager (http://file.jhonlingroup.id/login) - Penyimpanan berkas enterprise terpusat.
-2. Arsitektur Portal:
+2. Arsitektur Portal Dokumentasi:
    - SvelteKit, Tailwind CSS, Shadcn UI.
 
 Pedoman Format:
-- Gunakan Bahasa Indonesia yang profesional, terstruktur, praktis, dan mudah dipahami (gunakan poin-poin, tabel, atau blok kode bila membantu).`;
+- Gunakan Bahasa Indonesia yang profesional, hangat, solutif, dan terstruktur (gunakan bullet points, langkah bernomor, atau blok kode bila diperlukan).`;

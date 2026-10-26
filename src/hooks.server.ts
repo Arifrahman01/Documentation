@@ -1,3 +1,12 @@
+import { startExternalDocsScheduler } from '$lib/server/scheduler';
+
+// Inisialisasi scheduler otomatis jam 12 malam saat server SvelteKit menyala
+startExternalDocsScheduler();
+
+export const init = async () => {
+	startExternalDocsScheduler();
+};
+
 export const handle = async ({
 	event,
 	resolve

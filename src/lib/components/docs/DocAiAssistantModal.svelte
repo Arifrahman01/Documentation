@@ -2,7 +2,6 @@
 	import { renderMarkdown } from '$lib/utils/markdown';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
-	import { Input } from '$lib/components/ui/input';
 	import * as Card from '$lib/components/ui/card';
 	import {
 		Sparkles,
@@ -47,8 +46,9 @@
 	let isLoading = $state(false);
 	let copiedIdx = $state<number | null>(null);
 	let scrollContainer = $state<HTMLDivElement | null>(null);
-	let inputEl = $state<HTMLInputElement | null>(null);
+	let inputEl = $state<HTMLTextAreaElement | null>(null);
 	let currentDocSlug = $state<string>('');
+	let sendOnCtrlEnter = $state(false);
 
 	const quickActions = [
 		{
@@ -109,11 +109,63 @@
 		isOpen = false;
 	}
 
+	function autoResize() {
+		if (!inputEl) return;
+		inputEl.style.height = 'auto';
+		const nextHeight = Math.min(Math.max(inputEl.scrollHeight, 40), 160);
+		inputEl.style.height = `${nextHeight}px`;
+	}
+
+	function handleKeydown(e: KeyboardEvent) {
+		const isShift = e.shiftKey || (typeof e.getModifierState === 'function' && e.getModifierState('Shift'));
+		const isAlt = e.altKey || (typeof e.getModifierState === 'function' && e.getModifierState('Alt'));
+		const isCtrl = e.ctrlKey || e.metaKey;
+
+		if (e.key === 'Enter') {
+			if (sendOnCtrlEnter) {
+				// Mode Ctrl + Enter untuk kirim, Enter biasa untuk baris baru
+				if (isCtrl) {
+					e.preventDefault();
+					e.stopPropagation();
+					askDocumentAi();
+				} else {
+					setTimeout(autoResize, 0);
+				}
+			} else {
+				// Mode Standar: Shift+Enter / Alt+Enter untuk baris baru, Enter biasa untuk kirim
+				if (isShift || isAlt) {
+					e.preventDefault();
+					e.stopPropagation();
+					const target = e.currentTarget as HTMLTextAreaElement;
+					const start = target.selectionStart ?? target.value.length;
+					const end = target.selectionEnd ?? target.value.length;
+					const val = target.value;
+					inputQuery = val.substring(0, start) + '\n' + val.substring(end);
+					setTimeout(() => {
+						if (inputEl) {
+							inputEl.selectionStart = inputEl.selectionEnd = start + 1;
+							autoResize();
+						}
+					}, 0);
+					return;
+				}
+
+				// Enter biasa -> Kirim pesan
+				e.preventDefault();
+				e.stopPropagation();
+				askDocumentAi();
+			}
+		}
+	}
+
 	async function askDocumentAi(customPrompt?: string, actionLabel?: string) {
 		const query = (customPrompt || inputQuery).trim();
 		if (!query || isLoading) return;
 
-		if (!customPrompt) inputQuery = '';
+		if (!customPrompt) {
+			inputQuery = '';
+			if (inputEl) inputEl.style.height = '40px';
+		}
 		messages = [...messages, { role: 'user', content: query, label: actionLabel }];
 		isLoading = true;
 
@@ -351,34 +403,47 @@
 			</div>
 
 			<!-- Input Footer -->
-			<div class="border-t border-border bg-muted/20 px-5 py-3.5">
-				<form
-					onsubmit={(e) => {
-						e.preventDefault();
-						askDocumentAi();
-					}}
-					class="flex items-center gap-2"
-				>
+			<div class="border-t border-border bg-muted/20 px-5 py-3">
+				<div class="flex items-end gap-2">
 					<div class="relative flex-1">
 						<MessageSquare class="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none z-10" />
-						<Input
-							bind:ref={inputEl}
-							type="text"
+						<textarea
+							bind:this={inputEl}
 							bind:value={inputQuery}
-							placeholder="Tanyakan apa saja yang ada di dalam dokumen '{doc?.title}'..."
-							class="h-9 pl-9 pr-4 text-xs"
-						/>
+							onkeydown={handleKeydown}
+							oninput={autoResize}
+							rows={1}
+							placeholder="Tanyakan apa saja di panduan modul '{doc?.title}' untuk kendala Helpdesk..."
+							class="w-full rounded-md border border-input bg-background pl-9 pr-3 py-2 text-xs leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[40px] max-h-40 resize-none overflow-y-auto block whitespace-pre-wrap"
+						></textarea>
 					</div>
 					<Button
-						type="submit"
+						type="button"
 						size="sm"
+						onclick={() => askDocumentAi()}
 						disabled={!inputQuery.trim() || isLoading}
-						class="h-9 gap-1.5 px-4 text-xs font-semibold"
+						class="h-10 gap-1.5 px-4 text-xs font-semibold shrink-0"
 					>
 						<Send class="h-3.5 w-3.5" />
-						<span>Tanya Dokumen</span>
+						<span>Tanya Modul</span>
 					</Button>
-				</form>
+				</div>
+				<div class="mt-1.5 flex items-center justify-between text-[10px] text-muted-foreground px-0.5">
+					<span>
+						{#if sendOnCtrlEnter}
+							Tekan <kbd class="rounded border px-1 py-0.5 font-mono text-[9px]">Ctrl + Enter</kbd> untuk kirim, <kbd class="rounded border px-1 py-0.5 font-mono text-[9px]">Enter</kbd> untuk baris baru
+						{:else}
+							Tekan <kbd class="rounded border px-1 py-0.5 font-mono text-[9px]">Enter</kbd> untuk kirim, <kbd class="rounded border px-1 py-0.5 font-mono text-[9px]">Shift + Enter</kbd> untuk baris baru
+						{/if}
+					</span>
+					<button
+						type="button"
+						onclick={() => (sendOnCtrlEnter = !sendOnCtrlEnter)}
+						class="text-[10px] text-primary hover:underline cursor-pointer ml-2 shrink-0 font-medium"
+					>
+						{sendOnCtrlEnter ? 'Ubah: Enter kirim' : 'Ubah: Ctrl+Enter kirim'}
+					</button>
+				</div>
 			</div>
 		</Card.Root>
 	</div>

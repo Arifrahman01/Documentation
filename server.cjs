@@ -207,6 +207,8 @@ function callAiChat(messages, model, maxTokens = 1500, temperature = 0.1) {
 const DATA_DIR = path.join(__dirname, 'data');
 const DOCS_FILE = path.join(DATA_DIR, 'documents.json');
 const FRONTEND_DOCS_FILE = path.join(__dirname, 'src', 'lib', 'data', 'documents.json');
+const EXTERNAL_DOCS_FILE = path.join(DATA_DIR, 'external-documents.json');
+const FRONTEND_EXTERNAL_DOCS_FILE = path.join(__dirname, 'src', 'lib', 'data', 'external-documents.json');
 const APPS_FILE = path.join(__dirname, 'src', 'lib', 'data', 'apps.json');
 
 function loadDocuments() {
@@ -219,6 +221,20 @@ function loadDocuments() {
     }
   } catch (e) {
     console.error('Error reading documents database:', e.message);
+  }
+  return [];
+}
+
+function loadExternalDocuments() {
+  try {
+    if (fs.existsSync(EXTERNAL_DOCS_FILE)) {
+      return JSON.parse(fs.readFileSync(EXTERNAL_DOCS_FILE, 'utf8'));
+    }
+    if (fs.existsSync(FRONTEND_EXTERNAL_DOCS_FILE)) {
+      return JSON.parse(fs.readFileSync(FRONTEND_EXTERNAL_DOCS_FILE, 'utf8'));
+    }
+  } catch (e) {
+    console.error('Error reading external documents database:', e.message);
   }
   return [];
 }
@@ -289,6 +305,24 @@ function retrieveRelevantKnowledge(query) {
   const matchedDocs = docFuse.search(cleanQuery).slice(0, 2).map(r => r.item);
   const matchedApps = appFuse.search(cleanQuery).slice(0, 2).map(r => r.item);
 
+  const extDocs = loadExternalDocuments();
+  let matchedExtDocs = [];
+  if (extDocs.length > 0) {
+    const extFuse = new Fuse(extDocs, {
+      keys: [
+        { name: 'title', weight: 0.35 },
+        { name: 'category', weight: 0.25 },
+        { name: 'tags', weight: 0.2 },
+        { name: 'fileName', weight: 0.2 },
+        { name: 'snippet', weight: 0.15 },
+        { name: 'content', weight: 0.1 }
+      ],
+      threshold: 0.45,
+      ignoreLocation: true
+    });
+    matchedExtDocs = extFuse.search(cleanQuery).slice(0, 2).map(r => r.item);
+  }
+
   let knowledge = '';
 
   if (matchedApps.length > 0) {
@@ -305,44 +339,126 @@ function retrieveRelevantKnowledge(query) {
     }
   }
 
+  if (matchedExtDocs.length > 0) {
+    knowledge += `\n[SUMBER ARSIP DOKUMEN INTERNAL / HELPDESK]:\n`;
+    for (const doc of matchedExtDocs) {
+      knowledge += `--- Berkas Internal: "${doc.title}" (File: ${doc.fileName || doc.title}, Lokasi: ${doc.relativePath || doc.category}) ---\n${doc.content.slice(0, 1600)}\n\n`;
+    }
+  }
+
   return knowledge.trim();
 }
 
-const SYSTEM_PROMPT_BASE = `Anda adalah "AI Copilot", asisten kecerdasan buatan resmi untuk Documentation Portal & Program Navigator Enterprise.
+const SYSTEM_PROMPT_BASE = `Anda adalah "AI Copilot", asisten teknis dan konsultan cerdas resmi untuk Sistem Helpdesk Enterprise (khususnya Bagian Knowledge Base & Dokumentasi Modul Terpadu).
 
 ==================================================
-PRINSIP KETAT ANTI-HALUSINASI (STRICT ZERO-HALLUCINATION):
+PRINSIP UTAMA: INTEGRASI SATU APLIKASI DENGAN HELPDESK
 ==================================================
-1. SINGLE SOURCE OF TRUTH (HANYA BERDASARKAN SUMBER RESMI):
-   - Jawab pertanyaan HANYA berdasarkan fakta yang tertulis dalam [SUMBER DOKUMEN RESMI PORTAL], [DATA APLIKASI ENTERPRISE TERVERIFIKASI], dan [KONTEKS DOKUMEN AKTIF] di bawah.
-2. DILARANG MENGARANG (ZERO FABRICATION):
-   - JANGAN PERNAH mengarang URL fiktif, endpoint palsu, nama tabel/database rekaan, kode palsu, atau fitur yang tidak tercantum dalam sumber data resmi.
-   - JANGAN membuat asumsi atau menebak konfigurasi di luar dokumentasi resmi yang disediakan.
-3. KEJUJURAN KETIKA INFORMASI TIDAK DITEMUKAN:
-   - Jika pengguna bertanya tentang sesuatu yang TIDAK TERDAPAT dalam korpus sumber data, nyatakan dengan jujur, ramah, dan tegas:
-     "Mohon maaf, informasi mengenai hal tersebut tidak tercatat di dalam basis data dokumentasi portal saat ini."
-   - Jangan mencoba berspekulasi atau mengarang jawaban alternatif yang tidak ada dasarnya.
-4. SITASI SUMBER:
-   - Di akhir jawaban, sebutkan dokumen atau sistem enterprise resmi yang Anda jadikan rujukan (misal: "Rujukan: Dokumen Quick Start (/docs/get-started/quick-start)").
-5. IDENTITAS & KERAHASIAAN MODEL (STRICT ANONYMITY):
-   - JANGAN PERNAH memberi tahu atau menyebutkan model AI teknis apa yang digunakan (seperti Gemini, GPT, Claude, Llama, DeepSeek, OpenAI, Anthropic, Google, dll), baik secara langsung maupun tersirat.
-   - Jika pengguna bertanya model apa yang Anda gunakan, siapa Anda, atau teknologi model di balik sistem ini, JAWAB DENGAN KONSISTEN:
-     "Saya adalah AI Copilot resmi yang dikembangkan secara terintegrasi untuk Portal Dokumentasi & Program Navigator Enterprise."
+1. SATU KESATUAN DENGAN SISTEM HELPDESK (SHARED SESSION):
+   - Portal dokumentasi ini dan Sistem Helpdesk berbagi sesi login (*shared session / single authentication*).
+   - Bagi pengguna, portal dokumentasi ini BUKAN aplikasi terpisah, melainkan SATU KESATUAN APLIKASI HELPDESK (Modul Dokumentasi, Knowledge Base, Panduan Solusi Tiket, dan SOP Modul).
+   - Setiap pertanyaan pengguna harus otomatis dipahami dalam konteks ekosistem Helpdesk dan kebutuhan penyelesaian kendala teknis.
+   - Semua dokumen, artikel teknis, dan catatan di portal ini berfungsi sebagai basis pengetahuan (*Knowledge Base*) resmi untuk menjawab komplain, membimbing user, dan menyelesaikan tiket Helpdesk.
+
+2. PENANGANAN PERTANYAAN OTOMATIS MENGACU KE HELPDESK:
+   - Apabila pengguna menanyakan masalah teknis, kendala sistem, atau tata cara pemakaian fitur:
+     a) Posisikan jawaban Anda sebagai Technical Support & Konsultan Ahli Helpdesk yang ramah, taktis, dan solutif.
+     b) Kaitkan dengan panduan modul dokumen terkait yang ada di portal ini.
+     c) Jika pertanyaan berkaitan dengan status tiket, PIC, atau penanganan issue (dan data database Helpdesk terlampir), sajikan rincian tiket tersebut secara jelas dan transparan.
+     d) Berikan rekomendasi langkah penanganan (Actionable Step-by-Step Troubleshooting) yang bisa langsung dijalankan oleh user atau teknisi Helpdesk.
+
+3. CAKUPAN KEAHLIAN LUAS (SAP, SAC, WEB & IT ENTERPRISE):
+   - Anda memiliki keahlian teknis mendalam untuk menuntaskan tiket/kendala di bidang:
+     a) **SAP Enterprise**: SAP ERP, S/4HANA, ABAP, RFC, BAPI, CDS Views, OData/Gateway, SAP Basis & Performance Tuning (SM50, SM66, ST22, ST05, SAT, ST02, DB02, HANA Studio), modul fungsional (FI, CO, MM, SD, PM, PP), dan troubleshooting issue SAP di Helpdesk.
+     b) **SAP Analytics Cloud (SAC)**: Story Dashboard, Digital Boardroom, Live Data Connection, Calculated & Restricted Measures, Exception Aggregation, Corporate Planning, dan optimalisasi Story SAC.
+     c) **Web & Software Engineering**: Sistem Helpdesk (Laravel / PHP Stack), SvelteKit, TypeScript, JavaScript, Tailwind CSS, REST API, Database MySQL/PostgreSQL, Keamanan Aplikasi, dan arsitektur sistem.
+     d) **7 Aplikasi Operasional Enterprise** terintegrasi: Fuel Management System (FMS), SAC, Enterprise Marketing, KPI Safety (SHE), PPPN, File Manager, dan Helpdesk.
+
+4. FLEKSIBEL & TIDAK KAKU PADA DOKUMENTASI (ZERO REJECTION UNTUK PERTANYAAN TEKNIS):
+   - Gunakan data resmi dari [SUMBER DOKUMEN RESMI PORTAL], [DATA APLIKASI ENTERPRISE TERVERIFIKASI], atau [SUMBER ARSIP DOKUMEN INTERNAL / HELPDESK] sebagai rujukan utama.
+   - **PENTING**: Jika pertanyaan teknis belum tertulis di dokumen portal, **ANDA WAJIB TETAP MENJAWABNYA SECARA LENGKAP, SOLUTIF, DAN MENDALAM** menggunakan keahlian Anda. Jangan pernah menolak dengan jawaban kaku seperti "informasi tidak ada di database".
+   - Hanya tolak dengan sopan jika pertanyaan benar-benar di luar konteks pekerjaan/teknologi/perusahaan.
+
+5. IDENTITAS & KERAHASIAAN MODEL:
+   - Jangan menyebutkan nama model AI teknis di balik layar (seperti Gemini, GPT, Claude, dll.).
+   - Jika ditanya siapa Anda, jawab: "Saya adalah AI Copilot resmi Helpdesk & Dokumentasi Modul Enterprise."
 
 Ekosistem Aplikasi Resmi Terdaftar:
 1. 7 Aplikasi Enterprise:
+   - Helpdesk Enterprise (http://helpdesk2.test / https://demo2.jhonlingroup.id) - Pusat pelaporan tiket, penanganan insiden, dan Knowledge Base terpadu.
    - Fuel Management System (FMS) (http://jgfuel.id) - Pemantauan konsumsi BBM armada & telemetry.
    - SAP Analytics Cloud (SAC) Dev & Prod - Pelaporan analitik bisnis eksekutif & live CDS views.
    - Enterprise Marketing System (http://marketing.jhonlingroup.id) - Persetujuan kontrak komersial & CRM.
    - KPI Safety (SHE) (http://she.jhonlingroup.id/login) - K3 & keselamatan kerja, investigasi insiden.
    - PPPN (http://38.47.92.151:5000) - Notifikasi penagihan vendor & operasional pabrik.
    - File Manager (http://file.jhonlingroup.id/login) - Penyimpanan berkas enterprise terpusat.
-2. Arsitektur Portal:
-   - SvelteKit, Tailwind CSS, Shadcn UI, REST API backend Express.js.
+2. Arsitektur Portal Dokumentasi:
+   - SvelteKit, Tailwind CSS, Shadcn UI.
 
 Pedoman Format:
-- Gunakan Bahasa Indonesia yang profesional, padat, dan teknis.
-- Gunakan Markdown kaya (bullet points, bold, code block).`;
+- Gunakan Bahasa Indonesia yang profesional, hangat, solutif, dan terstruktur (gunakan bullet points, langkah bernomor, atau blok kode bila diperlukan).`;
+
+// Database Query Helper for AI Realtime Query (Metode 2)
+let dbPool = null;
+function getDbPool() {
+  if (!dbPool) {
+    try {
+      const mysql = require('mysql2/promise');
+      dbPool = mysql.createPool({
+        host: process.env.DB_HOST || '127.0.0.1',
+        port: parseInt(process.env.DB_PORT || '3306', 10),
+        database: process.env.DB_DATABASE || 'helpdesk',
+        user: process.env.DB_USERNAME || 'root',
+        password: process.env.DB_PASSWORD || 'root',
+        connectionLimit: 4
+      });
+    } catch (_) {}
+  }
+  return dbPool;
+}
+
+function detectDbQuery(query) {
+  if (!query || typeof query !== 'string') return null;
+  const q = query.toLowerCase();
+  const isDb = ['tiket', 'ticket', 'helpdesk', 'status tiket', 'berapa tiket', 'jumlah tiket', 'total tiket', 'antrian tiket'].some(k => q.includes(k));
+  if (!isDb) return null;
+
+  if ((q.includes('berapa') || q.includes('jumlah') || q.includes('total') || q.includes('status')) && !q.includes('terakhir') && !q.includes('terbaru')) {
+    if (q.includes('severity') || q.includes('prioritas') || q.includes('kritis') || q.includes('critical')) {
+      return `SELECT severity, COUNT(*) as total FROM tickets GROUP BY severity ORDER BY total DESC`;
+    }
+    if (q.includes('kategori') || q.includes('category')) {
+      return `SELECT category, COUNT(*) as total FROM tickets WHERE category IS NOT NULL GROUP BY category ORDER BY total DESC LIMIT 10`;
+    }
+    return `SELECT status, COUNT(*) as total FROM tickets GROUP BY status ORDER BY total DESC`;
+  }
+  if (q.includes('tiket open') || q.includes('tiket yang open') || q.includes('masih open')) {
+    return `SELECT id, ticket_number, title, created_by, severity, category, created_at FROM tickets WHERE status = 'Open' ORDER BY id DESC LIMIT 15`;
+  }
+  if (q.includes('in development') || q.includes('sedang dikembangkan')) {
+    return `SELECT id, ticket_number, title, created_by, dev_assigned_to, severity, created_at FROM tickets WHERE status = 'In Development' ORDER BY id DESC LIMIT 15`;
+  }
+  if (q.includes('terbaru') || q.includes('terakhir') || q.includes('daftar tiket')) {
+    return `SELECT id, ticket_number, title, status, severity, category, created_by, created_at FROM tickets ORDER BY id DESC LIMIT 10`;
+  }
+  return `SELECT status, COUNT(*) as total FROM tickets GROUP BY status ORDER BY total DESC`;
+}
+
+async function executeSafeSql(sql) {
+  if (!sql || !/^(SELECT|WITH|EXPLAIN)\s+/i.test(sql.trim())) return null;
+  const cleaned = sql.trim().replace(/;+\s*$/, '');
+  if (cleaned.includes(';')) return null;
+  if (/\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|REPLACE|CREATE|GRANT|REVOKE)\b/i.test(cleaned)) return null;
+  const finalSql = /\bLIMIT\b/i.test(cleaned) ? cleaned : `${cleaned} LIMIT 50`;
+  try {
+    const pool = getDbPool();
+    if (!pool) return null;
+    const [rows] = await pool.query(finalSql);
+    return { sql: finalSql, rows: Array.isArray(rows) ? rows : [] };
+  } catch (e) {
+    return null;
+  }
+}
 
 // 2. Chat API (with intelligent caching & fallback)
 app.post('/api/ai/chat', async (req, res) => {
@@ -400,12 +516,27 @@ ${docCtx.substring(0, 12000)}
       const lastUserQuery = query || (messageList.filter(m => m.role === 'user').pop()?.content || '');
       const relevantKnowledge = retrieveRelevantKnowledge(lastUserQuery);
 
+      // Realtime Database Query Integration (Metode 2)
+      let liveDbKnowledge = '';
+      const autoSql = detectDbQuery(lastUserQuery);
+      if (autoSql) {
+        try {
+          const dbRes = await executeSafeSql(autoSql);
+          if (dbRes && dbRes.rows && dbRes.rows.length > 0) {
+            liveDbKnowledge = `\n\n[DATA REALTIME DATABASE HELPDESK MYSQL (Query: ${dbRes.sql})]:\n${JSON.stringify(dbRes.rows, null, 2).slice(0, 3000)}\n\nInstruksi Penting: Gunakan data realtime database di atas untuk menjawab statistik atau status tiket pengguna secara akurat, faktual, dan ramah.`;
+          }
+        } catch (_) {}
+      }
+
       contextualPrompt = SYSTEM_PROMPT_BASE;
       if (currentRoute) {
         contextualPrompt += `\nLOKASI PENGGUNA SAAT INI DI PORTAL: ${currentRoute}`;
       }
       if (docCtx && docCtx.trim()) {
         contextualPrompt += `\n\n[KONTEKS DOKUMEN AKTIF SAAT INI]:\n"""\n${docCtx.substring(0, 3500)}\n"""`;
+      }
+      if (liveDbKnowledge) {
+        contextualPrompt += liveDbKnowledge;
       }
       if (relevantKnowledge) {
         contextualPrompt += `\n\n${relevantKnowledge}\n\nIngat: Jawab HANYA berdasarkan fakta di atas. Dilarang mengarang fakta di luar dokumen!`;
@@ -888,6 +1019,61 @@ Tugas Anda adalah merapikan catatan mentah/kasar pengguna menjadi format Markdow
     res.status(500).json({ error: err.message || 'Gagal menjalankan bantuan AI' });
   }
 });
+
+// API Sinkronisasi Dokumen Eksternal
+app.get('/api/docs/sync-external', (req, res) => {
+  res.json({
+    status: 'ok',
+    schedule: 'Setiap hari pukul 00:00 (12:00 AM)',
+    targetFolder: process.env.EXTERNAL_DOCS_DIR || 'D:\\Project\\helpdesk2\\storage\\app\\private'
+  });
+});
+
+app.post('/api/docs/sync-external', (req, res) => {
+  const scriptPath = path.join(__dirname, 'scripts', 'index-external-docs.cjs');
+  const { spawn } = require('child_process');
+  const p = spawn(process.execPath, [scriptPath], { stdio: ['ignore', 'pipe', 'pipe'] });
+  let out = '';
+  p.stdout.on('data', d => out += d);
+  p.stderr.on('data', d => out += d);
+  p.on('close', code => {
+    if (code === 0) {
+      res.json({ status: 'success', message: 'Sinkronisasi berhasil dijalankan', output: out });
+    } else {
+      res.status(500).json({ status: 'error', message: `Gagal (exit code: ${code})`, output: out });
+    }
+  });
+});
+
+// Scheduler harian jam 12 malam
+function startDailyDocsScheduler() {
+  function getMsUntilMidnight() {
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setDate(now.getDate() + 1);
+    midnight.setHours(0, 0, 0, 0);
+    return midnight.getTime() - now.getTime();
+  }
+
+  function scheduleNext() {
+    const ms = getMsUntilMidnight();
+    const hours = (ms / 3600000).toFixed(1);
+    console.log(`[SCHEDULER] Auto-sync dokumen dijadwalkan setiap jam 00:00 (berikutnya dalam ${hours} jam).`);
+    setTimeout(() => {
+      console.log(`[SCHEDULER 00:00] Menjalankan sinkronisasi dokumen eksternal di latar belakang...`);
+      const scriptPath = path.join(__dirname, 'scripts', 'index-external-docs.cjs');
+      const { spawn } = require('child_process');
+      const p = spawn(process.execPath, [scriptPath], { stdio: 'inherit' });
+      p.on('close', (code) => {
+        console.log(`[SCHEDULER 00:00] Sinkronisasi selesai (code: ${code}).`);
+        scheduleNext();
+      });
+    }, ms);
+  }
+  scheduleNext();
+}
+
+startDailyDocsScheduler();
 
 // ==========================================
 // SVELTEKIT FRONTEND INTEGRATION (MAIN DISPLAY)
