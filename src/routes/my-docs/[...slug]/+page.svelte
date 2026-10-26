@@ -85,8 +85,8 @@
 	let customTree = $state<any>(null);
 	let treeData = $derived(customTree ?? data.treeData);
 
-	// Editor state (Option 1: Split View default + 1 Mode Baca button)
-	let viewMode = $state<'view' | 'split'>('split');
+	// Editor state: Default to 'view' (Mode Baca) for a clean documentation reading experience
+	let viewMode = $state<'view' | 'split'>('view');
 	let editorLayout = $state<'full' | 'split'>('full');
 	let isFocusMode = $state(false);
 	let isMobileSidebarOpen = $state(false);
@@ -99,8 +99,9 @@
 	let saveSuccessToast = $state(false);
 	let isDraggingFile = $state(false);
 
-	// Sync local editor fields when document changes
+	// Sync local editor fields and view mode when document changes
 	$effect(() => {
+		const _activeDocSlug = data.doc?.slug; // Reactively track active doc changes
 		editorDoc = null;
 		customTree = data.treeData;
 		editorContent = data.doc.content || '';
@@ -108,6 +109,16 @@
 		editorCategory = data.doc.category || 'Catatan Harian';
 		editorSubcategory = data.doc.subcategory || '';
 		editorTags = (data.doc.tags || []).join(', ');
+
+		// Set default mode: Mode Baca ('view') unless URL explicitly specifies ?mode=edit or ?mode=split
+		if (typeof window !== 'undefined') {
+			const params = new URLSearchParams(window.location.search);
+			if (params.get('mode') === 'edit' || params.get('mode') === 'split') {
+				viewMode = 'split';
+			} else {
+				viewMode = 'view';
+			}
+		}
 
 		// Auto-expand folder of current document so it is immediately visible
 		if (data.doc?.category) {
@@ -122,12 +133,6 @@
 
 	$effect(() => {
 		if (typeof window !== 'undefined') {
-			const params = new URLSearchParams(window.location.search);
-			if (params.get('mode') === 'view') {
-				viewMode = 'view';
-			} else {
-				viewMode = 'split';
-			}
 			window.addEventListener('click', closeContextMenu);
 			return () => {
 				window.removeEventListener('click', closeContextMenu);
@@ -290,7 +295,7 @@
 		}
 	}
 
-	// Drag and Drop File Moving (Obsidian-style)
+	// Drag and Drop File Moving
 	let draggedDoc = $state<any>(null);
 	let activeDropTargetId = $state<string | null>(null);
 	let isMovingFile = $state(false);
@@ -822,7 +827,7 @@
 		}
 	}
 
-	// Create new doc (Obsidian Style)
+	// Create new doc
 	async function handleCreateDoc() {
 		const cleanTitle = (newDocTitle || 'Catatan Baru').trim();
 		isCreatingDoc = true;
@@ -922,7 +927,7 @@
 		}
 	}
 
-	// Confirm delete action for either single note or entire folder (Shadcn AlertDialog)
+	// Confirm delete action for either single note or entire folder
 	async function confirmDeleteAction() {
 		if (!deleteTarget.open || deleteTarget.isDeleting) return;
 		deleteTarget.isDeleting = true;
@@ -1344,7 +1349,7 @@
 
 				<!-- Right: Mode Switcher, Save & Action Buttons -->
 				<div class="flex items-center gap-1.5">
-					<!-- Option 1: Obsidian-style Single Toggle (Mode Baca vs Edit Catatan) -->
+					<!-- Mode Switcher: Mode Baca vs Edit Catatan -->
 					{#if viewMode === 'split'}
 						<Button
 							variant="outline"
@@ -1450,7 +1455,7 @@
 				</div>
 			</div>
 
-			<!-- Document Header Section (Obsidian Style: Clean & Minimalist) -->
+			<!-- Document Header Section -->
 			{#if viewMode === 'view' && !editorContent.trim().startsWith('# ')}
 				<h1 class="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl pb-1">
 					{currentDoc.title}
@@ -1783,7 +1788,7 @@
 	</div>
 </div>
 
-<!-- SHADCN DIALOG: Buat Catatan Baru (Obsidian Style: Cukup Nama Catatan) -->
+<!-- Dialog: Buat Catatan Baru -->
 <Dialog bind:open={showNewDocModal}>
 	<DialogContent class="sm:max-w-[400px]">
 		<DialogHeader>
@@ -1839,7 +1844,7 @@
 	</DialogContent>
 </Dialog>
 
-<!-- SHADCN DIALOG: Tambah Kategori Baru -->
+<!-- Dialog: Tambah Kategori Baru -->
 <Dialog bind:open={showNewFolderModal}>
 	<DialogContent class="sm:max-w-[420px]">
 		<DialogHeader>
@@ -1902,7 +1907,7 @@
 	</DialogContent>
 </Dialog>
 
-<!-- SHADCN ALERT DIALOG: Konfirmasi Hapus Catatan / Folder -->
+<!-- Alert Dialog: Konfirmasi Hapus Catatan / Folder -->
 <AlertDialog bind:open={deleteTarget.open}>
 	<AlertDialogContent>
 		<AlertDialogHeader>
@@ -1947,7 +1952,7 @@
 	/>
 {/if}
 
-<!-- Context Menu (Obsidian-Style Right-Click) -->
+<!-- Context Menu (Right-Click) -->
 <DocsContextMenu
 	open={contextMenu.open}
 	x={contextMenu.x}
