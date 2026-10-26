@@ -10,8 +10,9 @@ export const AI_CONFIG = {
 	host: process.env.AI_HOST || '127.0.0.1',
 	port: parseInt(process.env.AI_PORT || '8045', 10),
 	apiKey: process.env.AI_API_KEY || '',
-	defaultModel: process.env.AI_MODEL || 'gemini-3.8-flash-medium',
-	fallbackModel: 'gemini-3.8-flash'
+	defaultModel: process.env.AI_MODEL || 'gemini-3.8-flash-low',
+	fallbackModel: process.env.AI_FALLBACK_MODEL || 'gemini-3.8-flash',
+	timeoutMs: parseInt(process.env.AI_TIMEOUT_MS || '300000', 10)
 };
 
 const aiResponseCache = new Map<string, { data: any; expiresAt: number }>();
@@ -94,12 +95,15 @@ export function checkAiHealth(): Promise<{ status: string; service: string; cach
 export function callAiChat(
 	messages: Array<{ role: string; content: string }>,
 	model?: string,
-	maxTokens = 1500,
-	temperature = 0.1
+	maxTokens = 1800,
+	temperature = 0.1,
+	timeoutMs = AI_CONFIG.timeoutMs
 ): Promise<{ model?: string; message: string; usage?: any }> {
 	return new Promise((resolve, reject) => {
+		const targetModel = model || AI_CONFIG.defaultModel;
+		const targetTimeout = timeoutMs || AI_CONFIG.timeoutMs || 300000;
 		const postData = JSON.stringify({
-			model: model || AI_CONFIG.defaultModel,
+			model: targetModel,
 			messages: messages,
 			max_tokens: maxTokens,
 			temperature: typeof temperature === 'number' ? temperature : 0.1
@@ -116,7 +120,7 @@ export function callAiChat(
 					'Content-Type': 'application/json',
 					'Content-Length': Buffer.byteLength(postData)
 				},
-				timeout: 30000
+				timeout: targetTimeout
 			},
 			(res) => {
 				let body = '';
@@ -126,7 +130,7 @@ export function callAiChat(
 						const json = JSON.parse(body);
 						if (json.choices && json.choices[0] && json.choices[0].message) {
 							resolve({
-								model: model,
+								model: targetModel,
 								message: json.choices[0].message.content,
 								usage: json.usage
 							});
@@ -145,7 +149,7 @@ export function callAiChat(
 		req.on('error', reject);
 		req.on('timeout', () => {
 			req.destroy();
-			reject(new Error('Waktu permintaan AI habis (Timeout)'));
+			reject(new Error(`Waktu permintaan AI habis (Timeout setelah ${(targetTimeout / 1000).toFixed(0)} detik)`));
 		});
 
 		req.write(postData);

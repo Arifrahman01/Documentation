@@ -1,4 +1,4 @@
-import { error } from '@sveltejs/kit';
+import { error, redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import {
 	getUserDoc,
@@ -11,7 +11,7 @@ import { resolveSessionUser } from '$lib/server/auth';
 export const load: PageServerLoad = async ({ params, cookies, url }) => {
 	const userName = resolveSessionUser(cookies, url);
 	if (!userName) {
-		throw error(401, 'Sesi pengguna tidak ditemukan. Silakan login melalui portal utama terlebih dahulu.');
+		throw redirect(302, '/my-docs');
 	}
 
 	const storage = getUserDocStorage(userName);

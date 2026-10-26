@@ -6,7 +6,11 @@
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,
 		"skipLibCheck": true,
-		"types": ["node", "$app/types"]
+		"types": ["node", "$app/types"],
+		"paths": {
+			"$lib": ["./src/lib"],
+			"$lib/*": ["./src/lib/*"]
+		}
 	},
 	"include": [
 		"src/**/*.d.ts",

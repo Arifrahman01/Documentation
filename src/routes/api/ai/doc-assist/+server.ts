@@ -106,14 +106,22 @@ Tugas Anda adalah merapikan catatan mentah/kasar pengguna menjadi format Markdow
 				},
 				{
 					role: 'user',
-					content: `Judul Dokumen: ${currentDoc?.title || prompt || 'Catatan Dokumentasi'}\n\nCatatan Mentah yang Perlu Dirapikan:\n${currentDoc?.content || prompt || ''}`
+					content: `Judul Dokumen: ${currentDoc?.title || prompt || 'Catatan Dokumentasi'}\n\nCatatan Mentah yang Perlu Dirapikan:\n${(currentDoc?.content || prompt || '').slice(0, 12000)}`
 				}
 			];
 		} else {
 			return json({ error: `Aksi '${action}' tidak dikenali` }, { status: 400 });
 		}
 
-		const aiRes = await callAiChat(messages, AI_CONFIG.defaultModel, 1800);
+		let aiRes: any;
+		try {
+			aiRes = await callAiChat(messages, AI_CONFIG.defaultModel, 2500, 0.1, AI_CONFIG.timeoutMs);
+		} catch (primaryErr: any) {
+			console.warn(
+				`Doc-assist model ${AI_CONFIG.defaultModel} error: ${primaryErr.message}. Mencoba fallback ${AI_CONFIG.fallbackModel}...`
+			);
+			aiRes = await callAiChat(messages, AI_CONFIG.fallbackModel, 2500, 0.1, AI_CONFIG.timeoutMs);
+		}
 		const output = aiRes.message;
 
 		if (action === 'generate') {

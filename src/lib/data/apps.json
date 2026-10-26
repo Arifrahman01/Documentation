@@ -1,9 +1,9 @@
 {
   "stats": {
-    "total": 7,
-    "production": 5,
+    "total": 6,
+    "production": 3,
     "development": 1,
-    "active": 6
+    "active": 5
   },
   "programs": [
     {
@@ -18,7 +18,12 @@
       "statusState": "Success",
       "icon": "sap-icon://fuel-station",
       "iconColor": "sdkIconOrange",
-      "tags": ["FMS", "Fuel Tracking", "Real-Time", "Fleet Logistics"]
+      "tags": [
+        "FMS",
+        "Fuel Tracking",
+        "Real-Time",
+        "Fleet Logistics"
+      ]
     },
     {
       "id": "sac-dev",
@@ -32,7 +37,12 @@
       "statusState": "Warning",
       "icon": "sap-icon://line-chart",
       "iconColor": "sdkIconBlue",
-      "tags": ["SAC", "SAP Analytics", "Dashboard", "Dev Tenant"]
+      "tags": [
+        "SAC",
+        "SAP Analytics",
+        "Dashboard",
+        "Dev Tenant"
+      ]
     },
     {
       "id": "sac-prod",
@@ -46,7 +56,12 @@
       "statusState": "Success",
       "icon": "sap-icon://business-objects-experience",
       "iconColor": "sdkIconGreen",
-      "tags": ["SAC Live", "Executive BI", "Production", "Live Reporting"]
+      "tags": [
+        "SAC Live",
+        "Executive BI",
+        "Production",
+        "Live Reporting"
+      ]
     },
     {
       "id": "jms",
@@ -60,7 +75,12 @@
       "statusState": "Success",
       "icon": "sap-icon://lead",
       "iconColor": "sdkIconPurple",
-      "tags": ["JMS", "CRM", "Sales Approvals", "Commercial"]
+      "tags": [
+        "JMS",
+        "CRM",
+        "Sales Approvals",
+        "Commercial"
+      ]
     },
     {
       "id": "she",
@@ -74,7 +94,12 @@
       "statusState": "Success",
       "icon": "sap-icon://shield",
       "iconColor": "sdkIconGreen",
-      "tags": ["K3 SHE", "Safety Incident", "Compliance", "Governance"]
+      "tags": [
+        "K3 SHE",
+        "Safety Incident",
+        "Compliance",
+        "Governance"
+      ]
     },
     {
       "id": "pppn",
@@ -88,21 +113,12 @@
       "statusState": "Information",
       "icon": "sap-icon://money-bills",
       "iconColor": "sdkIconOrange",
-      "tags": ["PPPN", "Plant Notification", "Invoicing", "Payment Flow"]
-    },
-    {
-      "id": "file-manager",
-      "title": "File Manager",
-      "subtitle": "Centralized Cloud Storage & Document Center",
-      "description": "Easily and securely manage, store, and access files centrally using the File Manager. Penyimpanan dokumen terpusat berstandar keamanan enterprise.",
-      "url": "http://file.jhonlingroup.id/login",
-      "category": "storage",
-      "categoryName": "Storage & Infra",
-      "status": "Active",
-      "statusState": "Information",
-      "icon": "sap-icon://attachment",
-      "iconColor": "sdkIconCyan",
-      "tags": ["File Manager", "Cloud Storage", "Centralized", "Document Center"]
+      "tags": [
+        "PPPN",
+        "Plant Notification",
+        "Invoicing",
+        "Payment Flow"
+      ]
     }
   ]
 }

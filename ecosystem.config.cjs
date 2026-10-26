@@ -43,6 +43,7 @@ module.exports = {
       PORT: 5008,
       HOST: "0.0.0.0",
       ORIGIN: process.env.ORIGIN || "https://demo2.jhonlingroup.id",
+      AI_TIMEOUT_MS: process.env.AI_TIMEOUT_MS || "300000",
       DATABASE_PORT: process.env.DATABASE_PORT || 3306,
       SAP_CLIENT: process.env.SAP_CLIENT || "100"
     },
