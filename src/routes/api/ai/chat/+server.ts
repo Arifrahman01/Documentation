@@ -11,8 +11,7 @@ import {
 } from '$lib/server/ai';
 import {
 	isDatabaseQueryIntent,
-	generateSmartQueryForQuestion,
-	executeSafeQuery
+	buildRealtimeDbContext
 } from '$lib/server/database';
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -84,18 +83,13 @@ ${docCtx.substring(0, 12000)}
 				query || messageList.filter((m: any) => m.role === 'user').pop()?.content || '';
 			const relevantKnowledge = retrieveRelevantKnowledge(lastUserQuery);
 
-			// Realtime Database Query Integration (Metode 2)
+			// Realtime Database Query Integration (Metode 2 + Dashboard KPI & Cross-Tab Module Pivot)
 			let liveDbKnowledge = '';
-			if (isDatabaseQueryIntent(lastUserQuery)) {
-				const autoSql = generateSmartQueryForQuestion(lastUserQuery);
-				if (autoSql) {
-					try {
-						const dbRes = await executeSafeQuery(autoSql);
-						if (dbRes.success && dbRes.rows.length > 0) {
-							liveDbKnowledge = `\n\n[DATA REALTIME DATABASE HELPDESK MYSQL (Query: ${dbRes.sql})]:\n${JSON.stringify(dbRes.rows, null, 2).slice(0, 3000)}\n\nInstruksi Penting: Gunakan data realtime database di atas untuk menjawab statistik atau status tiket pengguna secara akurat, faktual, dan ramah.`;
-						}
-					} catch (_) {}
-				}
+			const hasDbIntent = isDatabaseQueryIntent(lastUserQuery);
+			if (hasDbIntent) {
+				try {
+					liveDbKnowledge = await buildRealtimeDbContext(lastUserQuery);
+				} catch (_) {}
 			}
 
 			contextualPrompt = SYSTEM_PROMPT_BASE;

@@ -22,9 +22,9 @@ export const GET: RequestHandler = async () => {
 		);
 	}
 
-	// Ambil ringkasan status tiket realtime
+	// Ambil ringkasan status tiket realtime sesuai Dashboard (`ticket_type = 'Ticket'` dan `deleted_at IS NULL`)
 	const summaryQuery = await executeSafeQuery(
-		`SELECT status, COUNT(*) as total FROM tickets GROUP BY status ORDER BY total DESC`
+		`SELECT status, COUNT(*) as total FROM tickets WHERE deleted_at IS NULL AND ticket_type = 'Ticket' GROUP BY status ORDER BY total DESC`
 	);
 
 	return json({
