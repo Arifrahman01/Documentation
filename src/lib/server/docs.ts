@@ -18,6 +18,7 @@ export interface FolderItem {
 	section: string;
 	category: string;
 	subcategory?: string;
+	order?: number;
 }
 
 export interface DocumentItem {
@@ -296,8 +297,26 @@ export function buildDocTree(docs: DocumentItem[]) {
 
 	// 1. Register explicitly created folders (including empty folders/sub-folders)
 	const explicitFolders = loadFolders();
+	const catKey = (sec: string, cat: string) => `${sec.toUpperCase()}::${cat.trim().toLowerCase()}`;
+	const subcatKey = (sec: string, cat: string, sub: string) =>
+		`${sec.toUpperCase()}::${cat.trim().toLowerCase()}::${sub.trim().toLowerCase()}`;
+
+	const categoryOrderMap = new Map<string, number>();
+	const subcategoryOrderMap = new Map<string, number>();
+
 	for (const f of explicitFolders) {
-		ensureFolder(f.section || 'SAP', f.category, f.subcategory);
+		const sec = (f.section || 'SAP').toUpperCase();
+		const cat = (f.category || 'General').trim();
+		const subcat = (f.subcategory || '').trim();
+		ensureFolder(sec, cat, subcat);
+
+		if (typeof f.order === 'number') {
+			if (subcat) {
+				subcategoryOrderMap.set(subcatKey(sec, cat, subcat), f.order);
+			} else {
+				categoryOrderMap.set(catKey(sec, cat), f.order);
+			}
+		}
 	}
 
 	// 2. Register documents into folders
@@ -331,25 +350,45 @@ export function buildDocTree(docs: DocumentItem[]) {
 
 		const folderEntry = ensureFolder(sec, cat, subcat);
 		folderEntry.nodes.push(node);
-		sectionMap[sec].get(cat)!.push(node);
+		const targetCat = folderEntry.title;
+		if (!sectionMap[sec].has(targetCat)) {
+			sectionMap[sec].set(targetCat, []);
+		}
+		sectionMap[sec].get(targetCat)!.push(node);
 	}
 
 	const treeData = Array.from(folderMetaMap.values())
 		.sort((a, b) => {
 			if (a.section !== b.section) return a.section.localeCompare(b.section);
+			const orderA = categoryOrderMap.get(catKey(a.section, a.title)) ?? 999999;
+			const orderB = categoryOrderMap.get(catKey(b.section, b.title)) ?? 999999;
+			if (orderA !== orderB) return orderA - orderB;
 			return a.title.localeCompare(b.title, undefined, { numeric: true });
 		})
-		.map((entry) => ({
-			title: entry.title,
-			section: entry.section,
-			icon: 'Folder',
-			subfolders: Array.from(entry.subfolders),
-			nodes: entry.nodes
-		}));
+		.map((entry) => {
+			const subfolders = Array.from(entry.subfolders).sort((sa, sb) => {
+				const orderA = subcategoryOrderMap.get(subcatKey(entry.section, entry.title, sa)) ?? 999999;
+				const orderB = subcategoryOrderMap.get(subcatKey(entry.section, entry.title, sb)) ?? 999999;
+				if (orderA !== orderB) return orderA - orderB;
+				return sa.localeCompare(sb, undefined, { numeric: true });
+			});
+			return {
+				title: entry.title,
+				section: entry.section,
+				icon: 'Folder',
+				subfolders,
+				nodes: entry.nodes
+			};
+		});
 
 	const sectionTree = sections.map((sec) => {
 		const catEntries = Array.from((sectionMap[sec] || new Map()).entries())
-			.sort((a, b) => a[0].localeCompare(b[0], undefined, { numeric: true }));
+			.sort((a, b) => {
+				const orderA = categoryOrderMap.get(catKey(sec, a[0])) ?? 999999;
+				const orderB = categoryOrderMap.get(catKey(sec, b[0])) ?? 999999;
+				if (orderA !== orderB) return orderA - orderB;
+				return a[0].localeCompare(b[0], undefined, { numeric: true });
+			});
 		return {
 			section: sec,
 			title: sec,
@@ -362,8 +401,22 @@ export function buildDocTree(docs: DocumentItem[]) {
 		};
 	});
 
+	const summaries = docs.map((d) => ({
+		id: d.id,
+		slug: d.slug,
+		title: d.title,
+		section: d.section || inferSection(d),
+		category: d.category,
+		subcategory: d.subcategory,
+		snippet: d.snippet || d.description,
+		description: d.description || d.snippet,
+		tags: d.tags,
+		sacUrl: d.sacUrl,
+		updatedAt: d.updatedAt
+	}));
+
 	return {
-		documents: docs,
+		documents: summaries,
 		sections,
 		sectionStats,
 		sectionTree,

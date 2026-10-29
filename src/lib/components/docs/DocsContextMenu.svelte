@@ -12,7 +12,10 @@
 		FileText,
 		Folder,
 		Download,
-		Trash2
+		Trash2,
+		PenLine,
+		ArrowUp,
+		ArrowDown
 	} from '@lucide/svelte';
 
 	interface Props {
@@ -23,6 +26,9 @@
 		onEdit: (doc: any) => void;
 		onCreate: (doc: any) => void;
 		onCreateFolder?: (doc: any) => void;
+		onRename?: (doc: any) => void;
+		onMoveUp?: (doc: any) => void;
+		onMoveDown?: (doc: any) => void;
 		onDuplicate?: (doc: any) => void;
 		onAskAi: (doc: any) => void;
 		onCopyLink: (doc: any) => void;
@@ -40,6 +46,9 @@
 		onEdit,
 		onCreate,
 		onCreateFolder,
+		onRename,
+		onMoveUp,
+		onMoveDown,
 		onDuplicate,
 		onAskAi,
 		onCopyLink,
@@ -108,6 +117,49 @@
 				</Button>
 			{/if}
 
+			{#if isFolderTarget}
+				{#if onRename}
+					<Button
+						variant="ghost"
+						size="sm"
+						onclick={() => onRename(targetDoc)}
+						class="h-8 w-full justify-between px-2.5 text-xs font-normal"
+					>
+						<div class="flex items-center gap-2">
+							<PenLine class="h-3.5 w-3.5 text-muted-foreground" />
+							<span>Ubah Nama Folder (Rename)</span>
+						</div>
+						<Badge variant="secondary" class="px-1.5 py-0 text-[9px] font-mono">F2</Badge>
+					</Button>
+				{/if}
+
+				{#if onMoveUp || onMoveDown}
+					<Separator class="my-1" />
+					{#if onMoveUp}
+						<Button
+							variant="ghost"
+							size="sm"
+							onclick={() => onMoveUp(targetDoc)}
+							class="h-8 w-full justify-start gap-2 px-2.5 text-xs font-normal"
+						>
+							<ArrowUp class="h-3.5 w-3.5 text-muted-foreground" />
+							<span>Pindahkan Urutan ke Atas</span>
+						</Button>
+					{/if}
+					{#if onMoveDown}
+						<Button
+							variant="ghost"
+							size="sm"
+							onclick={() => onMoveDown(targetDoc)}
+							class="h-8 w-full justify-start gap-2 px-2.5 text-xs font-normal"
+						>
+							<ArrowDown class="h-3.5 w-3.5 text-muted-foreground" />
+							<span>Pindahkan Urutan ke Bawah</span>
+						</Button>
+					{/if}
+				{/if}
+			{/if}
+
 			{#if !isFolderTarget}
 				<Separator class="my-1" />
 
@@ -123,6 +175,21 @@
 					</div>
 					<Badge variant="secondary" class="px-1.5 py-0 text-[9px] font-mono">Ctrl+E</Badge>
 				</Button>
+
+				{#if onRename}
+					<Button
+						variant="ghost"
+						size="sm"
+						onclick={() => onRename(targetDoc)}
+						class="h-8 w-full justify-between px-2.5 text-xs font-normal"
+					>
+						<div class="flex items-center gap-2">
+							<PenLine class="h-3.5 w-3.5 text-muted-foreground" />
+							<span>Ubah Nama File (Rename)</span>
+						</div>
+						<Badge variant="secondary" class="px-1.5 py-0 text-[9px] font-mono">F2</Badge>
+					</Button>
+				{/if}
 
 				{#if onDuplicate && targetDoc}
 					<Button

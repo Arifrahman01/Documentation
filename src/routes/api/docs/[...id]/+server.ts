@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { loadDocuments, saveDocuments, inferSection } from '$lib/server/docs';
+import { loadDocuments, saveDocuments, inferSection, buildDocTree } from '$lib/server/docs';
 import { verifyWriteAccess } from '$lib/server/auth';
 
 export const GET: RequestHandler = async ({ params }) => {
@@ -67,7 +67,8 @@ export const PUT: RequestHandler = async (event) => {
 		doc.updatedAt = new Date().toISOString();
 
 		saveDocuments(docs);
-		return json({ success: true, document: doc });
+		const tree = buildDocTree(docs);
+		return json({ success: true, document: doc, treeData: tree.treeData });
 	} catch (err: any) {
 		return json({ error: err?.message || 'Gagal mengubah dokumen' }, { status: 500 });
 	}

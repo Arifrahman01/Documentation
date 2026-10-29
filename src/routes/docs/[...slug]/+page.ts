@@ -1,63 +1,66 @@
 import type { PageLoad } from './$types';
-import { browser } from '$app/environment';
-import docsData from '$lib/data/docsIndex.json';
 import localDocs from '$lib/data/documents.json';
 import { error } from '@sveltejs/kit';
+import {
+	getCachedTree,
+	getCachedDoc,
+	updateDocCache,
+	getLocalFallbackDoc
+} from '$lib/stores/docsCache';
 
 export const load: PageLoad = async ({ params, fetch }) => {
 	const slug = params.slug || 'sap/overview';
 
-	let doc: any = null;
+	// 1. Resolve Tree Data (Instant synchronous lookup from memory cache, 0ms)
+	const treeInfo = getCachedTree();
+	const treeData = treeInfo.treeData;
+	const sectionTree = treeInfo.sectionTree;
+	const sectionStats = treeInfo.sectionStats;
+	const sections = treeInfo.sections;
 
-	// 1. Try fetching latest version from backend API (works on both SSR and client via SvelteKit fetch)
-	try {
-		const res = await fetch(`/api/docs/${slug}`);
-		if (res.ok) {
-			doc = await res.json();
+	// 2. Resolve Document Content (Cache first, then single-doc network fetch)
+	let doc: any = getCachedDoc(slug);
+
+	if (!doc) {
+		try {
+			const res = await fetch(`/api/docs/${slug}`);
+			if (res.ok) {
+				doc = await res.json();
+				updateDocCache(doc);
+			}
+		} catch (e) {
+			// fallback to local bundled database
 		}
-	} catch (e) {
-		// fallback to bundled JSON
 	}
 
-	// 2. Bundled JSON database (used for SSR or API fallback)
 	if (!doc) {
-		doc = (localDocs as any[]).find((d: any) => d.slug === slug || d.id === slug);
+		doc = getLocalFallbackDoc(slug);
+		if (doc) updateDocCache(doc);
 	}
 
 	if (!doc && (!params.slug || slug === 'sap/overview')) {
-		doc = localDocs[0];
+		doc = (localDocs as any[])[0];
+		if (doc) updateDocCache(doc);
 	}
 
 	if (!doc) {
 		throw error(404, `Dokumentasi '${slug}' tidak ditemukan`);
 	}
 
-	// 3. Sections & Tree data
-	let treeData = (docsData as any).treeData || [];
-	let sectionTree = (docsData as any).sectionTree || [];
-	let sectionStats = (docsData as any).sectionStats || { SAP: 0, SAC: 0, WEB: 0 };
-	let sections = (docsData as any).sections || ['SAP', 'SAC', 'WEB'];
-
-	try {
-		const treeRes = await fetch('/api/docs');
-		if (treeRes.ok) {
-			const treeJson = await treeRes.json();
-			if (treeJson.treeData) treeData = treeJson.treeData;
-			if (treeJson.sectionTree) sectionTree = treeJson.sectionTree;
-			if (treeJson.sectionStats) sectionStats = treeJson.sectionStats;
-			if (treeJson.sections) sections = treeJson.sections;
+	// 3. Previous & Next articles navigation (within current section)
+	const nodesFromTree: any[] = [];
+	for (const group of treeData) {
+		if (Array.isArray(group.nodes)) {
+			nodesFromTree.push(...group.nodes);
 		}
-	} catch (e) {
-		// fallback to local treeData
 	}
-
-	// 4. Previous & Next articles navigation (within current section)
-	const allDocs = localDocs as any[];
+	const allDocs = nodesFromTree.length > 0 ? nodesFromTree : (localDocs as any[]);
 	const currentSection = doc.section || 'SAP';
 	const sectionDocs = allDocs.filter((d: any) => (d.section || 'SAP') === currentSection);
 	const currentIndex = sectionDocs.findIndex((d: any) => d.slug === slug || d.id === slug);
 	const prevArticle = currentIndex > 0 ? sectionDocs[currentIndex - 1] : null;
-	const nextArticle = currentIndex < sectionDocs.length - 1 && currentIndex >= 0 ? sectionDocs[currentIndex + 1] : null;
+	const nextArticle =
+		currentIndex < sectionDocs.length - 1 && currentIndex >= 0 ? sectionDocs[currentIndex + 1] : null;
 
 	return {
 		slug: doc.slug,
@@ -69,6 +72,9 @@ export const load: PageLoad = async ({ params, fetch }) => {
 			subcategory: doc.subcategory,
 			snippet: doc.snippet || doc.description,
 			tags: doc.tags || [],
+			content: doc.content || '',
+			builderContent: doc.builderContent || '',
+			sacUrl: doc.sacUrl || '',
 			updatedAt: doc.updatedAt
 		},
 		content: doc.content,

@@ -721,8 +721,22 @@ app.get('/api/docs', (req, res) => {
     };
   });
 
+  const docSummaries = docs.map((d) => ({
+    id: d.id,
+    slug: d.slug,
+    title: d.title,
+    section: d.section || inferSection(d),
+    category: d.category,
+    subcategory: d.subcategory,
+    snippet: d.snippet || d.description,
+    description: d.description || d.snippet,
+    tags: d.tags,
+    sacUrl: d.sacUrl,
+    updatedAt: d.updatedAt
+  }));
+
   res.json({
-    documents: docs,
+    documents: docSummaries,
     sections,
     sectionStats,
     sectionTree,

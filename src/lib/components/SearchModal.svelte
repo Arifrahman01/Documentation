@@ -21,7 +21,7 @@
 	let searchQuery = $state('');
 	let selectedIndex = $state(0);
 	let inputEl = $state<HTMLInputElement | null>(null);
-	let liveDocs = $state<DocSearchItem[]>((docsData.documents || []) as DocSearchItem[]);
+	let liveDocs = $state<DocSearchItem[]>(((docsData as any).documents || (docsData as any).articles || []) as DocSearchItem[]);
 	let liveApps = $state(appsData.programs || []);
 	let liveUserDocs = $state<any[]>([]);
 

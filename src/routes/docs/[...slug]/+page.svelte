@@ -19,10 +19,19 @@
 		AlertDialogAction,
 		AlertDialogCancel
 	} from '$lib/components/ui/alert-dialog';
+	import {
+		Dialog,
+		DialogContent,
+		DialogHeader,
+		DialogTitle,
+		DialogDescription,
+		DialogFooter
+	} from '$lib/components/ui/dialog';
 	import DocAiAssistantModal from '$lib/components/docs/DocAiAssistantModal.svelte';
 	import DocsContextMenu from '$lib/components/docs/DocsContextMenu.svelte';
 	import DocsLightbox from '$lib/components/docs/DocsLightbox.svelte';
 	import DocsRightOutline from '$lib/components/docs/DocsRightOutline.svelte';
+	import { updateTreeCache, updateDocCache, invalidateDocCache } from '$lib/stores/docsCache';
 	import { renderMarkdown, extractOutlineTree, slugifyHeading, extractTitleFromMarkdown } from '$lib/utils/markdown';
 	import {
 		MARKDOWN_TABLE_SNIPPET,
@@ -41,6 +50,11 @@
 		Search,
 		ExternalLink,
 		ChevronDown,
+		ChevronUp,
+		ArrowUp,
+		ArrowDown,
+		PenLine,
+		GripVertical,
 		X,
 		MoreHorizontal,
 		Edit3,
@@ -167,6 +181,27 @@
 		description: '',
 		onConfirm: () => {}
 	});
+
+	// Rename Modal state (for files and folders)
+	let renameDialog = $state<{
+		open: boolean;
+		type: 'file' | 'folder';
+		target: any;
+		name: string;
+		isSubmitting: boolean;
+		error: string;
+	}>({
+		open: false,
+		type: 'file',
+		target: null,
+		name: '',
+		isSubmitting: false,
+		error: ''
+	});
+
+	// Drag & Drop Folder Reordering state
+	let draggedFolder = $state<{ section: string; category: string } | null>(null);
+	let dragOverFolderCategory = $state<string | null>(null);
 
 	// =========================================================================
 	// OBSIDIAN IN-PAGE NOTE EDITOR STATE (Write Directly Inside the Note!)
@@ -359,18 +394,23 @@
 			.filter(Boolean);
 	});
 
+	let lastLoadedSlug = $state('');
+
 	$effect(() => {
-		if (data.slug) {
+		const targetSlug = data.slug;
+		if (targetSlug && targetSlug !== lastLoadedSlug) {
+			lastLoadedSlug = targetSlug;
 			editorDoc = null;
-			const sec = (data.article?.section || currentDoc?.section) as 'SAP' | 'SAC' | 'WEB';
+			customTree = null;
+			const sec = (data.article?.section || data.doc?.section) as 'SAP' | 'SAC' | 'WEB';
 			if (['SAP', 'SAC', 'WEB'].includes(sec)) {
 				activeSection = sec;
 			}
-			const cat = currentDoc?.category || data.article?.category;
+			const cat = data.doc?.category || data.article?.category;
 			if (cat) expandedCategories[cat] = true;
 
 			// Automatically enter Obsidian In-Page Note Writing Mode if file was just created or is empty
-			const isNewlyCreated = pendingAutoEditSlug === data.slug;
+			const isNewlyCreated = pendingAutoEditSlug === targetSlug;
 			const isEmptyNote = !String(data.doc?.content || '').trim();
 			if (isNewlyCreated || isEmptyNote) {
 				pendingAutoEditSlug = '';
@@ -507,7 +547,10 @@
 				const json = await res.json();
 				if (!res.ok) throw new Error(json.error || 'Gagal membuat folder');
 
-				if (json.treeData) customTree = json.treeData;
+				if (json.treeData) {
+					customTree = json.treeData;
+					updateTreeCache(json.treeData);
+				}
 				const targetCat = explorerCreator.isRootFolder ? cleanName : explorerCreator.category;
 				expandedCategories[targetCat] = true;
 				if (!explorerCreator.isRootFolder) {
@@ -530,12 +573,21 @@
 				const json = await res.json();
 				if (!res.ok) throw new Error(json.error || 'Gagal membuat file catatan');
 
-				if (json.treeData) customTree = json.treeData;
+				if (json.treeData) {
+					customTree = json.treeData;
+					updateTreeCache(json.treeData);
+				}
+				if (json.document) {
+					updateDocCache(json.document);
+				}
 				expandedCategories[explorerCreator.category] = true;
 				explorerCreator.open = false;
 
 				if (json.document?.slug) {
-					pendingAutoEditSlug = json.document.slug;
+					if (json.document) {
+					updateDocCache(json.document);
+				}
+				pendingAutoEditSlug = json.document.slug;
 					await goto(`/docs/${json.document.slug}`);
 				}
 			}
@@ -544,6 +596,265 @@
 		} finally {
 			explorerCreator.isSubmitting = false;
 		}
+	}
+
+	// =========================================================================
+	// RENAME (FILE & FOLDER) ACTIONS
+	// =========================================================================
+	function openRename(target?: any) {
+		closeContextMenu();
+		const t = target || currentDoc;
+		if (!t) return;
+		const isFolder = Boolean(t.isFolder);
+		const currentName = isFolder
+			? t.subcategory || t.category || t.title
+			: t.title || 'Catatan';
+
+		renameDialog = {
+			open: true,
+			type: isFolder ? 'folder' : 'file',
+			target: t,
+			name: currentName,
+			isSubmitting: false,
+			error: ''
+		};
+
+		setTimeout(() => {
+			const el = document.getElementById('rename-dialog-input') as HTMLInputElement | null;
+			if (el) {
+				el.focus();
+				el.select();
+			}
+		}, 50);
+	}
+
+	async function submitRename(e?: Event) {
+		if (e) e.preventDefault();
+		const cleanName = renameDialog.name.trim();
+		if (!cleanName) return;
+
+		renameDialog.isSubmitting = true;
+		renameDialog.error = '';
+
+		try {
+			if (renameDialog.type === 'folder') {
+				const isSub = Boolean(renameDialog.target?.subcategory);
+				const res = await fetch('/api/docs', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						type: 'rename-folder',
+						section: renameDialog.target?.section || 'SAP',
+						oldCategory: renameDialog.target?.category,
+						newCategory: isSub ? renameDialog.target?.category : cleanName,
+						oldSubcategory: renameDialog.target?.subcategory,
+						newSubcategory: isSub ? cleanName : undefined
+					})
+				});
+				const json = await res.json();
+				if (!res.ok) throw new Error(json.error || 'Gagal mengubah nama folder');
+
+				if (json.treeData) {
+					customTree = json.treeData;
+					updateTreeCache(json.treeData);
+				}
+				const targetCat = isSub ? renameDialog.target?.category : cleanName;
+				expandedCategories[targetCat] = true;
+				if (isSub) {
+					expandedSubcategories[`${targetCat}::${cleanName}`] = true;
+				}
+
+				if (currentDoc) {
+					if (!isSub && currentDoc.category?.toLowerCase() === renameDialog.target?.category?.toLowerCase()) {
+						if (editorDoc) {
+							editorDoc.category = cleanName;
+						} else if (data.doc) {
+							data.doc.category = cleanName;
+						}
+					}
+					if (isSub && currentDoc.subcategory?.toLowerCase() === renameDialog.target?.subcategory?.toLowerCase()) {
+						if (editorDoc) {
+							editorDoc.subcategory = cleanName;
+						} else if (data.doc) {
+							data.doc.subcategory = cleanName;
+						}
+					}
+				}
+
+				renameDialog.open = false;
+				showCopyToast('✓ Nama folder berhasil diubah');
+			} else {
+				const slug = renameDialog.target?.slug || renameDialog.target?.path || renameDialog.target?.id;
+				const res = await fetch('/api/docs', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						type: 'rename-file',
+						id: slug,
+						newTitle: cleanName
+					})
+				});
+				const json = await res.json();
+				if (!res.ok) throw new Error(json.error || 'Gagal mengubah nama file');
+
+				if (json.treeData) {
+					customTree = json.treeData;
+					updateTreeCache(json.treeData);
+				}
+
+				if (json.document) {
+					updateDocCache(json.document);
+				}
+				if (slug === data.slug || slug === currentDoc?.slug) {
+					if (json.document) {
+						editorDoc = json.document;
+			if (json.document) {
+				updateDocCache(json.document);
+			}
+					}
+					if (isInlineEditing) {
+						inlineTitle = cleanName;
+					}
+				}
+
+				renameDialog.open = false;
+				showCopyToast('✓ Nama file berhasil diubah');
+			}
+		} catch (err: any) {
+			renameDialog.error = err.message || 'Gagal mengubah nama';
+		} finally {
+			renameDialog.isSubmitting = false;
+		}
+	}
+
+	// =========================================================================
+	// REORDER FOLDER ACTIONS (UP / DOWN & DRAG-AND-DROP)
+	// =========================================================================
+	async function moveFolderOrder(group: any, direction: 'up' | 'down') {
+		const sec = group.section || 'SAP';
+		const sectionFolders = (currentTree || [])
+			.filter((g: any) => (g.section || 'SAP') === sec)
+			.map((g: any) => g.title);
+
+		const idx = sectionFolders.indexOf(group.title || group.category);
+		if (idx === -1) return;
+		if (direction === 'up' && idx === 0) return;
+		if (direction === 'down' && idx === sectionFolders.length - 1) return;
+
+		const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+		const reordered = [...sectionFolders];
+		const [moved] = reordered.splice(idx, 1);
+		reordered.splice(targetIdx, 0, moved);
+
+		try {
+			const res = await fetch('/api/docs', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					type: 'reorder-folders',
+					section: sec,
+					categories: reordered
+				})
+			});
+			const d = await res.json();
+			if (res.ok && d.treeData) {
+				customTree = d.treeData;
+				updateTreeCache(d.treeData);
+				showCopyToast('✓ Urutan folder berhasil diperbarui');
+			}
+		} catch (_) {}
+	}
+
+	async function moveSubfolderOrder(group: any, subGroup: any, direction: 'up' | 'down') {
+		const sec = group.section || 'SAP';
+		const cat = group.title || group.category;
+		const subName = subGroup.title || subGroup.subcategory;
+		const subList = (group.subcategories || []).map((s: any) => s.title);
+
+		const idx = subList.indexOf(subName);
+		if (idx === -1) return;
+		if (direction === 'up' && idx === 0) return;
+		if (direction === 'down' && idx === subList.length - 1) return;
+
+		const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+		const reordered = [...subList];
+		const [moved] = reordered.splice(idx, 1);
+		reordered.splice(targetIdx, 0, moved);
+
+		try {
+			const res = await fetch('/api/docs', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					type: 'reorder-subfolders',
+					section: sec,
+					category: cat,
+					subcategories: reordered
+				})
+			});
+			const d = await res.json();
+			if (res.ok && d.treeData) {
+				customTree = d.treeData;
+				updateTreeCache(d.treeData);
+				showCopyToast('✓ Urutan sub-folder berhasil diperbarui');
+			}
+		} catch (_) {}
+	}
+
+	function handleFolderDragStart(e: DragEvent, group: any) {
+		draggedFolder = { section: group.section || 'SAP', category: group.title };
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = 'move';
+			e.dataTransfer.setData('text/plain', group.title);
+		}
+	}
+
+	function handleFolderDragOver(e: DragEvent, group: any) {
+		if (!draggedFolder || draggedFolder.section !== (group.section || 'SAP')) return;
+		if (draggedFolder.category === group.title) return;
+		e.preventDefault();
+		if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+		dragOverFolderCategory = group.title;
+	}
+
+	async function handleFolderDrop(e: DragEvent, targetGroup: any) {
+		e.preventDefault();
+		dragOverFolderCategory = null;
+		if (!draggedFolder || draggedFolder.section !== (targetGroup.section || 'SAP')) return;
+		const sourceCat = draggedFolder.category;
+		const targetCat = targetGroup.title;
+		draggedFolder = null;
+		if (sourceCat === targetCat) return;
+
+		const sectionFolders = (currentTree || [])
+			.filter((g: any) => (g.section || 'SAP') === targetGroup.section)
+			.map((g: any) => g.title);
+
+		const fromIdx = sectionFolders.indexOf(sourceCat);
+		const toIdx = sectionFolders.indexOf(targetCat);
+		if (fromIdx === -1 || toIdx === -1) return;
+
+		const reordered = [...sectionFolders];
+		reordered.splice(fromIdx, 1);
+		reordered.splice(toIdx, 0, sourceCat);
+
+		try {
+			const res = await fetch('/api/docs', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					type: 'reorder-folders',
+					section: targetGroup.section,
+					categories: reordered
+				})
+			});
+			const d = await res.json();
+			if (res.ok && d.treeData) {
+				customTree = d.treeData;
+				updateTreeCache(d.treeData);
+				showCopyToast('✓ Urutan folder berhasil dipindahkan');
+			}
+		} catch (_) {}
 	}
 
 	// =========================================================================
@@ -570,6 +881,11 @@
 				confirmLabel: 'Buang Perubahan',
 				onConfirm: () => {
 					alertConfirm.open = false;
+					discardInlineDraft();
+					inlineTitle = currentDoc?.title || data.article?.title || '';
+					inlineContent = currentDoc?.content || data.article?.content || '';
+					inlineBuilderContent = currentDoc?.builderContent || data.article?.builderContent || '';
+					inlineSacUrl = currentDoc?.sacUrl || data.article?.sacUrl || '';
 					isInlineEditing = false;
 					inlineReadyForAutoSave = false;
 				}
@@ -661,10 +977,11 @@
 
 	async function saveInlineNote(closeAfterSave = true) {
 		const targetBody = isSacDoc && inlineEditTarget === 'builder' ? inlineBuilderContent : inlineContent;
-		const derivedTitle = extractTitleFromMarkdown(
-			targetBody,
-			inlineTitle?.trim() || currentDoc?.title || data.article.title || 'Catatan'
-		);
+		const existingTitle = (inlineTitle || currentDoc?.title || data.article.title || '').trim();
+		const isGenericTitle = !existingTitle || ['Catatan', 'Catatan Baru', 'Untitled Note', 'Dokumen Baru'].includes(existingTitle);
+		const derivedTitle = isGenericTitle
+			? extractTitleFromMarkdown(targetBody, existingTitle || 'Catatan')
+			: existingTitle;
 		inlineTitle = derivedTitle;
 		isSavingInline = true;
 		inlineErrorMsg = '';
@@ -689,6 +1006,23 @@
 			if (!res.ok) throw new Error(json.error || 'Gagal menyimpan catatan');
 
 			editorDoc = json.document;
+			if (json.document) {
+				updateDocCache(json.document);
+			}
+			if (data.doc) {
+				data.doc.content = json.document.content;
+				data.doc.title = json.document.title;
+				data.doc.category = json.document.category;
+				data.doc.subcategory = json.document.subcategory;
+				data.doc.builderContent = json.document.builderContent;
+				data.doc.sacUrl = json.document.sacUrl;
+			}
+			if (data.article) {
+				data.article.title = json.document.title;
+				data.article.category = json.document.category;
+				data.article.subcategory = json.document.subcategory;
+			}
+
 			if (typeof window !== 'undefined') {
 				try {
 					localStorage.removeItem(inlineDraftKey);
@@ -700,7 +1034,10 @@
 			fetch('/api/docs')
 				.then((r) => r.json())
 				.then((d) => {
-					if (d.treeData) customTree = d.treeData;
+					if (d.treeData) {
+						customTree = d.treeData;
+						updateTreeCache(d.treeData, d.sectionTree, d.sectionStats);
+					}
 				})
 				.catch(() => {});
 
@@ -1161,6 +1498,16 @@
 					return;
 				}
 
+				// F2: Rename current file or folder
+				if (e.key === 'F2') {
+					if (!isInlineEditing && !isEditorOpen) {
+						e.preventDefault();
+						e.stopPropagation();
+						openRename(currentDoc);
+					}
+					return;
+				}
+
 				// Alt+Shift+F: Create New Folder (does not hijack browser Alt+F)
 				if (hasAlt && e.shiftKey && (key === 'f' || code === 'KeyF')) {
 					if (!isEditorOpen) {
@@ -1239,7 +1586,13 @@
 			});
 			const json = await res.json();
 			if (res.ok && json.document?.slug) {
-				if (json.treeData) customTree = json.treeData;
+				if (json.treeData) {
+					customTree = json.treeData;
+					updateTreeCache(json.treeData);
+				}
+				if (json.document) {
+					updateDocCache(json.document);
+				}
 				pendingAutoEditSlug = json.document.slug;
 				await goto(`/docs/${json.document.slug}`);
 			}
@@ -1293,6 +1646,32 @@
 		}
 	}
 
+	function handleContextMenuMoveUp(target: any) {
+		closeContextMenu();
+		if (!target) return;
+		if (target.isFolder) {
+			if (target.subcategory) {
+				const parentGroup = currentTree.find((g: any) => g.title === target.category);
+				if (parentGroup) moveSubfolderOrder(parentGroup, target, 'up');
+			} else {
+				moveFolderOrder(target, 'up');
+			}
+		}
+	}
+
+	function handleContextMenuMoveDown(target: any) {
+		closeContextMenu();
+		if (!target) return;
+		if (target.isFolder) {
+			if (target.subcategory) {
+				const parentGroup = currentTree.find((g: any) => g.title === target.category);
+				if (parentGroup) moveSubfolderOrder(parentGroup, target, 'down');
+			} else {
+				moveFolderOrder(target, 'down');
+			}
+		}
+	}
+
 	async function handleContextMenuDelete(target: any) {
 		closeContextMenu();
 		if (target?.isFolder) {
@@ -1331,7 +1710,10 @@
 							})
 						});
 						const d = await res.json();
-						if (res.ok && d.treeData) customTree = d.treeData;
+						if (res.ok && d.treeData) {
+							customTree = d.treeData;
+							updateTreeCache(d.treeData);
+						}
 					} catch (_) {}
 				}
 			};
@@ -1353,13 +1735,17 @@
 				try {
 					const res = await fetch(`/api/docs/${slug}`, { method: 'DELETE' });
 					if (res.ok) {
+						invalidateDocCache(slug);
 						if (slug === data.slug) {
 							goto('/docs/sap/overview');
 						} else {
 							fetch('/api/docs')
 								.then((r) => r.json())
 								.then((d) => {
-									if (d.treeData) customTree = d.treeData;
+									if (d.treeData) {
+										customTree = d.treeData;
+										updateTreeCache(d.treeData);
+									}
 								})
 								.catch(() => {});
 						}
@@ -1508,7 +1894,12 @@
 						{#each filteredTree as group}
 							{@const expanded = isCategoryExpanded(group)}
 							<div
-								class="group/folder"
+								class="group/folder transition-all rounded-md {dragOverFolderCategory === group.title ? 'border-t-2 border-primary bg-primary/5' : ''}"
+								draggable="true"
+								ondragstart={(e) => handleFolderDragStart(e, group)}
+								ondragover={(e) => handleFolderDragOver(e, group)}
+								ondragleave={() => (dragOverFolderCategory = null)}
+								ondrop={(e) => handleFolderDrop(e, group)}
 								oncontextmenu={(e) =>
 									openContextMenu(e, {
 										isFolder: true,
@@ -1540,9 +1931,59 @@
 										<span class="truncate">{group.title}</span>
 									</Button>
 
-									<span class="text-[10px] text-muted-foreground/60 font-mono pr-2 shrink-0">
-										{(group.directNodes?.length || group.nodes?.length || 0) + (group.subcategories?.length || 0)}
-									</span>
+									<div class="flex items-center gap-0.5">
+										<!-- Reorder & Rename buttons on hover -->
+										<div class="hidden group-hover/folder:flex items-center gap-0.5 mr-0.5">
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												title="Pindahkan urutan folder ke atas"
+												onclick={(e) => {
+													e.stopPropagation();
+													moveFolderOrder(group, 'up');
+												}}
+												class="h-5 w-5 text-muted-foreground hover:text-foreground"
+											>
+												<ChevronUp class="h-3 w-3" />
+											</Button>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												title="Pindahkan urutan folder ke bawah"
+												onclick={(e) => {
+													e.stopPropagation();
+													moveFolderOrder(group, 'down');
+												}}
+												class="h-5 w-5 text-muted-foreground hover:text-foreground"
+											>
+												<ChevronDown class="h-3 w-3" />
+											</Button>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon"
+												title="Ubah nama folder (Rename)"
+												onclick={(e) => {
+													e.stopPropagation();
+													openRename({
+														isFolder: true,
+														section: group.section,
+														category: group.title,
+														title: group.title
+													});
+												}}
+												class="h-5 w-5 text-muted-foreground hover:text-foreground"
+											>
+												<PenLine class="h-3 w-3" />
+											</Button>
+										</div>
+
+										<span class="text-[10px] text-muted-foreground/60 font-mono pr-2 shrink-0">
+											{(group.directNodes ? group.directNodes.length : (group.nodes?.length ?? 0)) + (group.subcategories?.length ?? 0)}
+										</span>
+									</div>
 								</div>
 
 								{#if expanded}
@@ -1578,25 +2019,89 @@
 														<Folder class="h-3 w-3 text-muted-foreground shrink-0" />
 														<span class="truncate">{subGroup.title}</span>
 													</Button>
-													<span class="text-[10px] text-muted-foreground/60 font-mono pr-2 shrink-0">
-														{subGroup.nodes.length}
-													</span>
+													<div class="flex items-center gap-0.5">
+														<div class="hidden group-hover/sub:flex items-center gap-0.5 mr-0.5">
+															<Button
+																type="button"
+																variant="ghost"
+																size="icon"
+																title="Pindahkan sub-folder ke atas"
+																onclick={(e) => {
+																	e.stopPropagation();
+																	moveSubfolderOrder(group, subGroup, 'up');
+																}}
+																class="h-5 w-5 text-muted-foreground hover:text-foreground"
+															>
+																<ChevronUp class="h-3 w-3" />
+															</Button>
+															<Button
+																type="button"
+																variant="ghost"
+																size="icon"
+																title="Pindahkan sub-folder ke bawah"
+																onclick={(e) => {
+																	e.stopPropagation();
+																	moveSubfolderOrder(group, subGroup, 'down');
+																}}
+																class="h-5 w-5 text-muted-foreground hover:text-foreground"
+															>
+																<ChevronDown class="h-3 w-3" />
+															</Button>
+															<Button
+																type="button"
+																variant="ghost"
+																size="icon"
+																title="Ubah nama sub-folder (Rename)"
+																onclick={(e) => {
+																	e.stopPropagation();
+																	openRename({
+																		isFolder: true,
+																		section: group.section,
+																		category: group.title,
+																		subcategory: subGroup.title,
+																		title: `${group.title} / ${subGroup.title}`
+																	});
+																}}
+																class="h-5 w-5 text-muted-foreground hover:text-foreground"
+															>
+																<PenLine class="h-3 w-3" />
+															</Button>
+														</div>
+														<span class="text-[10px] text-muted-foreground/60 font-mono pr-2 shrink-0">
+															{subGroup.nodes.length}
+														</span>
+													</div>
 												</div>
 
 												{#if subExpanded}
 													<div class="space-y-0.5 pl-3 ml-2 border-l border-border/50 py-0.5">
 														{#each subGroup.nodes as node}
 															{@const isCurrent = node.path === data.slug || node.slug === data.slug}
-															<a
-																href="/docs/{node.path}"
-																oncontextmenu={(e) => openContextMenu(e, node)}
-																class="flex items-center gap-2 rounded-md px-2 py-1 text-xs transition-colors {isCurrent
-																	? 'bg-secondary font-semibold text-secondary-foreground'
-																	: 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}"
-															>
-																<FileText class="h-3 w-3 opacity-60 shrink-0" />
-																<span class="truncate">{node.title}</span>
-															</a>
+															<div class="group/file flex items-center justify-between rounded-md pr-1 transition-colors {isCurrent
+																? 'bg-secondary font-semibold text-secondary-foreground'
+																: 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}">
+																<a
+																	href="/docs/{node.path}"
+																	oncontextmenu={(e) => openContextMenu(e, node)}
+																	class="flex items-center gap-2 flex-1 px-2 py-1 text-xs truncate min-w-0"
+																>
+																	<FileText class="h-3 w-3 opacity-60 shrink-0" />
+																	<span class="truncate">{node.title}</span>
+																</a>
+																<Button
+																	type="button"
+																	variant="ghost"
+																	size="icon"
+																	title="Ubah nama file (Rename)"
+																	onclick={(e) => {
+																		e.stopPropagation();
+																		openRename(node);
+																	}}
+																	class="hidden group-hover/file:flex h-5 w-5 text-muted-foreground hover:text-foreground shrink-0"
+																>
+																	<PenLine class="h-3 w-3" />
+																</Button>
+															</div>
 														{/each}
 														{#if subGroup.nodes.length === 0}
 															<div class="px-2 py-1 text-[11px] text-muted-foreground/60 italic">
@@ -1611,16 +2116,31 @@
 										<!-- Direct Files in Folder -->
 										{#each group.directNodes || group.nodes as node}
 											{@const isCurrent = node.path === data.slug || node.slug === data.slug}
-											<a
-												href="/docs/{node.path}"
-												oncontextmenu={(e) => openContextMenu(e, node)}
-												class="flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-colors {isCurrent
-													? 'bg-secondary font-semibold text-secondary-foreground'
-													: 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}"
-											>
-												<FileText class="h-3.5 w-3.5 opacity-60 shrink-0" />
-												<span class="truncate">{node.title}</span>
-											</a>
+											<div class="group/file flex items-center justify-between rounded-md pr-1 transition-colors {isCurrent
+												? 'bg-secondary font-semibold text-secondary-foreground'
+												: 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}">
+												<a
+													href="/docs/{node.path}"
+													oncontextmenu={(e) => openContextMenu(e, node)}
+													class="flex items-center gap-2 flex-1 px-2 py-1.5 text-xs truncate min-w-0"
+												>
+													<FileText class="h-3.5 w-3.5 opacity-60 shrink-0" />
+													<span class="truncate">{node.title}</span>
+												</a>
+												<Button
+													type="button"
+													variant="ghost"
+													size="icon"
+													title="Ubah nama file (Rename)"
+													onclick={(e) => {
+														e.stopPropagation();
+														openRename(node);
+													}}
+													class="hidden group-hover/file:flex h-5 w-5 text-muted-foreground hover:text-foreground shrink-0"
+												>
+													<PenLine class="h-3 w-3" />
+												</Button>
+											</div>
 										{/each}
 
 										{#if (group.directNodes || group.nodes).length === 0 && (group.subcategories || []).length === 0}
@@ -2264,6 +2784,9 @@
 	onEdit={handleContextMenuEdit}
 	onCreate={handleContextMenuCreate}
 	onCreateFolder={openExplorerCreateFolder}
+	onRename={openRename}
+	onMoveUp={handleContextMenuMoveUp}
+	onMoveDown={handleContextMenuMoveDown}
 	onDuplicate={handleContextMenuDuplicate}
 	onAskAi={handleContextMenuAi}
 	onCopyLink={handleContextMenuCopyLink}
@@ -2316,3 +2839,52 @@
 		</AlertDialogFooter>
 	</AlertDialogContent>
 </AlertDialog>
+
+<!-- SHADCN DIALOG: Rename File or Folder -->
+<Dialog bind:open={renameDialog.open}>
+	<DialogContent class="sm:max-w-md">
+		<form onsubmit={submitRename} class="space-y-4">
+			<DialogHeader>
+				<DialogTitle>
+					{renameDialog.type === 'folder'
+						? (renameDialog.target?.subcategory ? 'Ubah Nama Sub-Folder' : 'Ubah Nama Folder')
+						: 'Ubah Nama File Catatan'}
+				</DialogTitle>
+				<DialogDescription>
+					{renameDialog.type === 'folder'
+						? 'Masukkan nama baru untuk folder ini. Semua dokumen di dalamnya akan disinkronkan secara otomatis.'
+						: 'Masukkan nama baru untuk file catatan ini.'}
+				</DialogDescription>
+			</DialogHeader>
+
+			<div class="space-y-1.5 py-1">
+				<Input
+					id="rename-dialog-input"
+					type="text"
+					bind:value={renameDialog.name}
+					placeholder={renameDialog.type === 'folder' ? 'Nama folder baru...' : 'Nama file catatan baru...'}
+					class="h-9 text-sm"
+				/>
+				{#if renameDialog.error}
+					<p class="text-xs text-destructive">{renameDialog.error}</p>
+				{/if}
+			</div>
+
+			<DialogFooter>
+				<Button
+					type="button"
+					variant="outline"
+					onclick={() => (renameDialog.open = false)}
+				>
+					Batal
+				</Button>
+				<Button
+					type="submit"
+					disabled={renameDialog.isSubmitting || !renameDialog.name.trim()}
+				>
+					{renameDialog.isSubmitting ? 'Menyimpan...' : 'Simpan Nama Baru'}
+				</Button>
+			</DialogFooter>
+		</form>
+	</DialogContent>
+</Dialog>
