@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto, invalidateAll } from '$app/navigation';
 	import { ui } from '$lib/stores/ui.svelte';
+	import { auth } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -209,6 +210,14 @@
 	let customAiPrompt = $state('');
 
 	async function runAiFormatNote() {
+		auth.refresh();
+		if (!auth.isAuthenticated) {
+			showToast(
+				'Sesi login tidak ditemukan. Silakan login terlebih dahulu di aplikasi Helpdesk untuk menggunakan fitur AI.',
+				true
+			);
+			return;
+		}
 		if (!editorContent.trim()) {
 			showToast('Catatan masih kosong untuk dirapikan', true);
 			return;
@@ -252,6 +261,14 @@
 	}
 
 	async function runCustomAiInstruction() {
+		auth.refresh();
+		if (!auth.isAuthenticated) {
+			showToast(
+				'Sesi login tidak ditemukan. Silakan login terlebih dahulu di aplikasi Helpdesk untuk menggunakan fitur AI.',
+				true
+			);
+			return;
+		}
 		const instruction = customAiPrompt.trim();
 		if (!instruction) {
 			showToast('Silakan masukkan instruksi untuk AI terlebih dahulu', true);

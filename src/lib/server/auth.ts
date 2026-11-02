@@ -93,14 +93,14 @@ function verifySignature(userName: string, signature: string | undefined, secret
 }
 
 /**
- * Resolves the authenticated session user from cookies.
+ * Resolves the authenticated session user from cookies (set by Helpdesk / SSO).
  * - Cleans control characters and HTML tags.
  * - Verifies HMAC signature if SESSION_SECRET is configured.
- * - Falls back to DEV_FALLBACK_USER ONLY in local development (never in production).
+ * - Returns null when no valid session cookie exists.
  */
-export function resolveSessionUser(cookies: Cookies, url?: URL): string {
+export function resolveSessionUser(cookies: Cookies, url?: URL): string | null {
 	ensureEnvLoaded();
-	const raw = cookies.get('user_name');
+	const raw = cookies.get('user_name') || url?.searchParams.get('user_name') || undefined;
 
 	if (raw) {
 		let decoded = raw;
@@ -120,14 +120,43 @@ export function resolveSessionUser(cookies: Cookies, url?: URL): string {
 			if (secret && !isLocalDev(url)) {
 				const sig = cookies.get('user_sig');
 				if (!verifySignature(cleanName, sig, secret)) {
-					return (process.env.DEV_FALLBACK_USER || 'Arif Rahman').trim();
+					return null;
 				}
 			}
 			return cleanName;
 		}
 	}
 
-	return (process.env.DEV_FALLBACK_USER || 'Arif Rahman').trim();
+	return null;
+}
+
+export const AI_SESSION_REQUIRED_MESSAGE =
+	'Sesi login tidak ditemukan. Silakan login terlebih dahulu di aplikasi Helpdesk untuk menggunakan fitur AI.';
+
+/**
+ * Validates that the user has an active Helpdesk session before using any AI endpoint.
+ */
+export function verifyAiSession(event: {
+	cookies: Cookies;
+	url: URL;
+}): { authorized: true; userName: string } | { authorized: false; response: Response } {
+	const userName = resolveSessionUser(event.cookies, event.url);
+	if (!userName) {
+		return {
+			authorized: false,
+			response: json(
+				{
+					error: AI_SESSION_REQUIRED_MESSAGE,
+					message: AI_SESSION_REQUIRED_MESSAGE,
+					reply: `🔒 **Akses AI Memerlukan Sesi Login**\n\n${AI_SESSION_REQUIRED_MESSAGE}`,
+					requiresLogin: true
+				},
+				{ status: 401 }
+			)
+		};
+	}
+
+	return { authorized: true, userName };
 }
 
 /**

@@ -1,19 +1,62 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { loadDocuments, saveDocuments, inferSection, buildDocTree } from '$lib/server/docs';
+import {
+	loadDocuments,
+	loadExternalDocuments,
+	saveDocuments,
+	inferSection,
+	buildDocTree
+} from '$lib/server/docs';
 import { verifyWriteAccess } from '$lib/server/auth';
+
+function formatExternalDocMarkdown(extDoc: any): string {
+	const raw = String(extDoc.content || extDoc.snippet || '').trim();
+	const fileName = extDoc.fileName || extDoc.title || 'Berkas Eksternal';
+	const relPath = extDoc.relativePath || extDoc.category || '-';
+	const downloadUrl = `/api/docs/external-file?id=${encodeURIComponent(extDoc.id)}`;
+
+	// Convert [Slide X] or [Sheet: Y] markers into clean Markdown H2 headings for easy reading & outline navigation
+	const formattedBody = raw
+		.replace(/\[Slide\s+(\d+)\]/gi, '\n\n## Slide $1\n\n')
+		.replace(/\[Sheet:\s*([^\]]+)\]/gi, '\n\n## Sheet: $1\n\n')
+		.replace(/\{[0-9A-F-]{36}\}/gi, '\n')
+		.trim();
+
+	return [
+		`> [!NOTE] **Dokumen Arsip Terindeks**: Berkas ini berasal dari penyimpanan eksternal (\`${relPath}\`).`,
+		`> Anda dapat membaca isi teks hasil ekstraksi di bawah ini atau **[📥 Buka / Unduh Berkas Asli (${fileName})](${downloadUrl})**.`,
+		'',
+		formattedBody
+	].join('\n');
+}
 
 export const GET: RequestHandler = async ({ params }) => {
 	const id = params.id;
 	const docs = loadDocuments();
 	const doc = docs.find((d) => d.id === id || d.slug === id);
 
-	if (!doc) {
-		return json({ error: 'Dokumentasi tidak ditemukan' }, { status: 404 });
+	if (doc) {
+		doc.section = inferSection(doc);
+		return json(doc);
 	}
 
-	doc.section = inferSection(doc);
-	return json(doc);
+	// Fallback: Check External Synced Documents (`external/ext_...` or `ext_...`)
+	const extDocs = loadExternalDocuments();
+	const extDoc = extDocs.find(
+		(d) => d.id === id || d.slug === id || `external/${d.id}` === id
+	);
+
+	if (extDoc) {
+		return json({
+			...extDoc,
+			slug: extDoc.slug || `external/${extDoc.id}`,
+			section: inferSection(extDoc),
+			isExternalDoc: true,
+			content: formatExternalDocMarkdown(extDoc)
+		});
+	}
+
+	return json({ error: 'Dokumentasi tidak ditemukan' }, { status: 404 });
 };
 
 export const PUT: RequestHandler = async (event) => {

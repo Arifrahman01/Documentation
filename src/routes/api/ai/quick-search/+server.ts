@@ -1,8 +1,13 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { AI_CONFIG, callAiChat, getCache, setCache, hashString } from '$lib/server/ai';
+import { verifyAiSession } from '$lib/server/auth';
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async (event) => {
+	const authCheck = verifyAiSession(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { url } = event;
+
 	const query = (url.searchParams.get('q') || '').trim();
 	if (!query || query.length < 2) {
 		return json({ error: 'Parameter query q diperlukan' }, { status: 400 });

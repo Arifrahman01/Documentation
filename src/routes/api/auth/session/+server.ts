@@ -21,12 +21,24 @@ export const POST: RequestHandler = async ({ request, cookies, url }) => {
 	try {
 		const body = await request.json().catch(() => ({}));
 		const requestedUser = typeof body?.userName === 'string' ? body.userName.trim() : '';
-		const targetUser = requestedUser || resolveSessionUser(cookies, url) || 'Arif Rahman';
+		const targetUser = requestedUser || resolveSessionUser(cookies, url);
+
+		if (!targetUser) {
+			return json(
+				{
+					authenticated: false,
+					userName: null,
+					error: 'Sesi login tidak ditemukan. Silakan login terlebih dahulu di Helpdesk.'
+				},
+				{ status: 401 }
+			);
+		}
 
 		setPermanentUserCookies(cookies, targetUser, url);
 
 		return json({
 			success: true,
+			authenticated: true,
 			userName: targetUser,
 			message: 'Session permanen berhasil disimpan'
 		});

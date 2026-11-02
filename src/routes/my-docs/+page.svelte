@@ -75,7 +75,7 @@
 						</h2>
 					</div>
 					<p class="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-						Untuk menjamin kerahasiaan dan privasi data kerja Anda, akses ke <strong>My Docs</strong> hanya terbuka bagi pengguna yang telah masuk melalui portal utama enterprise. Silakan login atau gunakan kredensial SSO akun Anda.
+						Untuk menjamin kerahasiaan dan privasi data kerja Anda, akses ke <strong>My Docs</strong> dan fitur <strong>AI Copilot</strong> hanya terbuka bagi pengguna yang memiliki sesi login aktif. Silakan <strong>login terlebih dahulu di aplikasi Helpdesk</strong> menggunakan akun Anda.
 					</p>
 				</div>
 

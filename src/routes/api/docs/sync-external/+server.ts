@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
+import { verifyWriteAccess } from '$lib/server/auth';
 import {
 	startExternalDocsSyncBackground,
 	cancelExternalDocsSync,
@@ -22,7 +23,11 @@ export const GET: RequestHandler = async () => {
 	);
 };
 
-export const POST: RequestHandler = async ({ request, url }) => {
+export const POST: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+
+	const { request, url } = event;
 	if (url.searchParams.get('action') === 'stop') {
 		const abortResult = cancelExternalDocsSync();
 		return json(abortResult);
@@ -56,7 +61,10 @@ export const POST: RequestHandler = async ({ request, url }) => {
 	});
 };
 
-export const DELETE: RequestHandler = async () => {
+export const DELETE: RequestHandler = async (event) => {
+	const authCheck = verifyWriteAccess(event);
+	if (!authCheck.authorized) return authCheck.response;
+
 	const abortResult = cancelExternalDocsSync();
 	return json(abortResult);
 };

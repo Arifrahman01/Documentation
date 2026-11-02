@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { auth } from '$lib/stores/auth.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Textarea } from '$lib/components/ui/textarea';
@@ -441,6 +442,13 @@
 	}
 
 	async function runAiAction(action: 'generate' | 'improve' | 'code' | 'summarize' | 'format') {
+		auth.refresh();
+		if (!auth.isAuthenticated) {
+			errorMessage =
+				'Sesi login tidak ditemukan. Silakan login terlebih dahulu di aplikasi Helpdesk untuk menggunakan fitur AI.';
+			return;
+		}
+
 		isAiLoading = true;
 		errorMessage = '';
 		aiSuccessMessage = '';
@@ -465,13 +473,16 @@
 				})
 			});
 
-			if (!res.ok) {
-				throw new Error(`Server returned HTTP ${res.status}`);
+			const data = await res.json().catch(() => ({}));
+			if (res.status === 401 || data?.requiresLogin) {
+				auth.refresh();
+				throw new Error(
+					data?.error ||
+						'Sesi login tidak ditemukan. Silakan login terlebih dahulu di aplikasi Helpdesk untuk menggunakan fitur AI.'
+				);
 			}
-
-			const data = await res.json();
-			if (!data.success) {
-				throw new Error(data.error || 'Gagal memproses bantuan AI');
+			if (!res.ok || !data.success) {
+				throw new Error(data.error || `Server returned HTTP ${res.status}`);
 			}
 
 			if (action !== 'summarize') {

@@ -2,7 +2,8 @@ const PERMANENT_STORAGE_KEY = 'portal_permanent_user';
 const PERMANENT_COOKIE_SECONDS = 315360000; // 10 years
 
 class AuthStore {
-	userName = $state<string>('Arif Rahman');
+	userName = $state<string | null>(null);
+	isAuthenticated = $derived(Boolean(this.userName && this.userName.trim()));
 
 	init(initialName?: string | null) {
 		if (initialName && initialName.trim()) {
@@ -11,62 +12,53 @@ class AuthStore {
 			return;
 		}
 
-		if (typeof window !== 'undefined') {
-			// 1. Try reading from permanent localStorage backup
-			const localSaved = localStorage.getItem(PERMANENT_STORAGE_KEY);
-			if (localSaved && localSaved.trim()) {
-				this.userName = localSaved.trim();
-				this.writePermanentCookie(this.userName);
-				this.syncServerSession(this.userName);
+		// If server explicitly passed null, verify browser cookie directly
+		if (typeof document !== 'undefined') {
+			const cookieUser = this.readCookieUser();
+			if (cookieUser) {
+				this.userName = cookieUser;
+				this.persistLocal(cookieUser);
 				return;
 			}
-
-			// 2. Try reading from cookie
-			this.refresh();
 		}
 
-		if (!this.userName) {
-			this.userName = 'Arif Rahman';
-			this.persistLocal(this.userName);
+		// No active session cookie from Helpdesk -> clear stale local state
+		this.userName = null;
+		if (typeof window !== 'undefined') {
+			try {
+				localStorage.removeItem(PERMANENT_STORAGE_KEY);
+			} catch (_) {}
 		}
+	}
+
+	private readCookieUser(): string | null {
+		if (typeof document === 'undefined') return null;
+		const match = document.cookie.match(/(?:^|;\s*)user_name=([^;]+)/);
+		if (!match) return null;
+		try {
+			const decoded = decodeURIComponent(match[1]);
+			if (decoded && decoded.trim()) {
+				return decoded.trim();
+			}
+		} catch {
+			if (match[1] && match[1].trim()) {
+				return match[1].trim();
+			}
+		}
+		return null;
 	}
 
 	refresh() {
 		if (typeof document === 'undefined') return;
 
-		const match = document.cookie.match(/(?:^|;\s*)user_name=([^;]+)/);
-		if (match) {
-			try {
-				const decoded = decodeURIComponent(match[1]);
-				if (decoded && decoded.trim()) {
-					this.userName = decoded.trim();
-					this.persistLocal(this.userName);
-					return;
-				}
-			} catch {
-				if (match[1] && match[1].trim()) {
-					this.userName = match[1].trim();
-					this.persistLocal(this.userName);
-					return;
-				}
-			}
+		const cookieUser = this.readCookieUser();
+		if (cookieUser) {
+			this.userName = cookieUser;
+			this.persistLocal(cookieUser);
+			return;
 		}
 
-		// Fallback to localStorage if cookie was cleared
-		if (typeof window !== 'undefined') {
-			const saved = localStorage.getItem(PERMANENT_STORAGE_KEY);
-			if (saved && saved.trim()) {
-				this.userName = saved.trim();
-				this.writePermanentCookie(this.userName);
-				this.syncServerSession(this.userName);
-				return;
-			}
-		}
-
-		if (!this.userName) {
-			this.userName = 'Arif Rahman';
-			this.persistLocal(this.userName);
-		}
+		this.userName = null;
 	}
 
 	/**

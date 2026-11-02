@@ -6,8 +6,12 @@ import {
 	generateSmartQueryForQuestion,
 	HELPDESK_SCHEMA_INFO
 } from '$lib/server/database';
+import { verifyAiSession } from '$lib/server/auth';
 
-export const GET: RequestHandler = async () => {
+export const GET: RequestHandler = async (event) => {
+	const authCheck = verifyAiSession(event);
+	if (!authCheck.authorized) return authCheck.response;
+
 	const health = await checkDbHealth();
 	if (health.status !== 'connected') {
 		return json(
@@ -36,7 +40,11 @@ export const GET: RequestHandler = async () => {
 	});
 };
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async (event) => {
+	const authCheck = verifyAiSession(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { request } = event;
+
 	try {
 		const body = await request.json();
 		const { sql, question } = body;

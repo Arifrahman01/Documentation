@@ -1,8 +1,13 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { AI_CONFIG, callAiChat, getCache, setCache, hashString } from '$lib/server/ai';
+import { verifyAiSession } from '$lib/server/auth';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async (event) => {
+	const authCheck = verifyAiSession(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { request } = event;
+
 	try {
 		const body = await request.json();
 		const { title, content } = body;

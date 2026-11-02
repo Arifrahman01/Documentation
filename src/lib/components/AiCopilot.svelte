@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { ui } from '$lib/stores/ui.svelte';
+	import { auth } from '$lib/stores/auth.svelte';
 	import { marked } from 'marked';
 	import { sanitizeRenderedHtml } from '$lib/utils/markdown';
 	import { Button } from '$lib/components/ui/button';
@@ -14,16 +15,30 @@
 		User, 
 		Loader2, 
 		Copy, 
-		Check
+		Check,
+		Lock,
+		RotateCcw,
+		FileText,
+		ExternalLink
 	} from '@lucide/svelte';
+
+	interface SourceItem {
+		title: string;
+		url: string;
+		category: string;
+		type: 'SYNC_DOC' | 'USER_NOTE' | 'PORTAL_DOC';
+		badge: string;
+		fileUrl?: string;
+	}
 
 	interface Message {
 		role: 'user' | 'assistant';
 		content: string;
+		sources?: SourceItem[];
 	}
 
 	const WELCOME_MESSAGE =
-		'Halo! Saya adalah **AI Copilot**, asisten khusus yang dikunci pada **3 Sumber Data Internal** Anda:\n\n1. **Dokumen Hasil Sinkronisasi Eksternal** (PDF, Word, Excel, PPTX)\n2. **Isi Note (My Docs) & Dokumentasi** di program ini\n3. **Database Helpdesk** (Tiket, Solusi, Modul & Statistik)\n\nSilakan tanyakan isi dokumen, catatan Anda, atau data tiket Helpdesk!';
+		'Halo! Saya adalah **AI Copilot**. Silakan tanyakan apa saja terkait dokumentasi modul, catatan teknis, atau kendala sistem Anda.';
 
 	const quickSuggestions = [
 		'Apa saja isi note yang ada di program ini?',
@@ -48,11 +63,14 @@
 
 	$effect(() => {
 		if (ui.isAiOpen) {
+			auth.refresh();
 			setTimeout(() => inputEl?.focus(), 60);
 			if (ui.aiInitialPrompt) {
 				const prompt = ui.aiInitialPrompt;
 				ui.aiInitialPrompt = '';
-				sendMessage(prompt);
+				if (auth.isAuthenticated) {
+					sendMessage(prompt);
+				}
 			}
 		}
 	});
@@ -76,6 +94,19 @@
 		const query = (textToSend || inputQuery).trim();
 		if (!query || isLoading) return;
 
+		auth.refresh();
+		if (!auth.isAuthenticated) {
+			messages = [
+				...messages,
+				{
+					role: 'assistant',
+					content:
+						'🔒 **Akses AI Memerlukan Sesi Login**\n\nSesi login tidak ditemukan. Silakan **login terlebih dahulu di aplikasi Helpdesk** untuk menggunakan fitur AI Copilot.'
+				}
+			];
+			return;
+		}
+
 		inputQuery = '';
 		if (inputEl) {
 			inputEl.style.height = '40px';
@@ -96,14 +127,30 @@
 				})
 			});
 
-			if (!res.ok) {
-				throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+			const data = await res.json().catch(() => ({}));
+
+			if (res.status === 401 || data?.requiresLogin) {
+				auth.refresh();
+				messages = [
+					...messages,
+					{
+						role: 'assistant',
+						content:
+							data?.reply ||
+							'🔒 **Akses AI Memerlukan Sesi Login**\n\nSesi login tidak ditemukan. Silakan **login terlebih dahulu di aplikasi Helpdesk** untuk menggunakan fitur AI Copilot.'
+					}
+				];
+				return;
 			}
 
-			const data = await res.json();
-			const reply = data.reply || data.response || data.message || 'Maaf, tidak ada jawaban dari server AI.';
+			if (!res.ok) {
+				throw new Error(data?.error || `HTTP ${res.status}: ${res.statusText}`);
+			}
 
-			messages = [...messages, { role: 'assistant', content: reply }];
+			const reply = data.reply || data.response || data.message || 'Maaf, tidak ada jawaban dari server AI.';
+			const sources: SourceItem[] = Array.isArray(data.sources) ? data.sources : [];
+
+			messages = [...messages, { role: 'assistant', content: reply, sources }];
 		} catch (err: any) {
 			messages = [
 				...messages,
@@ -269,6 +316,46 @@
 
 			<!-- Messages Scroll Container -->
 			<div bind:this={messagesContainer} class="flex-1 overflow-y-auto p-5 space-y-4">
+				{#if !auth.isAuthenticated}
+					<div class="rounded-2xl border border-amber-500/35 bg-amber-500/10 p-5 text-foreground shadow-xs space-y-3">
+						<div class="flex items-start gap-3.5">
+							<div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-amber-500/40 bg-amber-500/15 text-amber-600 dark:text-amber-400">
+								<Lock class="h-5 w-5" />
+							</div>
+							<div class="space-y-1">
+								<div class="flex items-center gap-2">
+									<span class="inline-flex h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+									<h4 class="text-xs font-bold uppercase tracking-wide text-amber-700 dark:text-amber-300">
+										Sesi Login Diperlukan
+									</h4>
+								</div>
+								<p class="text-xs font-semibold text-foreground">
+									Fitur AI hanya dapat digunakan oleh pengguna yang memiliki sesi aktif.
+								</p>
+								<p class="text-[11.5px] leading-relaxed text-muted-foreground">
+									Silakan <strong>login terlebih dahulu di aplikasi Helpdesk</strong> menggunakan akun Anda, lalu kembali ke halaman ini atau klik tombol di bawah untuk memuat ulang sesi.
+								</p>
+							</div>
+						</div>
+						<div class="flex items-center justify-end gap-2 pt-1">
+							<Button
+								variant="outline"
+								size="sm"
+								onclick={() => {
+									auth.refresh();
+									if (!auth.isAuthenticated && typeof window !== 'undefined') {
+										window.location.reload();
+									}
+								}}
+								class="h-8 gap-1.5 text-xs font-semibold border-amber-500/40 text-amber-700 dark:text-amber-300 hover:bg-amber-500/15 cursor-pointer"
+							>
+								<RotateCcw class="h-3.5 w-3.5" />
+								<span>Cek Ulang Sesi Login</span>
+							</Button>
+						</div>
+					</div>
+				{/if}
+
 				{#each messages as msg, idx}
 					<div class="flex gap-3 {msg.role === 'user' ? 'justify-end' : 'justify-start'}">
 						{#if msg.role === 'assistant'}
@@ -282,9 +369,63 @@
 							: 'bg-muted/60 text-foreground border border-border'}">
 							
 							{#if msg.role === 'assistant'}
-								<div class="prose prose-xs dark:prose-invert max-w-none break-words text-[12px] leading-relaxed [&>p]:text-[12px] [&>p]:leading-relaxed [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-4 [&>ul]:my-1.5 [&>ol]:list-decimal [&>ol]:pl-4 [&>ol]:my-1.5 [&>li]:text-[12px] [&>li]:leading-relaxed [&>li]:my-0.5 [&>h1]:text-[13px] [&>h1]:font-bold [&>h1]:mb-1.5 [&>h1]:mt-2 [&>h2]:text-[12.5px] [&>h2]:font-bold [&>h2]:mb-1.5 [&>h2]:mt-2 [&>h3]:text-[12px] [&>h3]:font-bold [&>h3]:mb-1 [&>h3]:mt-1.5 [&>h4]:text-[12px] [&>h4]:font-semibold [&>pre]:my-2 [&>pre]:p-2.5 [&>pre]:text-[11px] [&>pre]:rounded-lg [&>pre]:bg-zinc-950 [&>pre]:text-zinc-100 [&>code]:bg-muted [&>code]:text-[11px] [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded [&>strong]:font-semibold">
+								<!-- svelte-ignore a11y_click_events_have_key_events -->
+								<!-- svelte-ignore a11y_no_static_element_interactions -->
+								<div
+									onclick={(e) => {
+										const anchor = (e.target as HTMLElement | null)?.closest('a');
+										const href = anchor?.getAttribute('href') || '';
+										if (href.startsWith('/docs/') || href.startsWith('/my-docs/')) {
+											ui.closeAi();
+										}
+									}}
+									class="prose prose-xs dark:prose-invert max-w-none break-words text-[12px] leading-relaxed [&>p]:text-[12px] [&>p]:leading-relaxed [&>p]:mb-2 [&>ul]:list-disc [&>ul]:pl-4 [&>ul]:my-1.5 [&>ol]:list-decimal [&>ol]:pl-4 [&>ol]:my-1.5 [&>li]:text-[12px] [&>li]:leading-relaxed [&>li]:my-0.5 [&>h1]:text-[13px] [&>h1]:font-bold [&>h1]:mb-1.5 [&>h1]:mt-2 [&>h2]:text-[12.5px] [&>h2]:font-bold [&>h2]:mb-1.5 [&>h2]:mt-2 [&>h3]:text-[12px] [&>h3]:font-bold [&>h3]:mb-1 [&>h3]:mt-1.5 [&>h4]:text-[12px] [&>h4]:font-semibold [&>pre]:my-2 [&>pre]:p-2.5 [&>pre]:text-[11px] [&>pre]:rounded-lg [&>pre]:bg-zinc-950 [&>pre]:text-zinc-100 [&>code]:bg-muted [&>code]:text-[11px] [&>code]:px-1 [&>code]:py-0.5 [&>code]:rounded [&>strong]:font-semibold [&_a]:text-primary [&_a]:underline [&_a]:font-medium"
+								>
 									{@html sanitizeRenderedHtml(marked.parse(msg.content) as string)}
 								</div>
+
+								{#if msg.sources && msg.sources.length > 0}
+									<div class="mt-3 pt-2.5 border-t border-border/70 space-y-1.5">
+										<div class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+											<FileText class="h-3 w-3 text-primary" />
+											<span>Sumber Dokumen (Klik untuk membuka):</span>
+										</div>
+										<div class="flex flex-col gap-1.5">
+											{#each msg.sources as src}
+												<div class="flex items-center justify-between gap-2 rounded-lg border border-border/80 bg-background/80 hover:bg-background hover:border-primary/40 px-2.5 py-1.5 transition-colors">
+													<a
+														href={src.url}
+														onclick={() => ui.closeAi()}
+														class="flex items-center gap-2 min-w-0 flex-1 text-left group/link"
+														title="Buka dokumen: {src.title}"
+													>
+														<FileText class="h-3.5 w-3.5 shrink-0 text-primary" />
+														<div class="min-w-0 flex-1">
+															<div class="text-[11px] font-semibold text-foreground group-hover/link:text-primary group-hover/link:underline truncate">
+																{src.title}
+															</div>
+															<div class="text-[9.5px] text-muted-foreground truncate">
+																{src.badge} • {src.category}
+															</div>
+														</div>
+														<ExternalLink class="h-3 w-3 shrink-0 text-muted-foreground group-hover/link:text-primary" />
+													</a>
+													{#if src.fileUrl}
+														<a
+															href={src.fileUrl}
+															target="_blank"
+															rel="noopener noreferrer"
+															class="shrink-0 rounded border border-border bg-muted/60 hover:bg-muted px-1.5 py-0.5 text-[9.5px] font-medium text-foreground transition-colors"
+															title="Buka / Unduh berkas asli ({src.title})"
+														>
+															Berkas Asli
+														</a>
+													{/if}
+												</div>
+											{/each}
+										</div>
+									</div>
+								{/if}
 								
 								<Button
 									variant="ghost"
@@ -313,7 +454,7 @@
 					</div>
 				{/each}
 
-				{#if messages.length === 1 && !isLoading}
+				{#if messages.length === 1 && !isLoading && auth.isAuthenticated}
 					<div class="pl-10 space-y-1.5">
 						<div class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
 							Contoh Pertanyaan Cepat:
@@ -354,16 +495,19 @@
 							bind:value={inputQuery}
 							onkeydown={handleKeydown}
 							oninput={autoResize}
+							disabled={!auth.isAuthenticated}
 							rows={1}
-							placeholder="Tanyakan isi dokumen sinkronisasi, isi note, atau database Helpdesk..."
-							class="w-full rounded-md border border-input bg-background px-3 py-2.5 pr-10 text-xs leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[40px] max-h-40 resize-none overflow-y-auto block whitespace-pre-wrap"
+							placeholder={auth.isAuthenticated
+								? 'Tanyakan isi dokumen sinkronisasi, isi note, atau database Helpdesk...'
+								: 'Silakan login terlebih dahulu di aplikasi Helpdesk untuk menggunakan AI Copilot...'}
+							class="w-full rounded-md border border-input bg-background px-3 py-2.5 pr-10 text-xs leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[40px] max-h-40 resize-none overflow-y-auto block whitespace-pre-wrap disabled:cursor-not-allowed disabled:opacity-60"
 						></textarea>
 						<Button
 							size="icon"
 							onclick={() => sendMessage()}
-							disabled={!inputQuery.trim() || isLoading}
+							disabled={!auth.isAuthenticated || !inputQuery.trim() || isLoading}
 							class="absolute right-1.5 bottom-1.5 h-7 w-7"
-							title="Kirim pesan"
+							title={auth.isAuthenticated ? 'Kirim pesan' : 'Login terlebih dahulu di Helpdesk'}
 							aria-label="Kirim pesan ke AI Copilot"
 						>
 							<Send class="h-3.5 w-3.5" />

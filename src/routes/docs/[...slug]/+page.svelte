@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ui } from '$lib/stores/ui.svelte';
+	import { auth } from '$lib/stores/auth.svelte';
 	import { goto } from '$app/navigation';
 	import { cn } from '$lib/utils.js';
 	import { Button } from '$lib/components/ui/button';
@@ -1073,6 +1074,12 @@
 	}
 
 	async function runInlineAiFormat() {
+		auth.refresh();
+		if (!auth.isAuthenticated) {
+			inlineErrorMsg =
+				'Sesi login tidak ditemukan. Silakan login terlebih dahulu di aplikasi Helpdesk untuk menggunakan fitur AI.';
+			return;
+		}
 		if (!activeInlineBody.trim()) {
 			inlineErrorMsg = 'Catatan masih kosong untuk dirapikan';
 			return;
@@ -1121,6 +1128,12 @@
 	}
 
 	async function runInlineCustomAi() {
+		auth.refresh();
+		if (!auth.isAuthenticated) {
+			inlineErrorMsg =
+				'Sesi login tidak ditemukan. Silakan login terlebih dahulu di aplikasi Helpdesk untuk menggunakan fitur AI.';
+			return;
+		}
 		const instruction = customAiPrompt.trim();
 		if (!instruction) {
 			inlineErrorMsg = 'Silakan masukkan instruksi untuk AI terlebih dahulu';

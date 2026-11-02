@@ -227,14 +227,14 @@
 			<a
 				href="/my-docs"
 				class="inline-flex items-center gap-2 h-9 rounded-lg border border-border bg-card/80 hover:bg-muted/80 px-2 sm:px-2.5 text-xs font-medium text-foreground transition-all hover:border-primary/40 shadow-2xs shrink-0 cursor-pointer"
-				title="Pengguna: {auth.userName || 'Arif Rahman'} (Buka My Docs)"
+				title={auth.userName ? `Pengguna Aktif: ${auth.userName} (Buka My Docs)` : 'Belum ada sesi login Helpdesk — Silakan login di Helpdesk terlebih dahulu'}
 			>
-				<div class="relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/25 pointer-events-none">
+				<div class="relative flex h-6 w-6 shrink-0 items-center justify-center rounded-full {auth.userName ? 'bg-primary/15 text-primary ring-1 ring-primary/25' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/30'} pointer-events-none">
 					<User class="h-3.5 w-3.5" />
-					<span class="absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-500 ring-1 ring-background"></span>
+					<span class="absolute -bottom-0.5 -right-0.5 h-1.5 w-1.5 rounded-full {auth.userName ? 'bg-emerald-500' : 'bg-amber-500'} ring-1 ring-background"></span>
 				</div>
-				<span class="max-w-[75px] xs:max-w-[105px] sm:max-w-[130px] md:max-w-[160px] truncate font-medium pointer-events-none">
-					{auth.userName || 'Arif Rahman'}
+				<span class="max-w-[75px] xs:max-w-[105px] sm:max-w-[130px] md:max-w-[160px] truncate font-medium pointer-events-none {auth.userName ? '' : 'text-amber-600 dark:text-amber-400'}">
+					{auth.userName || 'Belum Login'}
 				</span>
 			</a>
 
@@ -279,13 +279,13 @@
 				onclick={() => (mobileMenuOpen = false)}
 				class="flex items-center gap-3 rounded-lg border border-border bg-muted/40 p-2.5 text-xs font-medium text-foreground hover:bg-muted transition-colors"
 			>
-				<div class="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary ring-1 ring-primary/25">
+				<div class="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-full {auth.userName ? 'bg-primary/15 text-primary ring-1 ring-primary/25' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400 ring-1 ring-amber-500/30'}">
 					<User class="h-4 w-4" />
-					<span class="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-1.5 ring-background"></span>
+					<span class="absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full {auth.userName ? 'bg-emerald-500' : 'bg-amber-500'} ring-1.5 ring-background"></span>
 				</div>
 				<div class="flex flex-col truncate">
-					<span class="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">User Helpdesk</span>
-					<span class="truncate font-semibold text-foreground">{auth.userName || 'Arif Rahman'}</span>
+					<span class="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold">Sesi Helpdesk</span>
+					<span class="truncate font-semibold {auth.userName ? 'text-foreground' : 'text-amber-600 dark:text-amber-400'}">{auth.userName || 'Belum Login (Login di Helpdesk)'}</span>
 				</div>
 			</a>
 

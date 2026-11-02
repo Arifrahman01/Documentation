@@ -492,42 +492,62 @@ export async function buildRealtimeDbContext(query: string): Promise<string> {
 			].join('\n')
 		);
 
-		// 3. Cross-Tab Distribusi Tiket per Modul x Status (melalui tabel pivot module_ticket)
-		const [modDistRows]: any = await p.query(
-			`SELECT 
-				m.code,
-				m.name,
-				COUNT(t.id) as total,
-				COALESCE(SUM(t.status IN ('Open', 'Escalated to Dev', 'In Development', 'Ready for Testing')), 0) as open_dashboard,
-				COALESCE(SUM(t.status = 'Open'), 0) as open_pure,
-				COALESCE(SUM(t.status = 'Ready for Testing'), 0) as ready_testing,
-				COALESCE(SUM(t.status = 'Waiting for Confirmation'), 0) as waiting,
-				COALESCE(SUM(t.status = 'Closed'), 0) as closed,
-				COALESCE(SUM(t.status = 'Cancelled'), 0) as cancelled
-			FROM modules m
-			LEFT JOIN module_ticket mt ON m.id = mt.module_id
-			LEFT JOIN tickets t ON mt.ticket_id = t.id AND t.deleted_at IS NULL AND t.ticket_type = 'Ticket'
-			GROUP BY m.id, m.code, m.name
-			ORDER BY total DESC`
-		);
+		// 3. Cross-Tab Distribusi Tiket per Modul x Status (Hanya sertakan jika tidak sedang memfilter 1 modul spesifik, atau jika user meminta rekap semua modul)
+		const wantsAllModules =
+			!matchedModule ||
+			q.includes('semua modul') ||
+			q.includes('per modul') ||
+			q.includes('tiap modul') ||
+			q.includes('distribusi');
 
-		if (Array.isArray(modDistRows) && modDistRows.length > 0) {
-			const distLines = [`[TABEL CROSS-TAB DISTRIBUSI TIKET PER MODUL X STATUS (TABEL PIVOT \`module_ticket\` & \`modules\`, \`ticket_type = 'Ticket'\`)]:`];
-			for (const r of modDistRows) {
-				distLines.push(
-					`- Modul ${r.code} (${r.name}): Total = ${r.total} tiket | OPEN (Dashboard) = ${r.open_dashboard} tiket (Open Murni: ${r.open_pure}, Ready for Testing: ${r.ready_testing}) | Waiting = ${r.waiting} | Closed = ${r.closed} | Cancelled = ${r.cancelled}`
-				);
+		if (wantsAllModules) {
+			const [modDistRows]: any = await p.query(
+				`SELECT 
+					m.code,
+					m.name,
+					COUNT(t.id) as total,
+					COALESCE(SUM(t.status IN ('Open', 'Escalated to Dev', 'In Development', 'Ready for Testing')), 0) as open_dashboard,
+					COALESCE(SUM(t.status = 'Open'), 0) as open_pure,
+					COALESCE(SUM(t.status = 'Ready for Testing'), 0) as ready_testing,
+					COALESCE(SUM(t.status = 'Waiting for Confirmation'), 0) as waiting,
+					COALESCE(SUM(t.status = 'Closed'), 0) as closed,
+					COALESCE(SUM(t.status = 'Cancelled'), 0) as cancelled
+				FROM modules m
+				LEFT JOIN module_ticket mt ON m.id = mt.module_id
+				LEFT JOIN tickets t ON mt.ticket_id = t.id AND t.deleted_at IS NULL AND t.ticket_type = 'Ticket'
+				GROUP BY m.id, m.code, m.name
+				ORDER BY total DESC`
+			);
+
+			if (Array.isArray(modDistRows) && modDistRows.length > 0) {
+				const distLines = [
+					`[TABEL DISTRIBUSI TIKET PER MODUL (\`ticket_type = 'Ticket'\`)]:`
+				];
+				for (const r of modDistRows) {
+					distLines.push(
+						`- ${r.code} (${r.name}): Total=${r.total} | Open=${r.open_dashboard} (Murni:${r.open_pure}, Testing:${r.ready_testing}) | Waiting=${r.waiting} | Closed=${r.closed} | Cancel=${r.cancelled}`
+					);
+				}
+				blocks.push(distLines.join('\n'));
 			}
-			blocks.push(distLines.join('\n'));
 		}
 
-		// 4. Smart SQL Query baris tiket
+		// 4. Smart SQL Query baris tiket (Format pipa hemat token, bukan JSON.stringify berindentasi)
 		const autoSql = generateSmartQueryForQuestion(query);
 		if (autoSql) {
 			const dbRes = await executeSafeQuery(autoSql);
 			if (dbRes.success && dbRes.rows.length > 0) {
+				const compactRows = dbRes.rows
+					.slice(0, 15)
+					.map((r: any) =>
+						Object.entries(r)
+							.filter(([_, v]) => v !== null && v !== '' && v !== '-')
+							.map(([k, v]) => `${k}:${v}`)
+							.join(' | ')
+					)
+					.join('\n');
 				blocks.push(
-					`[DATA BARIS TIKET REALTIME DARI DATABASE HELPDESK]:\n${JSON.stringify(dbRes.rows, null, 2).slice(0, 3500)}`
+					`[DATA BARIS TIKET REALTIME DARI DATABASE HELPDESK]:\n${compactRows.slice(0, 2200)}`
 				);
 			}
 		}
@@ -593,15 +613,15 @@ export async function searchRelevantTicketsByKeywords(keywords: string[]): Promi
 				COALESCE(NULLIF(t.pic_helpdesk, ''), '-') as pic_helpdesk,
 				COALESCE(NULLIF(t.dev_assigned_to, ''), '-') as dev_assigned_to,
 				COALESCE(t.title, '-') as title,
-				LEFT(COALESCE(t.description, ''), 450) as description,
-				LEFT(COALESCE(t.solutions, ''), 450) as solutions,
-				LEFT(COALESCE(t.dev_notes, ''), 300) as dev_notes,
+				LEFT(COALESCE(t.description, ''), 280) as description,
+				LEFT(COALESCE(t.solutions, ''), 280) as solutions,
+				LEFT(COALESCE(t.dev_notes, ''), 180) as dev_notes,
 				DATE_FORMAT(t.created_at, '%Y-%m-%d') as created_at,
 				(${scoreParts.join(' + ')}) as relevance_score
 			FROM tickets t
 			WHERE t.deleted_at IS NULL AND (${whereParts.join(' OR ')})
 			ORDER BY relevance_score DESC, t.id DESC
-			LIMIT 5
+			LIMIT 3
 		`;
 
 		const [rows]: any = await p.query(sql, params);

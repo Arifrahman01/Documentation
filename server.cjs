@@ -460,6 +460,31 @@ async function executeSafeSql(sql) {
   }
 }
 
+// Middleware: Require active Helpdesk session cookie (`user_name`) for all AI endpoints
+app.use('/api/ai', (req, res, next) => {
+  const cookieHeader = req.headers.cookie || '';
+  const match = cookieHeader.match(/(?:^|;\s*)user_name=([^;]+)/);
+  let userName = null;
+  if (match && match[1]) {
+    try {
+      userName = decodeURIComponent(match[1]).replace(/[<>"'`&\x00-\x1f\x7f]/g, '').trim();
+    } catch (_) {
+      userName = match[1].trim();
+    }
+  }
+  if (!userName) {
+    const msg = 'Sesi login tidak ditemukan. Silakan login terlebih dahulu di aplikasi Helpdesk untuk menggunakan fitur AI.';
+    return res.status(401).json({
+      error: msg,
+      message: msg,
+      reply: `🔒 **Akses AI Memerlukan Sesi Login**\n\n${msg}`,
+      requiresLogin: true
+    });
+  }
+  req.sessionUser = userName;
+  next();
+});
+
 // 2. Chat API (with intelligent caching & fallback)
 app.post('/api/ai/chat', async (req, res) => {
   try {

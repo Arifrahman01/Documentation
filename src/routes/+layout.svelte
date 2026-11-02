@@ -13,9 +13,7 @@
 	let { data, children }: LayoutProps = $props();
 
 	$effect.pre(() => {
-		if (data?.userName) {
-			auth.init(data.userName);
-		}
+		auth.init(data?.userName ?? null);
 	});
 
 	$effect(() => {

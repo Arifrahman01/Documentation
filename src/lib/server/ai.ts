@@ -170,6 +170,15 @@ export function callAiChat(
 // - Multi-Turn Delta Retrieval (Sends Digest + Only New Relevant Paragraphs on Follow-ups)
 // ============================================================================
 
+export interface AiSourceLink {
+	title: string;
+	url: string;
+	category: string;
+	type: 'SYNC_DOC' | 'USER_NOTE' | 'PORTAL_DOC';
+	badge: string;
+	fileUrl?: string;
+}
+
 export interface DocDigest {
 	docId: string;
 	sourceType: 'SYNC_DOC' | 'USER_NOTE' | 'PORTAL_DOC';
@@ -178,6 +187,7 @@ export interface DocDigest {
 	category: string;
 	subcategory?: string;
 	pathOrLoc: string;
+	docUrl: string;
 	ownerName?: string;
 	outlineSummary: string;
 	digestCard: string; // Compact ~120-token summary card of the entire document
@@ -193,6 +203,7 @@ export interface DocChunk {
 	category: string;
 	subcategory?: string;
 	pathOrLoc: string;
+	docUrl: string;
 	ownerName?: string;
 	tags: string[];
 	outlineSummary: string;
@@ -265,6 +276,7 @@ function buildPrecomputedDigestCard(
 	title: string,
 	category: string,
 	pathOrLoc: string,
+	docUrl: string,
 	outlineSummary: string,
 	rawContent: string,
 	totalParts: number
@@ -275,7 +287,7 @@ function buildPrecomputedDigestCard(
 		.trim()
 		.slice(0, 280);
 	const parts: string[] = [
-		`• Judul: "${title}" | Kategori: ${category} | Lokasi: ${pathOrLoc} (${totalParts} bagian)`
+		`• Judul: "${title}" | Kategori: ${category} | Link Dokumen: ${docUrl} | Lokasi: ${pathOrLoc} (${totalParts} bagian)`
 	];
 	if (outlineSummary) {
 		parts.push(`• Peta Bab/Sheet: ${outlineSummary}`);
@@ -374,6 +386,12 @@ function splitDocumentIntoChunks(
 			: sourceType === 'USER_NOTE'
 				? `/my-docs/${doc.slug || doc.id}`
 				: `/docs/${doc.slug || doc.id}`;
+	const docUrl =
+		sourceType === 'SYNC_DOC'
+			? `/docs/${doc.slug || `external/${doc.id}`}`
+			: sourceType === 'USER_NOTE'
+				? `/my-docs/${doc.slug || doc.id}`
+				: `/docs/${doc.slug || doc.id}`;
 	const tags = Array.isArray(doc.tags) ? doc.tags : [];
 	const outlineSummary = extractDocumentOutline(rawContent);
 
@@ -420,12 +438,14 @@ function splitDocumentIntoChunks(
 		category,
 		subcategory,
 		pathOrLoc,
+		docUrl,
 		ownerName: doc.ownerName,
 		outlineSummary,
 		digestCard: buildPrecomputedDigestCard(
 			title,
 			category,
 			pathOrLoc,
+			docUrl,
 			outlineSummary,
 			rawContent,
 			totalParts
@@ -442,6 +462,7 @@ function splitDocumentIntoChunks(
 		category,
 		subcategory,
 		pathOrLoc,
+		docUrl,
 		ownerName: doc.ownerName,
 		tags,
 		outlineSummary,
@@ -606,7 +627,12 @@ export function retrieveRelevantKnowledge(
 	query: string,
 	history?: Array<{ role: string; content: string }>,
 	activeDocHint?: string
-): { knowledgeText: string; hasMatches: boolean; extractedKeywords: string[] } {
+): {
+	knowledgeText: string;
+	hasMatches: boolean;
+	extractedKeywords: string[];
+	sources: AiSourceLink[];
+} {
 	const {
 		allChunks,
 		chunksByDocId,
@@ -892,27 +918,54 @@ export function retrieveRelevantKnowledge(
 
 	const hasMatches = rankedChunks.length > 0 || matchedApps.length > 0 || isCatalogQuestion;
 
+	// Build deduplicated clickable source links for the UI & AI citations
+	const seenDocIds = new Set<string>();
+	const sources: AiSourceLink[] = [];
+	for (const { chunk } of rankedChunks) {
+		if (seenDocIds.has(chunk.docId)) continue;
+		seenDocIds.add(chunk.docId);
+		sources.push({
+			title: chunk.fileName || chunk.title,
+			url: chunk.docUrl,
+			category: chunk.subcategory ? `${chunk.category} / ${chunk.subcategory}` : chunk.category,
+			type: chunk.sourceType,
+			badge:
+				chunk.sourceType === 'USER_NOTE'
+					? 'My Docs'
+					: chunk.sourceType === 'SYNC_DOC'
+						? 'Dokumen Sinkronisasi'
+						: 'Dokumentasi',
+			fileUrl:
+				chunk.sourceType === 'SYNC_DOC'
+					? `/api/docs/external-file?id=${encodeURIComponent(chunk.docId)}`
+					: undefined
+		});
+		if (sources.length >= 4) break;
+	}
+
 	return {
 		knowledgeText: sections.join('\n\n').trim(),
 		hasMatches,
-		extractedKeywords: allActiveKeywords
+		extractedKeywords: allActiveKeywords,
+		sources
 	};
 }
 
-export const SYSTEM_PROMPT_BASE = `Anda adalah "AI Copilot", asisten cerdas resmi yang dikhususkan untuk menjawab pertanyaan berdasarkan 3 Sumber Pengetahuan Internal sistem ini:
+export const SYSTEM_PROMPT_BASE = `Anda adalah "AI Copilot", asisten cerdas resmi yang dikhususkan untuk menjawab pertanyaan berdasarkan Sumber Pengetahuan Internal sistem ini:
 1. **Dokumen Hasil Sinkronisasi Eksternal** (PDF, Word, Excel, PPTX, Teks dari penyimpanan Helpdesk).
 2. **Isi Note / Catatan (My Docs) & Dokumentasi Modul** di dalam program ini.
 3. **Database Helpdesk** (data tiket, solusi penanganan kendala, modul, unit, PIC, dan statistik Helpdesk).
 
-ATURAN KETAT (STRICT SCOPE & TOKEN EFFICIENCY):
-1. HANYA MENJAWAB DARI 3 SUMBER INTERNAL DI ATAS:
+ATURAN KETAT (STRICT SCOPE & DIRECT SOURCE LINKS):
+1. HANYA MENJAWAB DARI SUMBER INTERNAL DI ATAS:
    - Gunakan informasi dari \`[KARTU INTISARI DOKUMEN]\`, \`[SUMBER DOKUMEN HASIL SINKRONISASI EKSTERNAL]\`, \`[SUMBER CATATAN / NOTE]\`, \`[SUMBER DOKUMENTASI MODUL]\`, serta \`[SUMBER DATABASE HELPDESK]\`.
    - Anda boleh membalas sapaan sopan atau menjelaskan daftar dokumen/note yang tersedia.
 2. TOLAK PERTANYAAN DI LUAR KONTEKS:
-   - Jika pertanyaan berada di luar ketiga sumber tersebut, jawab dengan sopan:
-     "Maaf, saya hanya dapat menjawab pertanyaan berdasarkan **Dokumen Hasil Sinkronisasi**, **Isi Note & Dokumentasi di program ini**, serta **Database Helpdesk**. Informasi mengenai hal tersebut tidak ditemukan di dalam sumber data kami."
-3. SEBUTKAN SUMBER RUJUKAN SECARA SPESIFIK:
-   - Sebutkan **Nama File / Judul Dokumen**, **Judul Note**, atau **Nomor Tiket Helpdesk** yang menjadi dasar jawaban Anda.
+   - Jika pertanyaan berada di luar sumber tersebut, jawab dengan sopan bahwa informasi tersebut tidak ditemukan di dalam sumber dokumentasi kami.
+3. WAJIB CANTUMKAN SUMBER DENGAN LINK LANGSUNG KE DOKUMEN:
+   - Di akhir setiap jawaban yang mengacu pada dokumen atau note, **WAJIB** tambahkan bagian **Sumber Referensi:** yang berisi tautan Markdown langsung menggunakan \`Link Dokumen\` yang tertera pada \`[KARTU INTISARI DOKUMEN]\`, contoh:
+     - 📄 [Judul Dokumen atau Nama File](/docs/...) atau [Judul Note](/my-docs/...)
+   - Jika mengacu pada tiket Helpdesk, sebutkan **Nomor Tiket Helpdesk** terkait.
 4. DILARANG MENAMPILKAN QUERY SQL:
    - Jangan pernah menampilkan kode SQL (\`SELECT ...\`) kepada pengguna; sajikan langsung hasil datanya.
 5. KONTINUITAS OBROLAN:

@@ -8,15 +8,21 @@ import {
 	hashString,
 	retrieveRelevantKnowledge,
 	buildSmartActiveDocContext,
-	SYSTEM_PROMPT_BASE
+	SYSTEM_PROMPT_BASE,
+	type AiSourceLink
 } from '$lib/server/ai';
 import {
 	isDatabaseQueryIntent,
 	buildRealtimeDbContext,
 	searchRelevantTicketsByKeywords
 } from '$lib/server/database';
+import { verifyAiSession } from '$lib/server/auth';
 
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async (event) => {
+	const authCheck = verifyAiSession(event);
+	if (!authCheck.authorized) return authCheck.response;
+	const { request } = event;
+
 	try {
 		const body = await request.json();
 		const {
@@ -52,13 +58,31 @@ export const POST: RequestHandler = async ({ request }) => {
 		const isFollowUpTurn = priorHistory.length >= 2;
 		const docCtx = documentContext || context || '';
 		let contextualPrompt = '';
+		let matchedSources: AiSourceLink[] = [];
 
 		if (strictDocScope) {
 			// STRICT SINGLE-DOCUMENT AI ASSISTANT SCOPE (Token-Efficient Delta Windowing on Follow-up Turns)
 			const docTitle = docMeta?.title || currentRoute || 'Dokumen Aktif';
 			const docSection = docMeta?.section || 'Dokumentasi';
 			const docCategory = docMeta?.category || 'Umum';
-			const docSlug = docMeta?.slug ? `/docs/${docMeta.slug}` : '';
+			const isMyDocs = docSection.toLowerCase().includes('my docs');
+			const docSlug = docMeta?.slug
+				? isMyDocs
+					? `/my-docs/${docMeta.slug}`
+					: `/docs/${docMeta.slug}`
+				: '';
+
+			if (docSlug) {
+				matchedSources = [
+					{
+						title: docTitle,
+						url: docSlug,
+						category: docCategory,
+						type: isMyDocs ? 'USER_NOTE' : 'PORTAL_DOC',
+						badge: isMyDocs ? 'My Docs' : 'Dokumentasi'
+					}
+				];
+			}
 
 			// Turn 1: up to 14,000 chars. Turn 2+ (Follow-up): Outline + 3,200 chars of targeted delta segments!
 			const smartDocBody = buildSmartActiveDocContext(
@@ -86,11 +110,12 @@ ${smartDocBody}
 		} else {
 			// GLOBAL PORTAL CHAT AI COPILOT SCOPE
 			// 1. Retrieve Pre-Digested Cards + Targeted Chunks from In-Memory Inverted Index (0ms disk read)
-			const { knowledgeText, extractedKeywords } = retrieveRelevantKnowledge(
+			const { knowledgeText, extractedKeywords, sources } = retrieveRelevantKnowledge(
 				lastUserQuery,
 				priorHistory,
 				currentRoute
 			);
+			matchedSources = sources;
 
 			// 2. Retrieve Realtime Helpdesk Database Context only when relevant
 			let liveDbKnowledge = '';
@@ -105,29 +130,54 @@ ${smartDocBody}
 			].join(' ');
 
 			const hasDbIntent = isDatabaseQueryIntent(combinedRecentText);
+			const qLower = lastUserQuery.toLowerCase();
+			const hasTroubleshootingIntent =
+				hasDbIntent ||
+				['error', 'gagal', 'kendala', 'masalah', 'solusi', 'bug', 'issue', 'tidak bisa', 'kenapa'].some(
+					(w) => qLower.includes(w)
+				);
+
 			if (hasDbIntent) {
 				try {
 					liveDbKnowledge = await buildRealtimeDbContext(lastUserQuery || combinedRecentText);
 				} catch (_) {}
 			}
 
-			if (extractedKeywords.length > 0) {
+			// Only query ticket history when user asks about tickets/troubleshooting OR when no doc matches were found
+			if (
+				extractedKeywords.length > 0 &&
+				(hasTroubleshootingIntent || matchedSources.length === 0)
+			) {
 				try {
 					ticketKeywordKnowledge = await searchRelevantTicketsByKeywords(extractedKeywords);
 				} catch (_) {}
 			}
+
+			// Only inject background page context in global Copilot if user explicitly asks about "dokumen/halaman/catatan ini"
+			const refersToCurrentPage =
+				[
+					'dokumen ini',
+					'halaman ini',
+					'catatan ini',
+					'note ini',
+					'artikel ini',
+					'modul ini',
+					'rangkum ini',
+					'jelaskan ini'
+				].some((phrase) => qLower.includes(phrase)) ||
+				(matchedSources.length === 0 && Boolean(docCtx && docCtx.trim()));
 
 			// KV-Cache Friendly Ordering: Static System Prompt at the very top
 			contextualPrompt = SYSTEM_PROMPT_BASE;
 			if (currentRoute) {
 				contextualPrompt += `\nLOKASI HALAMAN AKTIF: ${currentRoute}`;
 			}
-			if (docCtx && docCtx.trim()) {
-				// On Turn 1: max 4,500 chars; on Turn 2+ (Follow-up): Outline + 2,000 chars targeted delta!
+			if (refersToCurrentPage && docCtx && docCtx.trim()) {
+				// On Turn 1: max 3,200 chars; on Turn 2+ (Follow-up): Outline + 1,800 chars targeted delta!
 				const smartPageContext = buildSmartActiveDocContext(
 					docCtx,
 					lastUserQuery,
-					4500,
+					3200,
 					isFollowUpTurn
 				);
 				contextualPrompt += `\n\n[KONTEKS HALAMAN YANG SEDANG DIBUKA PENGGUNA]:\n"""\n${smartPageContext}\n"""`;
@@ -160,7 +210,11 @@ ${smartDocBody}
 		const cacheKey = hashString(JSON.stringify(fullMessages));
 		const cached = getCache(cacheKey);
 		if (cached) {
-			return json({ ...cached, cached: true });
+			return json({
+				...cached,
+				sources: cached.sources || matchedSources,
+				cached: true
+			});
 		}
 
 		let result: any;
@@ -175,12 +229,14 @@ ${smartDocBody}
 			result = await callAiChat(fullMessages, AI_CONFIG.fallbackModel);
 		}
 
-		setCache(cacheKey, result);
-		return json({
+		const responsePayload = {
 			message: result.message,
 			reply: result.message,
+			sources: matchedSources,
 			usage: result.usage
-		});
+		};
+		setCache(cacheKey, responsePayload);
+		return json(responsePayload);
 	} catch (err: any) {
 		console.error('AI Chat Error:', err?.message);
 		return json({ error: err?.message || 'Gagal menghubungi server AI' }, { status: 500 });
