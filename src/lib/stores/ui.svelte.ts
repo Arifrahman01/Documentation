@@ -67,7 +67,7 @@ class UiStore {
 		this.isAiOpen = false;
 	}
 
-	openSyncModal(autoTrigger = true) {
+	openSyncModal(autoTrigger = false) {
 		this.syncModalAutoTrigger = autoTrigger;
 		this.isSyncModalOpen = true;
 	}

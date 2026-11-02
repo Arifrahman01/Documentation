@@ -12,16 +12,18 @@ let lastSyncOutput: string = '';
 let currentChildProcess: ChildProcess | null = null;
 let currentActiveTypes: string[] = ['pdf', 'docx', 'xlsx'];
 let currentIsIncremental = true;
+let currentBatchLimit = 0;
 
 const STATUS_FILE = path.resolve(process.cwd(), 'data/sync-status.json');
+const MAX_LOG_LINES = 200;
 
 export interface SyncOptions {
 	types?: string[];
 	force?: boolean;
+	batchLimit?: number;
 }
 
 export function getSyncStatus() {
-	// If process was running across SvelteKit reload, check status file
 	let checkpointInfo: any = null;
 	if (fs.existsSync(STATUS_FILE)) {
 		try {
@@ -29,15 +31,21 @@ export function getSyncStatus() {
 		} catch (_) {}
 	}
 
+	const logsToReturn = isSyncRunning
+		? currentLogs.slice(-MAX_LOG_LINES)
+		: lastSyncOutput
+			? lastSyncOutput.split('\n').slice(-MAX_LOG_LINES)
+			: currentLogs.slice(-MAX_LOG_LINES);
+
 	return {
 		isSyncRunning,
 		lastSyncTimestamp,
 		lastSyncStatus,
 		activeTypes: currentActiveTypes,
 		isIncremental: currentIsIncremental,
+		batchLimit: currentBatchLimit,
 		checkpoint: checkpointInfo,
-		logs: isSyncRunning ? currentLogs : lastSyncOutput ? lastSyncOutput.split('\n') : currentLogs,
-		output: isSyncRunning ? currentLogs.join('\n') : lastSyncOutput
+		logs: logsToReturn
 	};
 }
 
@@ -55,7 +63,9 @@ export function cancelExternalDocsSync(): { success: boolean; message: string } 
 
 	try {
 		const timestamp = new Date().toLocaleTimeString('id-ID');
-		currentLogs.push(`[${timestamp}] Permintaan pembatalan diterima. Mengirim sinyal aman SIGTERM ke worker...`);
+		currentLogs.push(
+			`[${timestamp}] Permintaan pembatalan diterima. Mengirim sinyal aman SIGTERM ke worker...`
+		);
 		currentChildProcess.kill('SIGTERM');
 		return {
 			success: true,
@@ -71,8 +81,8 @@ export function cancelExternalDocsSync(): { success: boolean; message: string } 
 
 /**
  * Menjalankan proses ekstraksi dan pengindeksan dokumen eksternal di latar belakang.
- * Menggunakan child process agar memori parser (PDF/Excel) langsung dibersihkan oleh OS
- * dan tidak membebani memori utama server SvelteKit.
+ * Menggunakan child process dengan batas memori ketat (768MB) & prioritas CPU rendah
+ * agar laptop / server tetap responsif dan tidak pernah hang.
  */
 export function startExternalDocsSyncBackground(options?: SyncOptions): {
 	started: boolean;
@@ -87,7 +97,6 @@ export function startExternalDocsSyncBackground(options?: SyncOptions): {
 		};
 	}
 
-	// Trigger background execution without awaiting
 	runExternalDocsSync(options).catch((err) => {
 		console.error('[SCHEDULER ASYNC ERROR]:', err);
 	});
@@ -95,7 +104,7 @@ export function startExternalDocsSyncBackground(options?: SyncOptions): {
 	return {
 		started: true,
 		isSyncRunning: true,
-		message: 'Proses sinkronisasi dokumen eksternal berhasil dimulai.'
+		message: 'Proses sinkronisasi dokumen eksternal berhasil dimulai secara bertahap.'
 	};
 }
 
@@ -130,7 +139,8 @@ export function runExternalDocsSync(
 
 		// Configure arguments
 		const cliArgs: string[] = [];
-		const types = options?.types && options.types.length > 0 ? options.types : ['pdf', 'docx', 'xlsx'];
+		const types =
+			options?.types && options.types.length > 0 ? options.types : ['pdf', 'docx', 'xlsx'];
 		currentActiveTypes = types;
 		cliArgs.push(`--types=${types.join(',')}`);
 
@@ -140,13 +150,19 @@ export function runExternalDocsSync(
 			cliArgs.push('--force');
 		}
 
+		const batchLimit = typeof options?.batchLimit === 'number' && options.batchLimit > 0 ? options.batchLimit : 0;
+		currentBatchLimit = batchLimit;
+		if (batchLimit > 0) {
+			cliArgs.push(`--batch=${batchLimit}`);
+		}
+
 		const addLog = (text: string) => {
 			const rawLines = text.split(/\r?\n/);
 			for (const l of rawLines) {
 				const trimmed = l.trimEnd();
 				if (trimmed) {
 					currentLogs.push(trimmed);
-					if (currentLogs.length > 2500) {
+					if (currentLogs.length > MAX_LOG_LINES) {
 						currentLogs.shift();
 					}
 				}
@@ -154,16 +170,20 @@ export function runExternalDocsSync(
 		};
 
 		const timeStart = new Date().toLocaleTimeString('id-ID');
-		addLog(`[${timeStart}] Memulai worker sinkronisasi dokumen eksternal...`);
+		addLog(`[${timeStart}] Memulai worker sinkronisasi dokumen (Mode Hemat CPU & RAM)...`);
 		addLog(`[${timeStart}] Jenis Dokumen Terpilih: ${types.join(', ').toUpperCase()}`);
-		addLog(`[${timeStart}] Mode: ${isForce ? 'Full Re-index' : 'Inkremental Cepat (Smart Cache)'}`);
+		addLog(
+			`[${timeStart}] Mode: ${isForce ? 'Full Re-index (Bertahap)' : 'Inkremental Cepat (Smart Cache)'}${batchLimit > 0 ? ` • Maks ${batchLimit} berkas baru` : ''}`
+		);
 
-		console.log(`[SYNC DOCS ${timeStart}] Memulai sinkronisasi (types=${types.join(',')}, force=${isForce})...`);
+		console.log(
+			`[SYNC DOCS ${timeStart}] Memulai sinkronisasi (types=${types.join(',')}, force=${isForce}, batch=${batchLimit})...`
+		);
 
-		// Spawn process with 4GB heap limit to prevent OOM
+		// Spawn process with strict 768MB heap limit + explicit GC to prevent laptop RAM exhaustion / hang
 		const proc = spawn(
 			process.execPath,
-			['--max-old-space-size=4096', scriptPath, ...cliArgs],
+			['--max-old-space-size=768', '--expose-gc', scriptPath, ...cliArgs],
 			{
 				cwd: process.cwd(),
 				env: { ...process.env },
@@ -189,7 +209,9 @@ export function runExternalDocsSync(
 
 			if (signal === 'SIGTERM' || signal === 'SIGINT') {
 				lastSyncStatus = 'aborted';
-				addLog(`[${new Date().toLocaleTimeString('id-ID')}] Sinkronisasi DIHENTIKAN. Progres tersimpan di checkpoint.`);
+				addLog(
+					`[${new Date().toLocaleTimeString('id-ID')}] Sinkronisasi DIHENTIKAN. Progres tersimpan di checkpoint.`
+				);
 				console.log(`[SYNC DOCS] Sinkronisasi dihentikan (signal: ${signal}).`);
 				resolve({
 					success: true,
@@ -198,7 +220,9 @@ export function runExternalDocsSync(
 				});
 			} else if (code === 0) {
 				lastSyncStatus = 'success';
-				addLog(`[${new Date().toLocaleTimeString('id-ID')}] Sinkronisasi selesai dengan SUKSES.`);
+				addLog(
+					`[${new Date().toLocaleTimeString('id-ID')}] Sinkronisasi selesai dengan SUKSES.`
+				);
 				console.log(
 					`[SYNC DOCS ${new Date().toLocaleTimeString('id-ID')}] Sinkronisasi dokumen eksternal selesai dengan SUKSES.`
 				);
@@ -209,7 +233,9 @@ export function runExternalDocsSync(
 				});
 			} else {
 				lastSyncStatus = 'failed';
-				addLog(`[${new Date().toLocaleTimeString('id-ID')}] Sinkronisasi gagal dengan exit code: ${code}`);
+				addLog(
+					`[${new Date().toLocaleTimeString('id-ID')}] Sinkronisasi gagal dengan exit code: ${code}`
+				);
 				console.error(
 					`[SYNC DOCS ERROR ${new Date().toLocaleTimeString('id-ID')}] Sinkronisasi gagal dengan kode ${code}`
 				);
@@ -225,7 +251,9 @@ export function runExternalDocsSync(
 			isSyncRunning = false;
 			currentChildProcess = null;
 			lastSyncStatus = 'failed';
-			addLog(`[${new Date().toLocaleTimeString('id-ID')}] Gagal menjalankan child process: ${err.message}`);
+			addLog(
+				`[${new Date().toLocaleTimeString('id-ID')}] Gagal menjalankan child process: ${err.message}`
+			);
 			lastSyncOutput = currentLogs.join('\n');
 			console.error(`[SYNC DOCS ERROR] Gagal menjalankan child process:`, err.message);
 			resolve({
@@ -241,13 +269,12 @@ function getMsUntilMidnight(): number {
 	const now = new Date();
 	const midnight = new Date(now);
 	midnight.setDate(now.getDate() + 1);
-	midnight.setHours(0, 0, 0, 0); // Tepat jam 00:00:00
+	midnight.setHours(0, 0, 0, 0);
 	return midnight.getTime() - now.getTime();
 }
 
 /**
  * Memulai penjadwal otomatis harian setiap jam 12 malam (00:00).
- * Menghitung selisih milidetik secara presisi sehingga tidak mengalami pergeseran waktu (time drift).
  */
 export function startExternalDocsScheduler() {
 	if (schedulerStarted) return;
@@ -266,13 +293,11 @@ export function startExternalDocsScheduler() {
 				`\n[SCHEDULER 00:00] Menjalankan jadwal otomatis harian: Sinkronisasi dokumen eksternal...`
 			);
 			try {
-				// Jadwal otomatis tengah malam selalu menggunakan mode inkremental hemat sumber daya
 				await runExternalDocsSync({ types: ['pdf', 'docx', 'xlsx'], force: false });
 			} catch (err: any) {
 				console.error(`[SCHEDULER ERROR] Eksekusi jadwal tengah malam gagal:`, err?.message);
 			}
 
-			// Jadwalkan untuk jam 12 malam berikutnya
 			scheduleNextRun();
 		}, msUntilMidnight);
 	}

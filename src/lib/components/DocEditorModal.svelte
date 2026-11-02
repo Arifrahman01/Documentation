@@ -567,10 +567,28 @@
 		}
 	}
 
+	let closeConfirmOpen = $state(false);
+
+	function isModalDirty(): boolean {
+		const initTitle = (initialDoc?.title || '').trim();
+		const initContent = (initialDoc?.content || '').trim();
+		return title.trim() !== initTitle || content.trim() !== initContent;
+	}
+
 	function closeModal(e?: Event) {
 		if (e) {
 			e.stopPropagation();
 		}
+		if (isModalDirty()) {
+			closeConfirmOpen = true;
+			return;
+		}
+		isOpen = false;
+	}
+
+	function forceDiscardAndClose() {
+		closeConfirmOpen = false;
+		discardDraft();
 		isOpen = false;
 	}
 </script>
@@ -1199,7 +1217,7 @@
 							type="button"
 							variant="outline"
 							size="sm"
-							onclick={() => (isOpen = false)}
+							onclick={(e) => closeModal(e)}
 							disabled={isSaving}
 						>
 							Batal
@@ -1243,6 +1261,27 @@
 				}}
 			>
 				Terapkan Kerangka
+			</AlertDialogAction>
+		</AlertDialogFooter>
+	</AlertDialogContent>
+</AlertDialog>
+
+<!-- SHADCN ALERT DIALOG: Konfirmasi Buang Perubahan -->
+<AlertDialog bind:open={closeConfirmOpen}>
+	<AlertDialogContent>
+		<AlertDialogHeader>
+			<AlertDialogTitle>Buang Perubahan Dokumen?</AlertDialogTitle>
+			<AlertDialogDescription>
+				Ada perubahan dokumen yang belum disimpan. Yakin ingin menutup editor dan membuang perubahan ini?
+			</AlertDialogDescription>
+		</AlertDialogHeader>
+		<AlertDialogFooter>
+			<AlertDialogCancel onclick={() => (closeConfirmOpen = false)}>Lanjut Menulis</AlertDialogCancel>
+			<AlertDialogAction
+				onclick={forceDiscardAndClose}
+				class="bg-destructive text-white hover:bg-destructive/90"
+			>
+				Buang Perubahan
 			</AlertDialogAction>
 		</AlertDialogFooter>
 	</AlertDialogContent>

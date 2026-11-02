@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { ui } from '$lib/stores/ui.svelte';
+	import appsData from '$lib/data/apps.json';
 	import {
 		BookOpen,
 		Layers,
@@ -167,7 +168,7 @@
 
 				<Button variant="outline" size="lg" href="/apps" class="gap-2">
 					<Layers class="h-4 w-4 text-muted-foreground" />
-					<span>Apps (7 Apps)</span>
+					<span>Apps ({appsData.programs?.length || 7} Apps)</span>
 				</Button>
 			</div>
 

@@ -18,6 +18,14 @@ export default defineConfig({
 	},
 	server: {
 		port: 8088,
-		host: true
+		host: true,
+		watch: {
+			ignored: [
+				'**/data/external-documents.json',
+				'**/data/sync-status.json',
+				'**/src/lib/data/external-documents.json',
+				'**/*.tmp'
+			]
+		}
 	}
 });

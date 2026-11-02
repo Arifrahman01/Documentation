@@ -24,6 +24,8 @@ test-*.js
 test_*.js
 *.tmp
 *.temp
+.temp_fsd/
+temp-excel-inspect/
 
 # Log files
 *.log

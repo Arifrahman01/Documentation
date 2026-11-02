@@ -1035,28 +1035,158 @@ Tugas Anda adalah merapikan catatan mentah/kasar pengguna menjadi format Markdow
 });
 
 // API Sinkronisasi Dokumen Eksternal
-app.get('/api/docs/sync-external', (req, res) => {
-  res.json({
+let isSyncRunning = false;
+let lastSyncTimestamp = null;
+let lastSyncStatus = null;
+let currentSyncLogs = [];
+let lastSyncOutput = '';
+let currentSyncProc = null;
+let currentActiveTypes = ['pdf', 'docx', 'xlsx'];
+let currentIsIncremental = true;
+const SYNC_STATUS_FILE = path.join(__dirname, 'data', 'sync-status.json');
+
+function getSyncStatePayload() {
+  let checkpointInfo = null;
+  if (fs.existsSync(SYNC_STATUS_FILE)) {
+    try {
+      checkpointInfo = JSON.parse(fs.readFileSync(SYNC_STATUS_FILE, 'utf8'));
+    } catch (_) {}
+  }
+  return {
     status: 'ok',
     schedule: 'Setiap hari pukul 00:00 (12:00 AM)',
-    targetFolder: process.env.EXTERNAL_DOCS_DIR || 'D:\\Project\\helpdesk2\\storage\\app\\private'
+    targetFolder: process.env.EXTERNAL_DOCS_DIR || 'D:\\Project\\helpdesk2\\storage\\app\\private',
+    isSyncRunning,
+    lastSyncTimestamp,
+    lastSyncStatus,
+    activeTypes: currentActiveTypes,
+    isIncremental: currentIsIncremental,
+    checkpoint: checkpointInfo,
+    logs: isSyncRunning ? currentSyncLogs : lastSyncOutput ? lastSyncOutput.split('\n') : currentSyncLogs,
+    output: isSyncRunning ? currentSyncLogs.join('\n') : lastSyncOutput
+  };
+}
+
+function cancelSyncWorker() {
+  if (!isSyncRunning || !currentSyncProc) {
+    return { success: false, message: 'Tidak ada proses sinkronisasi yang sedang berjalan.' };
+  }
+  try {
+    const ts = new Date().toLocaleTimeString('id-ID');
+    currentSyncLogs.push(`[${ts}] Permintaan pembatalan diterima. Mengirim sinyal aman SIGTERM ke worker...`);
+    currentSyncProc.kill('SIGTERM');
+    return { success: true, message: 'Sinyal penghentian telah dikirim. Checkpoint dokumen sedang diamankan.' };
+  } catch (err) {
+    return { success: false, message: `Gagal menghentikan proses: ${err.message}` };
+  }
+}
+
+function startBackgroundSyncWorker(options = {}) {
+  if (isSyncRunning) {
+    return {
+      started: false,
+      isSyncRunning: true,
+      message: 'Sinkronisasi dokumen sedang berjalan di latar belakang.'
+    };
+  }
+
+  const scriptPath = path.join(__dirname, 'scripts', 'index-external-docs.cjs');
+  if (!fs.existsSync(scriptPath)) {
+    return {
+      started: false,
+      isSyncRunning: false,
+      message: `Berkas skrip indexer tidak ditemukan di: ${scriptPath}`
+    };
+  }
+
+  isSyncRunning = true;
+  currentSyncLogs = [];
+  const types = Array.isArray(options.types) && options.types.length > 0 ? options.types : ['pdf', 'docx', 'xlsx'];
+  const isForce = Boolean(options.force);
+  currentActiveTypes = types;
+  currentIsIncremental = !isForce;
+
+  const cliArgs = [`--types=${types.join(',')}`];
+  if (isForce) cliArgs.push('--force');
+  const batchLimit = typeof options.batchLimit === 'number' && options.batchLimit > 0 ? options.batchLimit : 0;
+  if (batchLimit > 0) cliArgs.push(`--batch=${batchLimit}`);
+
+  const addLog = (text) => {
+    for (const l of String(text).split(/\r?\n/)) {
+      const trimmed = l.trimEnd();
+      if (trimmed) {
+        currentSyncLogs.push(trimmed);
+        if (currentSyncLogs.length > 200) currentSyncLogs.shift();
+      }
+    }
+  };
+
+  const { spawn } = require('child_process');
+  const p = spawn(process.execPath, ['--max-old-space-size=768', '--expose-gc', scriptPath, ...cliArgs], {
+    cwd: __dirname,
+    env: { ...process.env },
+    stdio: ['ignore', 'pipe', 'pipe']
   });
+  currentSyncProc = p;
+
+  p.stdout.on('data', d => addLog(d.toString()));
+  p.stderr.on('data', d => addLog(d.toString()));
+  p.on('close', (code, signal) => {
+    isSyncRunning = false;
+    currentSyncProc = null;
+    lastSyncTimestamp = new Date().toISOString();
+    lastSyncOutput = currentSyncLogs.join('\n');
+    aiResponseCache.clear();
+
+    if (signal === 'SIGTERM' || signal === 'SIGINT') {
+      lastSyncStatus = 'aborted';
+      addLog(`[${new Date().toLocaleTimeString('id-ID')}] Sinkronisasi DIHENTIKAN. Progres tersimpan di checkpoint.`);
+    } else if (code === 0) {
+      lastSyncStatus = 'success';
+      addLog(`[${new Date().toLocaleTimeString('id-ID')}] Sinkronisasi selesai dengan SUKSES.`);
+    } else {
+      lastSyncStatus = 'failed';
+      addLog(`[${new Date().toLocaleTimeString('id-ID')}] Sinkronisasi gagal dengan exit code: ${code}`);
+    }
+  });
+  p.on('error', (err) => {
+    isSyncRunning = false;
+    currentSyncProc = null;
+    lastSyncStatus = 'failed';
+    addLog(`[ERROR] Gagal menjalankan worker: ${err.message}`);
+    lastSyncOutput = currentSyncLogs.join('\n');
+  });
+
+  return {
+    started: true,
+    isSyncRunning: true,
+    message: 'Proses sinkronisasi dokumen eksternal berhasil dimulai.'
+  };
+}
+
+app.get('/api/docs/sync-external', (req, res) => {
+  res.json(getSyncStatePayload());
 });
 
 app.post('/api/docs/sync-external', (req, res) => {
-  const scriptPath = path.join(__dirname, 'scripts', 'index-external-docs.cjs');
-  const { spawn } = require('child_process');
-  const p = spawn(process.execPath, [scriptPath], { stdio: ['ignore', 'pipe', 'pipe'] });
-  let out = '';
-  p.stdout.on('data', d => out += d);
-  p.stderr.on('data', d => out += d);
-  p.on('close', code => {
-    if (code === 0) {
-      res.json({ status: 'success', message: 'Sinkronisasi berhasil dijalankan', output: out });
-    } else {
-      res.status(500).json({ status: 'error', message: `Gagal (exit code: ${code})`, output: out });
-    }
+  if (req.query.action === 'stop' || (req.body && req.body.action === 'stop')) {
+    return res.json(cancelSyncWorker());
+  }
+  const types = Array.isArray(req.body?.types) && req.body.types.length > 0 ? req.body.types : ['pdf', 'docx', 'xlsx'];
+  const force = Boolean(req.body?.force);
+  const result = startBackgroundSyncWorker({ types, force });
+  res.json({
+    status: result.started ? 'started' : 'already_running',
+    message: result.message,
+    isSyncRunning: result.isSyncRunning,
+    types,
+    force,
+    timestamp: new Date().toISOString()
   });
+});
+
+app.delete('/api/docs/sync-external', (req, res) => {
+  res.json(cancelSyncWorker());
 });
 
 // Scheduler harian jam 12 malam
@@ -1075,13 +1205,8 @@ function startDailyDocsScheduler() {
     console.log(`[SCHEDULER] Auto-sync dokumen dijadwalkan setiap jam 00:00 (berikutnya dalam ${hours} jam).`);
     setTimeout(() => {
       console.log(`[SCHEDULER 00:00] Menjalankan sinkronisasi dokumen eksternal di latar belakang...`);
-      const scriptPath = path.join(__dirname, 'scripts', 'index-external-docs.cjs');
-      const { spawn } = require('child_process');
-      const p = spawn(process.execPath, [scriptPath], { stdio: 'inherit' });
-      p.on('close', (code) => {
-        console.log(`[SCHEDULER 00:00] Sinkronisasi selesai (code: ${code}).`);
-        scheduleNext();
-      });
+      startBackgroundSyncWorker({ types: ['pdf', 'docx', 'xlsx'], force: false });
+      scheduleNext();
     }, ms);
   }
   scheduleNext();

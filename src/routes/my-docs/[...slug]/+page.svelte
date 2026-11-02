@@ -1130,7 +1130,7 @@
 							<Button
 								variant="ghost"
 								size="sm"
-								onclick={() => ui.openSyncModal(true)}
+								onclick={() => ui.openSyncModal(false)}
 								class="h-6 gap-1 px-1.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15 cursor-pointer shrink-0 active:scale-95 transition-transform"
 								title="Buka Detail & Jalankan Sinkronisasi Dokumen Eksternal"
 							>

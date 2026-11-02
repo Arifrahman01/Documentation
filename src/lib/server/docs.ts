@@ -51,10 +51,10 @@ export function getDataVersion(): number {
 
 export function loadExternalDocuments(): DocumentItem[] {
 	try {
-		const targetFile = fs.existsSync(EXTERNAL_DOCS_FILE)
-			? EXTERNAL_DOCS_FILE
-			: fs.existsSync(ROOT_EXTERNAL_DOCS_FILE)
-				? ROOT_EXTERNAL_DOCS_FILE
+		const targetFile = fs.existsSync(ROOT_EXTERNAL_DOCS_FILE)
+			? ROOT_EXTERNAL_DOCS_FILE
+			: fs.existsSync(EXTERNAL_DOCS_FILE)
+				? EXTERNAL_DOCS_FILE
 				: null;
 		if (!targetFile) return [];
 

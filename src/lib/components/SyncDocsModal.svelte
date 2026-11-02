@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import { ui } from '$lib/stores/ui.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { Badge } from '$lib/components/ui/badge';
@@ -13,25 +14,42 @@
 		Clock,
 		FolderTree,
 		X,
-		FileText,
 		SlidersHorizontal,
 		Zap,
 		ShieldCheck,
 		Square,
-		Layers
+		Cpu
 	} from '@lucide/svelte';
 
+	interface CheckpointData {
+		isSyncRunning?: boolean;
+		total?: number;
+		processed?: number;
+		success?: number;
+		cached?: number;
+		newOrUpdated?: number;
+		failed?: number;
+		currentFile?: string;
+		lastCheckpoint?: string;
+	}
+
 	let isSyncRunning = $state(false);
+	let isStartingSync = $state(false);
 	let lastSyncTimestamp = $state<string | null>(null);
 	let lastSyncStatus = $state<'success' | 'failed' | 'aborted' | null>(null);
+	let checkpoint = $state<CheckpointData | null>(null);
 	let logs = $state<string[]>([]);
 	let isCopied = $state(false);
 	let terminalEl = $state<HTMLDivElement | null>(null);
-	let pollInterval = $state<any>(null);
+
+	// Non-reactive polling state to prevent Svelte 5 $effect dependency loops
+	let pollTimer: ReturnType<typeof setTimeout> | null = null;
+	let isFetchingStatus = false;
 
 	// Filtering & Mode Configuration
 	let selectedTypes = $state<string[]>(['pdf', 'docx', 'xlsx']);
 	let isIncremental = $state(true);
+	let batchLimit = $state<number>(0); // 0 = all files sequentially with throttling
 	let showFilters = $state(false);
 
 	const availableDocTypes = [
@@ -42,9 +60,14 @@
 		{ id: 'txt', label: 'Teks (.txt, .md)', desc: 'Catatan Singkat & Readme', default: false }
 	];
 
+	const progressPercent = $derived.by(() => {
+		if (!checkpoint || !checkpoint.total || checkpoint.total <= 0) return 0;
+		const pct = Math.round(((checkpoint.processed || 0) / checkpoint.total) * 100);
+		return Math.min(100, Math.max(0, pct));
+	});
+
 	function toggleType(typeId: string) {
 		if (selectedTypes.includes(typeId)) {
-			// Don't allow deselecting all
 			if (selectedTypes.length > 1) {
 				selectedTypes = selectedTypes.filter((t) => t !== typeId);
 			}
@@ -53,56 +76,70 @@
 		}
 	}
 
-	// Synchronize on modal open
+	// Only watch ui.isSyncModalOpen; run all internal logic inside untrack() to avoid reactive loops
 	$effect(() => {
-		if (ui.isSyncModalOpen) {
-			fetchStatus();
-
-			if (ui.syncModalAutoTrigger) {
-				ui.syncModalAutoTrigger = false;
-				triggerSync();
+		const isOpen = ui.isSyncModalOpen;
+		untrack(() => {
+			if (isOpen) {
+				if (ui.syncModalAutoTrigger) {
+					ui.syncModalAutoTrigger = false;
+					triggerSync();
+				} else {
+					fetchStatus();
+				}
+			} else {
+				stopPolling();
 			}
+		});
 
-			startPolling();
-		} else {
+		return () => {
 			stopPolling();
-		}
+		};
 	});
 
-	function startPolling() {
-		stopPolling();
-		pollInterval = setInterval(() => {
-			fetchStatus();
-		}, 500);
+	function stopPolling() {
+		if (pollTimer) {
+			clearTimeout(pollTimer);
+			pollTimer = null;
+		}
 	}
 
-	function stopPolling() {
-		if (pollInterval) {
-			clearInterval(pollInterval);
-			pollInterval = null;
-		}
+	function scheduleNextPoll(delayMs = 1500) {
+		stopPolling();
+		if (!ui.isSyncModalOpen) return;
+		pollTimer = setTimeout(() => {
+			fetchStatus();
+		}, delayMs);
 	}
 
 	async function fetchStatus() {
+		// Prevent overlapping concurrent requests in Browser Network tab
+		if (isFetchingStatus) return;
+		isFetchingStatus = true;
+
 		try {
-			const res = await fetch('/api/docs/sync-external');
+			const res = await fetch('/api/docs/sync-external', {
+				headers: { Accept: 'application/json' }
+			});
 			if (res.ok) {
 				const data = await res.json();
-				isSyncRunning = Boolean(data.isSyncRunning);
+				const running = Boolean(data.isSyncRunning);
+				isSyncRunning = running;
 				lastSyncTimestamp = data.lastSyncTimestamp;
 				lastSyncStatus = data.lastSyncStatus;
 
-				if (Array.isArray(data.logs) && data.logs.length > 0) {
-					logs = data.logs;
-				} else if (typeof data.output === 'string' && data.output.trim()) {
-					logs = data.output.split('\n');
+				if (data.checkpoint) {
+					checkpoint = data.checkpoint;
 				}
 
-				if (Array.isArray(data.activeTypes) && data.activeTypes.length > 0 && isSyncRunning) {
+				if (Array.isArray(data.logs) && data.logs.length > 0) {
+					logs = data.logs;
+				}
+
+				if (Array.isArray(data.activeTypes) && data.activeTypes.length > 0 && running) {
 					selectedTypes = data.activeTypes;
 				}
 
-				// Auto scroll terminal smoothly to the latest line
 				if (terminalEl) {
 					requestAnimationFrame(() => {
 						if (terminalEl) {
@@ -110,17 +147,37 @@
 						}
 					});
 				}
+
+				// Only keep polling while sync is actively running!
+				if (running && ui.isSyncModalOpen) {
+					scheduleNextPoll(1500);
+				} else {
+					stopPolling();
+				}
 			}
-		} catch (_) {}
+		} catch (_) {
+			// If temporary error while running, retry gently after 2.5s
+			if (isSyncRunning && ui.isSyncModalOpen) {
+				scheduleNextPoll(2500);
+			}
+		} finally {
+			isFetchingStatus = false;
+		}
 	}
 
 	async function triggerSync() {
-		if (isSyncRunning) return;
+		if (isSyncRunning || isStartingSync) return;
+		isStartingSync = true;
 		isSyncRunning = true;
+		stopPolling();
 
 		const timeNow = new Date().toLocaleTimeString('id-ID');
-		const modeLabel = isIncremental ? 'Inkremental Cepat (Smart Cache)' : 'Full Re-index';
-		logs.push(`[${timeNow}] Mengirim perintah sinkronisasi (${selectedTypes.join(', ').toUpperCase()} - ${modeLabel})...`);
+		const modeLabel = isIncremental ? 'Inkremental Cepat (Smart Cache)' : 'Full Re-index Bertahap';
+		const batchLabel = batchLimit > 0 ? `, Maks ${batchLimit} berkas baru` : ', Throttled Anti-Hang';
+		logs = [
+			...logs,
+			`[${timeNow}] Mengirim perintah sinkronisasi (${selectedTypes.join(', ').toUpperCase()} — ${modeLabel}${batchLabel})...`
+		];
 
 		try {
 			const res = await fetch('/api/docs/sync-external', {
@@ -128,28 +185,35 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					types: selectedTypes,
-					force: !isIncremental
+					force: !isIncremental,
+					batchLimit
 				})
 			});
 			if (res.ok) {
-				fetchStatus();
+				scheduleNextPoll(600);
+			} else {
+				isSyncRunning = false;
+				logs = [...logs, `[ERROR] Server menolak permintaan sinkronisasi (HTTP ${res.status}).`];
 			}
 		} catch (err: any) {
-			logs.push(`[ERROR] Gagal memicu sinkronisasi: ${err?.message}`);
+			logs = [...logs, `[ERROR] Gagal memicu sinkronisasi: ${err?.message}`];
 			isSyncRunning = false;
+		} finally {
+			isStartingSync = false;
 		}
 	}
 
 	async function stopSync() {
 		if (!isSyncRunning) return;
+		stopPolling();
 		const timeNow = new Date().toLocaleTimeString('id-ID');
-		logs.push(`[${timeNow}] Mengirim permintaan penghentian aman ke server...`);
+		logs = [...logs, `[${timeNow}] Mengirim permintaan penghentian aman ke server...`];
 
 		try {
 			await fetch('/api/docs/sync-external?action=stop', { method: 'POST' });
-			fetchStatus();
+			scheduleNextPoll(500);
 		} catch (err: any) {
-			logs.push(`[ERROR] Gagal mengirim sinyal penghentian: ${err?.message}`);
+			logs = [...logs, `[ERROR] Gagal mengirim sinyal penghentian: ${err?.message}`];
 		}
 	}
 
@@ -219,7 +283,7 @@
 							</h3>
 						</div>
 						<p class="text-xs text-muted-foreground mt-0.5">
-							Ekstraksi & indeksasi berkas terpilih untuk basis pengetahuan AI Copilot
+							Ekstraksi satu-per-satu (Low-CPU & RAM Capped) agar laptop tetap ringan
 						</p>
 					</div>
 				</div>
@@ -278,13 +342,46 @@
 				</div>
 			</div>
 
-			<!-- Resilience Notice Banner (Anti-Putus) -->
+			<!-- Low-Resource & Anti-Hang Protection Banner -->
 			<div class="flex items-start gap-2.5 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-xs text-muted-foreground">
-				<ShieldCheck class="size-4 text-emerald-500 shrink-0 mt-0.5" />
+				<Cpu class="size-4 text-emerald-500 shrink-0 mt-0.5" />
 				<div class="leading-relaxed">
-					<strong class="text-foreground">Tahan Putus & Mandiri di Background:</strong> Proses berjalan di sisi server. Anda dapat menutup pop-up atau browser kapan saja tanpa membatalkan sinkronisasi. Checkpoint tersimpan otomatis setiap 20 berkas.
+					<strong class="text-foreground">Proteksi Anti-Hang Aktif:</strong> Dokumen diekstrak secara berurutan (1 berkas per waktu) dengan jeda pendinginan CPU, batas RAM 768 MB, dan 1 request pemantauan tiap 1,5 detik.
 				</div>
 			</div>
+
+			<!-- Progress Bar & Checkpoint Summary -->
+			{#if checkpoint && (checkpoint.total ?? 0) > 0}
+				<div class="rounded-xl border border-border/70 bg-muted/25 p-3 space-y-2">
+					<div class="flex items-center justify-between text-xs">
+						<div class="flex items-center gap-2 font-semibold text-foreground truncate">
+							<span>
+								Progres: {checkpoint.processed || 0} / {checkpoint.total || 0} berkas ({progressPercent}%)
+							</span>
+							{#if isSyncRunning && checkpoint.currentFile}
+								<span class="text-muted-foreground font-normal truncate max-w-[240px]">
+									• {checkpoint.currentFile}
+								</span>
+							{/if}
+						</div>
+						<div class="flex items-center gap-2 text-[11px] text-muted-foreground shrink-0">
+							<span class="text-emerald-600 dark:text-emerald-400 font-medium">
+								{checkpoint.cached || 0} cache
+							</span>
+							<span>•</span>
+							<span class="text-amber-600 dark:text-amber-400 font-medium">
+								{checkpoint.newOrUpdated || 0} baru
+							</span>
+						</div>
+					</div>
+					<div class="h-2 w-full overflow-hidden rounded-full bg-muted">
+						<div
+							class="h-full bg-emerald-500 transition-all duration-300"
+							style="width: {progressPercent}%"
+						></div>
+					</div>
+				</div>
+			{/if}
 
 			<!-- Filter & Mode Collapsible Header -->
 			<div class="rounded-xl border border-border/70 bg-muted/30 p-3 space-y-2.5">
@@ -315,8 +412,14 @@
 						<span class="text-muted-foreground/60">•</span>
 						<span class="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
 							<Zap class="size-3" />
-							{isIncremental ? 'Inkremental (Cepat / Cache)' : 'Full Re-index'}
+							{isIncremental ? 'Inkremental (Smart Cache)' : 'Full Re-index'}
 						</span>
+						{#if batchLimit > 0}
+							<span class="text-muted-foreground/60">•</span>
+							<Badge variant="outline" class="text-[10px] px-1.5 py-0">
+								Batch {batchLimit} berkas
+							</Badge>
+						{/if}
 					</div>
 				{/if}
 
@@ -370,6 +473,23 @@
 									<RefreshCw class="size-3" />
 									<span>Penuh (Full Re-index)</span>
 								</button>
+							</div>
+						</div>
+
+						<!-- Batch Limit Selector (Extra Safe Mode for Laptop) -->
+						<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1 border-t border-border/40 text-xs">
+							<span class="text-muted-foreground">Batas Ekstraksi Baru per Klik:</span>
+							<div class="flex flex-wrap items-center gap-1.5">
+								{#each [{ val: 0, label: 'Semua (Bertahap)' }, { val: 25, label: '25 Berkas' }, { val: 50, label: '50 Berkas' }] as opt}
+									<button
+										type="button"
+										onclick={() => (batchLimit = opt.val)}
+										disabled={isSyncRunning}
+										class="px-2.5 py-1 rounded-lg border text-xs font-medium cursor-pointer transition-all {batchLimit === opt.val ? 'bg-primary/15 border-primary/50 text-foreground' : 'bg-background border-border text-muted-foreground'}"
+									>
+										{opt.label}
+									</button>
+								{/each}
 							</div>
 						</div>
 					</div>
@@ -429,6 +549,7 @@
 						<Button
 							size="sm"
 							onclick={triggerSync}
+							disabled={isStartingSync}
 							class="h-8 gap-1.5 text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs cursor-pointer active:scale-95 transition-transform"
 						>
 							<RefreshCw class="size-3.5" />
@@ -450,7 +571,7 @@
 
 				<div
 					bind:this={terminalEl}
-					class="relative h-[250px] w-full overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3.5 font-mono text-[11.5px] leading-relaxed text-zinc-300 shadow-inner select-text"
+					class="relative h-[220px] w-full overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-950 p-3.5 font-mono text-[11.5px] leading-relaxed text-zinc-300 shadow-inner select-text"
 					role="log"
 					aria-live="polite"
 				>
@@ -459,13 +580,15 @@
 							{#each logs as line}
 								{#if line.includes('[ERROR]') || line.includes('[FATAL]') || line.includes('Gagal')}
 									<div class="text-rose-400 font-medium">{line}</div>
+								{:else if line.includes('[SKIP]')}
+									<div class="text-amber-400">{line}</div>
 								{:else if line.includes('[SYNC DOCS]') || line.includes('SUKSES') || line.includes('Selesai') || line.includes('Total Terindeks')}
 									<div class="text-emerald-400 font-medium">{line}</div>
 								{:else if line.startsWith('===')}
 									<div class="text-zinc-500">{line}</div>
 								{:else if line.includes('Target Folder') || line.includes('Jenis Dokumen')}
 									<div class="text-sky-300">{line}</div>
-								{:else if line.includes('Progres pemrosesan') || line.includes('dari cache')}
+								{:else if line.includes('[PROGRES]') || line.includes('dari cache')}
 									<div class="text-amber-300 font-mono">{line}</div>
 								{:else if line.includes('DIHENTIKAN') || line.includes('Sinyal penghentian')}
 									<div class="text-sky-400 font-medium">{line}</div>

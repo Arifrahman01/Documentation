@@ -81,8 +81,25 @@
 		const slug = doc?.slug || doc?.path || doc?.id || '';
 		if (slug && slug !== currentDocSlug) {
 			currentDocSlug = slug;
-			messages = [];
 			inputQuery = '';
+			if (typeof window !== 'undefined') {
+				try {
+					const saved = sessionStorage.getItem(`doc_ai_hist_${slug}`);
+					messages = saved ? JSON.parse(saved) : [];
+				} catch {
+					messages = [];
+				}
+			} else {
+				messages = [];
+			}
+		}
+	});
+
+	$effect(() => {
+		if (currentDocSlug && typeof window !== 'undefined') {
+			try {
+				sessionStorage.setItem(`doc_ai_hist_${currentDocSlug}`, JSON.stringify(messages.slice(-20)));
+			} catch (_) {}
 		}
 	});
 
@@ -170,6 +187,15 @@
 		messages = [...messages, { role: 'user', content: query, label: actionLabel }];
 		isLoading = true;
 
+		const fullDocText = [
+			doc?.content || doc?.description || '',
+			doc?.builderContent
+				? `\n\n--- [SPESIFIKASI STORY BUILDER SAC] ---\n${doc.builderContent}`
+				: ''
+		]
+			.filter(Boolean)
+			.join('');
+
 		try {
 			const res = await fetch('/api/ai/chat', {
 				method: 'POST',
@@ -183,7 +209,7 @@
 						category: doc?.category || 'General',
 						slug: doc?.slug || doc?.path || ''
 					},
-					documentContext: doc?.content || doc?.description || '',
+					documentContext: fullDocText,
 					currentRoute: doc?.title || '',
 					history: priorHistory
 				})

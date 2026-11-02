@@ -211,7 +211,7 @@
 				<Button
 					variant="outline"
 					size="sm"
-					onclick={() => ui.openSyncModal(true)}
+					onclick={() => ui.openSyncModal(false)}
 					class="h-9 gap-1.5 text-xs font-semibold px-2.5 sm:px-3 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 hover:border-emerald-500/50 shadow-2xs shrink-0 cursor-pointer transition-all active:scale-95"
 					title="Buka Detail & Jalankan Sinkronisasi Dokumen Eksternal"
 					aria-label="Detail Sinkronisasi Dokumen Eksternal"
@@ -351,7 +351,7 @@
 							size="sm"
 							onclick={() => {
 								mobileMenuOpen = false;
-								ui.openSyncModal(true);
+								ui.openSyncModal(false);
 							}}
 							class="w-full justify-center h-9 gap-2 text-xs font-semibold text-emerald-600 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 shadow-2xs cursor-pointer active:scale-95 transition-transform"
 						>

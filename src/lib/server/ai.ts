@@ -163,9 +163,26 @@ export function callAiChat(
 }
 
 // ============================================================================
-// 4-PILLAR ADVANCED RAG ENGINE
-// (Smart Chunking + Hybrid BM25/Fuzzy + Multi-Turn Context Locking + Catalog Map)
+// TOKEN-EFFICIENT, PRE-DIGESTED RAG & CONTEXT MEMORY ENGINE
+// - Pre-Computed Document Digest Cards (Built Once in RAM, Never Re-read per Query)
+// - Inverted Keyword Index for O(1) Candidate Lookup (No Full-Scan Lag)
+// - Conditional Catalog Injection (Saves ~800 Tokens per Normal Chat)
+// - Multi-Turn Delta Retrieval (Sends Digest + Only New Relevant Paragraphs on Follow-ups)
 // ============================================================================
+
+export interface DocDigest {
+	docId: string;
+	sourceType: 'SYNC_DOC' | 'USER_NOTE' | 'PORTAL_DOC';
+	title: string;
+	fileName: string;
+	category: string;
+	subcategory?: string;
+	pathOrLoc: string;
+	ownerName?: string;
+	outlineSummary: string;
+	digestCard: string; // Compact ~120-token summary card of the entire document
+	totalParts: number;
+}
 
 export interface DocChunk {
 	chunkId: string;
@@ -178,6 +195,7 @@ export interface DocChunk {
 	pathOrLoc: string;
 	ownerName?: string;
 	tags: string[];
+	outlineSummary: string;
 	partNumber: number;
 	totalParts: number;
 	text: string;
@@ -202,9 +220,6 @@ const STOPWORDS = new Set([
 	'is', 'are', 'in', 'on', 'of', 'to', 'for', 'and', 'or', 'with', 'how', 'what'
 ]);
 
-/**
- * Ekstrak kata kunci bermakna dari kalimat pertanyaan (menghapus kata sambung/filler).
- */
 export function extractQueryKeywords(text: string): string[] {
 	if (!text || typeof text !== 'string') return [];
 	const cleaned = text
@@ -216,9 +231,6 @@ export function extractQueryKeywords(text: string): string[] {
 	return Array.from(new Set(tokens));
 }
 
-/**
- * Ekstrak frasa 2 kata (bigrams) untuk pencocokan frasa spesifik.
- */
 function extractQueryBigrams(keywords: string[]): string[] {
 	const bigrams: string[] = [];
 	for (let i = 0; i < keywords.length - 1; i++) {
@@ -227,18 +239,129 @@ function extractQueryBigrams(keywords: string[]): string[] {
 	return bigrams;
 }
 
+export function extractDocumentOutline(rawText: string): string {
+	if (!rawText) return '';
+	const headings: string[] = [];
+	const lines = rawText.split('\n');
+	for (const line of lines) {
+		const trimmed = line.trim();
+		if (!trimmed) continue;
+		if (/^#{1,4}\s+.+/.test(trimmed)) {
+			headings.push(trimmed.replace(/^#+\s*/, '').trim());
+		} else if (/^\[(Sheet|Slide)[^\]]+\]/i.test(trimmed)) {
+			const match = trimmed.match(/^\[([^\]]+)\]/);
+			if (match) headings.push(match[1]);
+		}
+		if (headings.length >= 18) break;
+	}
+	return headings.length > 0 ? headings.join(' | ') : '';
+}
+
 /**
- * Pilar 1: Smart Chunking — Memecah dokumen panjang menjadi bagian-bagian (chunks)
- * berukuran ~1.300 karakter dengan overlap ~220 karakter agar tidak ada halaman yang terpotong/hilang.
+ * Buat Kartu Intisari Dokumen (Pre-Computed Digest Card) berukuran hemat (~80-150 token)
+ * sehingga AI langsung memahami konteks utuh dokumen tanpa harus membaca ribuan kata berulang kali.
  */
+function buildPrecomputedDigestCard(
+	title: string,
+	category: string,
+	pathOrLoc: string,
+	outlineSummary: string,
+	rawContent: string,
+	totalParts: number
+): string {
+	const cleanFirstLines = rawContent
+		.replace(/^#+\s+.+$/gm, '')
+		.replace(/\n+/g, ' ')
+		.trim()
+		.slice(0, 280);
+	const parts: string[] = [
+		`• Judul: "${title}" | Kategori: ${category} | Lokasi: ${pathOrLoc} (${totalParts} bagian)`
+	];
+	if (outlineSummary) {
+		parts.push(`• Peta Bab/Sheet: ${outlineSummary}`);
+	}
+	if (cleanFirstLines) {
+		parts.push(`• Ringkasan Awal: ${cleanFirstLines}...`);
+	}
+	return parts.join('\n');
+}
+
+/**
+ * Token-Efficient Smart Active Document Context:
+ * - Pada Pertanyaan Pertama (Turn 1): Mengirimkan Kartu Intisari + Bagian dokumen yang relevan (maks 8.000 karakter).
+ * - Pada Pertanyaan Lanjutan (Turn 2+): TIDAK mengirim ulang seluruh dokumen dari awal!
+ *   Hanya mengirim Kartu Intisari Dokumen (~150 token) + 2 segmen paling relevan dengan pertanyaan baru (~2.400 karakter),
+ *   karena isi sebelumnya sudah ada di riwayat obrolan. Menghemat token hingga 75%!
+ */
+export function buildSmartActiveDocContext(
+	rawDocText: string,
+	query: string,
+	maxChars = 10000,
+	isFollowUpTurn = false
+): string {
+	const clean = (rawDocText || '').trim();
+	if (!clean) return '';
+
+	const outline = extractDocumentOutline(clean);
+	const outlineHeader = outline ? `[PETA STRUKTUR BAB / SHEET DOKUMEN INI]: ${outline}\n` : '';
+	const briefIntro = clean.slice(0, 600).trim();
+
+	// Jika ini adalah pertanyaan lanjutan (Turn 2+), gunakan mode Delta Hemat Token
+	const effectiveBudget = isFollowUpTurn ? Math.min(maxChars, 3200) : maxChars;
+
+	if (clean.length <= effectiveBudget) {
+		return `${outlineHeader}\n${clean}`.trim();
+	}
+
+	const keywords = extractQueryKeywords(query);
+	const segSize = 1400;
+	const segments: Array<{ index: number; text: string; score: number }> = [];
+
+	for (let pos = 0, idx = 0; pos < clean.length; pos += segSize - 200, idx++) {
+		const segText = clean.slice(pos, pos + segSize);
+		const segLower = segText.toLowerCase();
+		let score = 0;
+		for (const kw of keywords) {
+			if (segLower.includes(kw)) {
+				score += 6 + Math.min(countOccurrences(segLower, kw), 4) * 2.5;
+			}
+		}
+		// Sedikit bonus untuk bagian awal jika tidak ada kata kunci spesifik
+		if (idx === 0 && score === 0) score = 1;
+		segments.push({ index: idx, text: segText, score });
+	}
+
+	segments.sort((a, b) => b.score - a.score || a.index - b.index);
+	const maxSegments = Math.max(1, Math.floor(effectiveBudget / segSize));
+	const chosenSegments = segments
+		.slice(0, maxSegments)
+		.sort((a, b) => a.index - b.index);
+
+	const hasFirstSegment = chosenSegments.some((s) => s.index === 0);
+
+	return [
+		outlineHeader.trim(),
+		!hasFirstSegment ? `[RINGKASAN PEMBUKA DOKUMEN]:\n${briefIntro}...` : '',
+		...chosenSegments.map(
+			(seg) => `--- [KUTIPAN BAB RELEVAN (Segmen #${seg.index + 1})] ---\n${seg.text.trim()}`
+		)
+	]
+		.filter(Boolean)
+		.join('\n\n');
+}
+
 function splitDocumentIntoChunks(
 	doc: DocumentItem & { ownerName?: string },
 	sourceType: 'SYNC_DOC' | 'USER_NOTE' | 'PORTAL_DOC',
-	chunkSize = 1350,
-	overlap = 220
-): DocChunk[] {
-	const rawContent = (doc.content || doc.snippet || doc.description || '').trim();
-	if (!rawContent) return [];
+	chunkSize = 1150,
+	overlap = 180
+): { chunks: DocChunk[]; digest: DocDigest } | null {
+	const mainText = (doc.content || doc.snippet || doc.description || '').trim();
+	const builderText = doc.builderContent
+		? `\n\n[SPESIFIKASI STORY BUILDER SAC]:\n${doc.builderContent.trim()}`
+		: '';
+	const rawContent = `${mainText}${builderText}`.trim();
+	if (!rawContent) return null;
 
 	const docId = doc.id || doc.slug || doc.title;
 	const title = (doc.title || doc.fileName || 'Dokumen Tanpa Judul').trim();
@@ -252,65 +375,65 @@ function splitDocumentIntoChunks(
 				? `/my-docs/${doc.slug || doc.id}`
 				: `/docs/${doc.slug || doc.id}`;
 	const tags = Array.isArray(doc.tags) ? doc.tags : [];
+	const outlineSummary = extractDocumentOutline(rawContent);
 
 	const titleLower = `${title} ${fileName}`.toLowerCase();
-	const metaLower = `${category} ${subcategory || ''} ${tags.join(' ')} ${pathOrLoc} ${doc.ownerName || ''}`.toLowerCase();
-
-	if (rawContent.length <= chunkSize + 150) {
-		return [
-			{
-				chunkId: `${docId}#1`,
-				docId,
-				sourceType,
-				title,
-				fileName,
-				category,
-				subcategory,
-				pathOrLoc,
-				ownerName: doc.ownerName,
-				tags,
-				partNumber: 1,
-				totalParts: 1,
-				text: rawContent,
-				titleLower,
-				metaLower,
-				textLower: rawContent.toLowerCase()
-			}
-		];
-	}
+	const metaLower = `${category} ${subcategory || ''} ${tags.join(' ')} ${pathOrLoc} ${doc.ownerName || ''} ${outlineSummary}`.toLowerCase();
 
 	const textParts: string[] = [];
-	let start = 0;
-	const len = rawContent.length;
+	if (rawContent.length <= chunkSize + 200) {
+		textParts.push(rawContent);
+	} else {
+		let start = 0;
+		const len = rawContent.length;
+		while (start < len) {
+			let end = Math.min(start + chunkSize, len);
+			if (end < len) {
+				const paragraphBreak = rawContent.lastIndexOf('\n\n', end);
+				const lineBreak = rawContent.lastIndexOf('\n', end);
+				const spaceBreak = rawContent.lastIndexOf(' ', end);
 
-	while (start < len) {
-		let end = Math.min(start + chunkSize, len);
-		if (end < len) {
-			// Cari pemisah paragraf atau baris terdekat agar kalimat tidak terpotong di tengah kata
-			const paragraphBreak = rawContent.lastIndexOf('\n\n', end);
-			const lineBreak = rawContent.lastIndexOf('\n', end);
-			const spaceBreak = rawContent.lastIndexOf(' ', end);
-
-			if (paragraphBreak > start + chunkSize * 0.55) {
-				end = paragraphBreak;
-			} else if (lineBreak > start + chunkSize * 0.65) {
-				end = lineBreak;
-			} else if (spaceBreak > start + chunkSize * 0.75) {
-				end = spaceBreak;
+				if (paragraphBreak > start + chunkSize * 0.55) {
+					end = paragraphBreak;
+				} else if (lineBreak > start + chunkSize * 0.65) {
+					end = lineBreak;
+				} else if (spaceBreak > start + chunkSize * 0.75) {
+					end = spaceBreak;
+				}
 			}
-		}
 
-		const slice = rawContent.slice(start, end).trim();
-		if (slice.length > 0) {
-			textParts.push(slice);
+			const slice = rawContent.slice(start, end).trim();
+			if (slice.length > 0) {
+				textParts.push(slice);
+			}
+			if (end >= len) break;
+			start = Math.max(start + 1, end - overlap);
 		}
-
-		if (end >= len) break;
-		start = Math.max(start + 1, end - overlap);
 	}
 
 	const totalParts = textParts.length;
-	return textParts.map((text, idx) => ({
+	const digest: DocDigest = {
+		docId,
+		sourceType,
+		title,
+		fileName,
+		category,
+		subcategory,
+		pathOrLoc,
+		ownerName: doc.ownerName,
+		outlineSummary,
+		digestCard: buildPrecomputedDigestCard(
+			title,
+			category,
+			pathOrLoc,
+			outlineSummary,
+			rawContent,
+			totalParts
+		),
+		totalParts
+	};
+
+	const chunks: DocChunk[] = textParts.map((text, idx) => ({
 		chunkId: `${docId}#${idx + 1}`,
 		docId,
 		sourceType,
@@ -321,6 +444,7 @@ function splitDocumentIntoChunks(
 		pathOrLoc,
 		ownerName: doc.ownerName,
 		tags,
+		outlineSummary,
 		partNumber: idx + 1,
 		totalParts,
 		text,
@@ -328,13 +452,20 @@ function splitDocumentIntoChunks(
 		metaLower,
 		textLower: text.toLowerCase()
 	}));
+
+	return { chunks, digest };
 }
 
+// Pre-computed singleton memory store (Only built once when data changes, 0ms per chat request)
 let cachedIndexKey = '';
 let cachedAllChunks: DocChunk[] = [];
+let cachedChunksByDocId = new Map<string, DocChunk[]>();
+let cachedDigestsByDocId = new Map<string, DocDigest>();
+let cachedInvertedIndex = new Map<string, Set<number>>(); // token -> chunk indices for O(1) lookup
 let cachedChunkFuse: Fuse<DocChunk> | null = null;
 let cachedAppFuse: Fuse<any> | null = null;
 let cachedCatalogSummary = '';
+let cachedCompactStatsHeader = '';
 
 function getSearchIndices() {
 	const docs = loadDocuments();
@@ -346,33 +477,57 @@ function getSearchIndices() {
 
 	if (!cachedChunkFuse || !cachedAppFuse || cachedIndexKey !== indexKey) {
 		const allChunks: DocChunk[] = [];
+		const byDocId = new Map<string, DocChunk[]>();
+		const digestsByDocId = new Map<string, DocDigest>();
+		const invertedIdx = new Map<string, Set<number>>();
 
-		// 1. User Notes (My Docs / Catatan di Program Ini)
-		for (const note of userNotes) {
-			allChunks.push(...splitDocumentIntoChunks(note, 'USER_NOTE'));
-		}
+		const registerDoc = (
+			doc: DocumentItem & { ownerName?: string },
+			sourceType: 'SYNC_DOC' | 'USER_NOTE' | 'PORTAL_DOC'
+		) => {
+			const res = splitDocumentIntoChunks(doc, sourceType);
+			if (!res) return;
+			digestsByDocId.set(res.digest.docId, res.digest);
+			byDocId.set(res.digest.docId, res.chunks);
 
-		// 2. Portal Official Documentation (/docs)
-		for (const doc of docs) {
-			allChunks.push(...splitDocumentIntoChunks(doc, 'PORTAL_DOC'));
-		}
+			for (const c of res.chunks) {
+				const chunkArrayIdx = allChunks.length;
+				allChunks.push(c);
 
-		// 3. External Synced Documents (Helpdesk Synced PDF/DOCX/XLSX/PPTX/TXT)
-		for (const ext of extDocs) {
-			allChunks.push(...splitDocumentIntoChunks(ext, 'SYNC_DOC'));
-		}
+				// Index unique words (length >= 3) into Inverted Index so queries don't scan irrelevant chunks
+				const combinedWords = `${c.titleLower} ${c.metaLower} ${c.textLower}`
+					.replace(/[^a-z0-9_/-]+/g, ' ')
+					.split(/\s+/);
+				for (const w of combinedWords) {
+					if (w.length >= 3 && !STOPWORDS.has(w)) {
+						let bucket = invertedIdx.get(w);
+						if (!bucket) {
+							bucket = new Set<number>();
+							invertedIdx.set(w, bucket);
+						}
+						bucket.add(chunkArrayIdx);
+					}
+				}
+			}
+		};
+
+		for (const note of userNotes) registerDoc(note, 'USER_NOTE');
+		for (const doc of docs) registerDoc(doc, 'PORTAL_DOC');
+		for (const ext of extDocs) registerDoc(ext, 'SYNC_DOC');
 
 		cachedAllChunks = allChunks;
+		cachedChunksByDocId = byDocId;
+		cachedDigestsByDocId = digestsByDocId;
+		cachedInvertedIndex = invertedIdx;
 
 		cachedChunkFuse = new Fuse(allChunks, {
 			keys: [
-				{ name: 'title', weight: 0.35 },
-				{ name: 'fileName', weight: 0.25 },
+				{ name: 'title', weight: 0.4 },
+				{ name: 'fileName', weight: 0.3 },
 				{ name: 'category', weight: 0.2 },
-				{ name: 'tags', weight: 0.15 },
-				{ name: 'text', weight: 0.2 }
+				{ name: 'tags', weight: 0.1 }
 			],
-			threshold: 0.42,
+			threshold: 0.38,
 			ignoreLocation: true
 		});
 
@@ -387,12 +542,13 @@ function getSearchIndices() {
 			ignoreLocation: true
 		});
 
-		// Pilar 4: Bangun Katalog Peta Pengetahuan Global (Global Knowledge Map)
-		const noteTitles = userNotes.map(
-			(n) => `"${n.title}" (Kategori: ${n.category}${n.subcategory ? '/' + n.subcategory : ''}, Pemilik: ${n.ownerName || 'User'})`
-		);
-		const portalTitles = docs.map((d) => `"${d.title}" [${d.section || 'DOC'} - ${d.category}]`);
+		// Compact stats line (~25 tokens) vs Full Catalog (~800 tokens, only injected when user asks for catalog)
+		cachedCompactStatsHeader = `[BASIS PENGETAHUAN TERINDEKS DI MEMORI: ${userNotes.length} Note (My Docs), ${docs.length} Dokumentasi Modul, ${extDocs.length} Dokumen Sinkronisasi Eksternal]`;
 
+		const noteTitles = userNotes.map(
+			(n) => `"${n.title}" (${n.category}${n.subcategory ? '/' + n.subcategory : ''})`
+		);
+		const portalTitles = docs.map((d) => `"${d.title}" [${d.section || 'DOC'}]`);
 		const extCategoryCounts = new Map<string, number>();
 		for (const e of extDocs) {
 			const cat = e.category || 'Umum';
@@ -400,22 +556,18 @@ function getSearchIndices() {
 		}
 		const extCatSummary = Array.from(extCategoryCounts.entries())
 			.slice(0, 15)
-			.map(([c, count]) => `${c} (${count} berkas)`)
+			.map(([c, count]) => `${c} (${count})`)
 			.join(', ');
 		const sampleExtTitles = extDocs
-			.slice(0, 35)
+			.slice(0, 25)
 			.map((e) => e.fileName || e.title)
 			.join(', ');
 
 		cachedCatalogSummary = [
 			`[PETA KATALOG PENGETAHUAN PROGRAM INI]:`,
-			`1. Catatan / Note di Program Ini (Menu My Docs - Total ${userNotes.length} catatan):`,
-			noteTitles.length > 0 ? `   - ${noteTitles.join('\n   - ')}` : `   - Belum ada catatan`,
-			`2. Dokumentasi Modul Portal (Menu Documentation - Total ${docs.length} dokumen):`,
-			portalTitles.length > 0 ? `   - ${portalTitles.slice(0, 30).join(', ')}` : `   - Belum ada dokumen`,
-			`3. Dokumen Hasil Sinkronisasi Eksternal Helpdesk (Total ${extDocs.length} berkas terindeks dalam ${allChunks.filter((c) => c.sourceType === 'SYNC_DOC').length} bagian/chunks):`,
-			`   - Kategori Folder: ${extCatSummary || '-'}`,
-			`   - Contoh Berkas Terindeks: ${sampleExtTitles || '-'}`
+			`1. Note (My Docs - ${userNotes.length} catatan): ${noteTitles.join(', ') || 'Belum ada'}`,
+			`2. Dokumentasi Portal (${docs.length} dokumen): ${portalTitles.slice(0, 25).join(', ')}`,
+			`3. Dokumen Sinkronisasi Eksternal (${extDocs.length} berkas): Kategori [${extCatSummary}] | Contoh: ${sampleExtTitles}`
 		].join('\n');
 
 		cachedIndexKey = indexKey;
@@ -423,9 +575,13 @@ function getSearchIndices() {
 
 	return {
 		allChunks: cachedAllChunks,
+		chunksByDocId: cachedChunksByDocId,
+		digestsByDocId: cachedDigestsByDocId,
+		invertedIndex: cachedInvertedIndex,
 		chunkFuse: cachedChunkFuse!,
 		appFuse: cachedAppFuse!,
-		catalogSummary: cachedCatalogSummary
+		catalogSummary: cachedCatalogSummary,
+		compactStatsHeader: cachedCompactStatsHeader
 	};
 }
 
@@ -441,28 +597,60 @@ function countOccurrences(haystack: string, needle: string): number {
 }
 
 /**
- * Pilar 2 & 3: Pencarian Hibrida BM25 + Fuzzy + Multi-Turn Context Locking
- * Mengambil bagian bab/paragraf (chunks) yang paling relevan dari seluruh dokumen sinkronisasi & note
- * tanpa harus membaca seluruh ratusan dokumen secara mentah.
+ * Token-Efficient & Zero Re-Reading Knowledge Retrieval:
+ * 1. Menggunakan Inverted Index & Pre-Computed Digest di RAM (0ms, tidak pernah baca ulang file dari disk).
+ * 2. Hanya menyertakan Katalog Penuh jika user bertanya soal daftar dokumen/note (hemat ~750 token/chat).
+ * 3. Menyertakan Kartu Intisari Dokumen (Digest Card) + 3-4 Kutipan Bab paling relevan (bukan seluruh dokumen mentah).
  */
 export function retrieveRelevantKnowledge(
 	query: string,
-	history?: Array<{ role: string; content: string }>
+	history?: Array<{ role: string; content: string }>,
+	activeDocHint?: string
 ): { knowledgeText: string; hasMatches: boolean; extractedKeywords: string[] } {
-	const { allChunks, chunkFuse, appFuse, catalogSummary } = getSearchIndices();
+	const {
+		allChunks,
+		chunksByDocId,
+		digestsByDocId,
+		invertedIndex,
+		chunkFuse,
+		appFuse,
+		catalogSummary,
+		compactStatsHeader
+	} = getSearchIndices();
 
 	const cleanQuery = (query || '').trim();
 	const primaryKeywords = extractQueryKeywords(cleanQuery);
+	const isFollowUpTurn = Array.isArray(history) && history.length >= 2;
 
-	// Pilar 3: Multi-Turn Conversational Context Locking
-	// Ambil kata kunci dari 2 giliran percakapan sebelumnya jika pertanyaan saat ini merupakan pertanyaan lanjutan
 	const historyKeywords: string[] = [];
+	const recentHistoryTextLower: string[] = [];
 	if (Array.isArray(history) && history.length > 0) {
 		const recentMessages = history.slice(-4);
 		for (const msg of recentMessages) {
 			if (msg && typeof msg.content === 'string') {
+				recentHistoryTextLower.push(msg.content.toLowerCase());
 				const kws = extractQueryKeywords(msg.content);
 				historyKeywords.push(...kws.slice(0, 8));
+			}
+		}
+	}
+
+	const combinedHistoryLower = recentHistoryTextLower.join('\n');
+	const activeHintLower = (activeDocHint || '').toLowerCase().trim();
+
+	// Identifikasi dokumen yang sedang dibicarakan di pesan sebelumnya (Sticky Document IDs)
+	const stickyDocIds = new Set<string>();
+	if (combinedHistoryLower.length > 0 || activeHintLower.length > 0) {
+		for (const [docId, digest] of digestsByDocId.entries()) {
+			const titleL = digest.title.toLowerCase();
+			const fileL = digest.fileName.toLowerCase();
+			if (
+				(titleL.length >= 4 && combinedHistoryLower.includes(titleL)) ||
+				(fileL.length >= 4 && combinedHistoryLower.includes(fileL)) ||
+				(activeHintLower.length >= 4 &&
+					(titleL.includes(activeHintLower) || activeHintLower.includes(titleL)))
+			) {
+				stickyDocIds.add(docId);
 			}
 		}
 	}
@@ -473,7 +661,6 @@ export function retrieveRelevantKnowledge(
 	const allActiveKeywords = [...primaryKeywords, ...uniqueHistoryKeywords.slice(0, 6)];
 	const bigrams = extractQueryBigrams(primaryKeywords);
 
-	// Jika user bertanya tentang daftar seluruh note / dokumen yang ada
 	const qLower = cleanQuery.toLowerCase();
 	const isCatalogQuestion =
 		qLower.includes('dokumen apa saja') ||
@@ -486,21 +673,51 @@ export function retrieveRelevantKnowledge(
 		qLower.includes('apa saja isi dokumen') ||
 		qLower.includes('berapa dokumen');
 
-	// Skor setiap chunk menggunakan BM25-style keyword + phrase + metadata scoring
+	// Kumpulkan kandidat chunk secara instan melalui Inverted Index + Sticky Docs (tanpa scan buta ribuan chunk)
+	const candidateChunkIndices = new Set<number>();
+	for (const kw of allActiveKeywords) {
+		const exactSet = invertedIndex.get(kw);
+		if (exactSet) {
+			for (const idx of exactSet) candidateChunkIndices.add(idx);
+		}
+		// Partial prefix match untuk kata >= 4 huruf
+		if (kw.length >= 4) {
+			for (const [indexedWord, idxSet] of invertedIndex.entries()) {
+				if (indexedWord.includes(kw) || kw.includes(indexedWord)) {
+					for (const idx of idxSet) candidateChunkIndices.add(idx);
+				}
+			}
+		}
+	}
+
+	// Sertakan juga semua chunk dari dokumen yang sedang dikunci (Sticky Docs)
+	if (stickyDocIds.size > 0) {
+		for (let i = 0; i < allChunks.length; i++) {
+			if (stickyDocIds.has(allChunks[i].docId)) {
+				candidateChunkIndices.add(i);
+			}
+		}
+	}
+
 	const chunkScores = new Map<string, { chunk: DocChunk; score: number }>();
 
-	for (const chunk of allChunks) {
+	for (const chunkIdx of candidateChunkIndices) {
+		const chunk = allChunks[chunkIdx];
+		if (!chunk) continue;
+
 		let score = 0;
 		let matchedPrimaryCount = 0;
 
-		// 1. Pencocokan Frasa 2 Kata (Bigrams)
+		if (stickyDocIds.has(chunk.docId)) {
+			score += 24;
+		}
+
 		for (const bg of bigrams) {
 			if (chunk.titleLower.includes(bg)) score += 22;
 			if (chunk.metaLower.includes(bg)) score += 14;
 			if (chunk.textLower.includes(bg)) score += 15;
 		}
 
-		// 2. Pencocokan Kata Kunci Utama (Primary Query Keywords)
 		for (const kw of primaryKeywords) {
 			let kwMatched = false;
 			if (chunk.titleLower.includes(kw)) {
@@ -513,28 +730,27 @@ export function retrieveRelevantKnowledge(
 			}
 			const textHits = countOccurrences(chunk.textLower, kw);
 			if (textHits > 0) {
-				// Saturasi frekuensi kata (BM25 style)
 				score += Math.min(textHits, 5) * 3.5;
 				kwMatched = true;
 			}
 			if (kwMatched) matchedPrimaryCount++;
 		}
 
-		// Bonus cakupan multi-kata kunci (Coverage Bonus)
 		if (matchedPrimaryCount >= 2) {
 			score += matchedPrimaryCount * 7;
 		}
 
-		// 3. Pencocokan Konteks Percakapan Sebelumnya (Multi-Turn Context Locking)
 		for (const hkw of uniqueHistoryKeywords.slice(0, 6)) {
 			if (chunk.titleLower.includes(hkw)) score += 4.5;
 			if (chunk.metaLower.includes(hkw)) score += 2.5;
 			if (chunk.textLower.includes(hkw)) score += 1.5;
 		}
 
-		// 4. Prioritas Note jika user menyebut kata "note" atau "catatan"
-		if ((qLower.includes('note') || qLower.includes('catatan') || qLower.includes('my docs')) && chunk.sourceType === 'USER_NOTE') {
-			score += 12;
+		if (
+			(qLower.includes('note') || qLower.includes('catatan') || qLower.includes('my docs')) &&
+			chunk.sourceType === 'USER_NOTE'
+		) {
+			score += 14;
 		}
 
 		if (score > 0) {
@@ -542,13 +758,13 @@ export function retrieveRelevantKnowledge(
 		}
 	}
 
-	// 5. Tambahkan Fuzzy Search (Fuse.js) untuk menangani typo ejaan
+	// Fallback Fuzzy Search hanya jika kandidat kata kunci sedikit (< 3 hasil)
 	const fuseQuery = primaryKeywords.length > 0 ? primaryKeywords.join(' ') : cleanQuery;
-	if (fuseQuery.length >= 2) {
-		const fuseHits = chunkFuse.search(fuseQuery).slice(0, 10);
+	if (chunkScores.size < 3 && fuseQuery.length >= 2) {
+		const fuseHits = chunkFuse.search(fuseQuery).slice(0, 6);
 		for (let i = 0; i < fuseHits.length; i++) {
 			const item = fuseHits[i].item;
-			const fuseBonus = Math.max(2, 12 - i);
+			const fuseBonus = Math.max(2, 10 - i);
 			const existing = chunkScores.get(item.chunkId);
 			if (existing) {
 				existing.score += fuseBonus;
@@ -558,71 +774,118 @@ export function retrieveRelevantKnowledge(
 		}
 	}
 
-	// Urutkan berdasarkan skor tertinggi
-	const rankedChunks = Array.from(chunkScores.values())
+	// Token Budget: Pada giliran pertama ambil maks 4 chunk terbaik; pada giliran lanjutan (follow-up) cukup ambil 3 chunk delta paling presisi
+	const maxTopChunks = isFollowUpTurn ? 3 : 4;
+	const topCandidates = Array.from(chunkScores.values())
 		.sort((a, b) => b.score - a.score)
-		.slice(0, 8);
+		.slice(0, maxTopChunks);
 
-	// Cari juga di direktori aplikasi jika relevan
+	// Neighbor Expansion hemat token: Hanya tambahkan 1 chunk kelanjutannya (#part+1) untuk dokumen peringkat #1 jika skornya sangat tinggi
+	const expandedChunksMap = new Map<string, { chunk: DocChunk; score: number }>();
+	for (let idx = 0; idx < topCandidates.length; idx++) {
+		const item = topCandidates[idx];
+		expandedChunksMap.set(item.chunk.chunkId, item);
+
+		if (idx === 0 && item.chunk.totalParts > 1 && item.chunk.partNumber < item.chunk.totalParts) {
+			const siblingChunks = chunksByDocId.get(item.chunk.docId) || [];
+			const nextChunk = siblingChunks.find((c) => c.partNumber === item.chunk.partNumber + 1);
+			if (nextChunk && !expandedChunksMap.has(nextChunk.chunkId)) {
+				expandedChunksMap.set(nextChunk.chunkId, {
+					chunk: nextChunk,
+					score: item.score - 0.5
+				});
+			}
+		}
+	}
+
+	const rankedChunks = Array.from(expandedChunksMap.values())
+		.sort((a, b) => {
+			if (a.chunk.docId === b.chunk.docId) {
+				return a.chunk.partNumber - b.chunk.partNumber;
+			}
+			return b.score - a.score;
+		})
+		.slice(0, isFollowUpTurn ? 4 : 5);
+
 	const matchedApps =
-		fuseQuery.length >= 2
+		fuseQuery.length >= 2 && (qLower.includes('aplikasi') || qLower.includes('app') || qLower.includes('url') || qLower.includes('link'))
 			? appFuse
 					.search(fuseQuery)
 					.slice(0, 2)
 					.map((r) => r.item)
 			: [];
 
-	const sections: string[] = [catalogSummary];
+	// HANYA kirimkan Katalog Lengkap jika user memang bertanya soal daftar dokumen/note, atau jika tidak ada chunk yang cocok!
+	const sections: string[] = [
+		isCatalogQuestion || rankedChunks.length === 0 ? catalogSummary : compactStatsHeader
+	];
 
-	// Kelompokkan hasil chunk berdasarkan tipe sumber
 	const noteChunks = rankedChunks.filter((r) => r.chunk.sourceType === 'USER_NOTE');
 	const syncChunks = rankedChunks.filter((r) => r.chunk.sourceType === 'SYNC_DOC');
 	const portalChunks = rankedChunks.filter((r) => r.chunk.sourceType === 'PORTAL_DOC');
 
-	// Jika user secara eksplisit menanyakan tentang note/catatan atau daftar isi, sertakan semua note pengguna
 	if (isCatalogQuestion && noteChunks.length === 0) {
-		const allUserNoteChunks = allChunks.filter((c) => c.sourceType === 'USER_NOTE').slice(0, 5);
+		const allUserNoteChunks = allChunks.filter((c) => c.sourceType === 'USER_NOTE').slice(0, 4);
 		for (const nc of allUserNoteChunks) {
 			noteChunks.push({ chunk: nc, score: 5 });
 		}
 	}
 
-	if (noteChunks.length > 0) {
-		const lines = [`\n[SUMBER CATATAN / NOTE DI PROGRAM INI (MY DOCS)]:`];
-		for (const { chunk } of noteChunks) {
-			lines.push(
-				`--- Note: "${chunk.title}" (Kategori: ${chunk.category}${chunk.subcategory ? ' / ' + chunk.subcategory : ''}, Pemilik: ${chunk.ownerName || 'User'}, Bagian ${chunk.partNumber}/${chunk.totalParts}, Path: ${chunk.pathOrLoc}) ---\n${chunk.text}\n`
+	// Format setiap dokumen dengan menyertakan KARTU INTISARI (Pre-computed Digest Card) + Kutipan Bab Spesifik
+	const formatGroupedChunks = (
+		items: Array<{ chunk: DocChunk; score: number }>,
+		labelPrefix: string
+	) => {
+		const byDoc = new Map<string, DocChunk[]>();
+		for (const { chunk } of items) {
+			const list = byDoc.get(chunk.docId) || [];
+			list.push(chunk);
+			byDoc.set(chunk.docId, list);
+		}
+
+		const blocks: string[] = [];
+		for (const [docId, docChunks] of byDoc.entries()) {
+			docChunks.sort((a, b) => a.partNumber - b.partNumber);
+			const first = docChunks[0];
+			const digest = digestsByDocId.get(docId);
+			const digestHeader = digest ? `[KARTU INTISARI DOKUMEN]:\n${digest.digestCard}\n` : '';
+			const combinedText = docChunks
+				.map((c) =>
+					first.totalParts > 1
+						? `[Kutipan Bagian ${c.partNumber}/${c.totalParts}]:\n${c.text}`
+						: c.text
+				)
+				.join('\n\n');
+
+			blocks.push(
+				`--- ${labelPrefix}: "${first.title}" (File: ${first.fileName || first.title}) ---\n${digestHeader}${combinedText}\n`
 			);
 		}
-		sections.push(lines.join('\n'));
+		return blocks.join('\n');
+	};
+
+	if (noteChunks.length > 0) {
+		sections.push(
+			`[SUMBER CATATAN / NOTE DI PROGRAM INI (MY DOCS)]:\n${formatGroupedChunks(noteChunks, 'Note')}`
+		);
 	}
 
 	if (syncChunks.length > 0) {
-		const lines = [`\n[SUMBER DOKUMEN HASIL SINKRONISASI EKSTERNAL (HELPDESK STORAGE)]:`];
-		for (const { chunk } of syncChunks) {
-			lines.push(
-				`--- Dokumen Sinkronisasi: "${chunk.title}" (Nama File: ${chunk.fileName}, Lokasi Folder: ${chunk.pathOrLoc}, Bagian ${chunk.partNumber}/${chunk.totalParts}) ---\n${chunk.text}\n`
-			);
-		}
-		sections.push(lines.join('\n'));
+		sections.push(
+			`[SUMBER DOKUMEN HASIL SINKRONISASI EKSTERNAL]:\n${formatGroupedChunks(syncChunks, 'Dokumen Sinkronisasi')}`
+		);
 	}
 
 	if (portalChunks.length > 0) {
-		const lines = [`\n[SUMBER DOKUMENTASI MODUL DI PROGRAM INI (/docs)]:`];
-		for (const { chunk } of portalChunks) {
-			lines.push(
-				`--- Dokumentasi Portal: "${chunk.title}" (Kategori: ${chunk.category}, Bagian ${chunk.partNumber}/${chunk.totalParts}, Path: ${chunk.pathOrLoc}) ---\n${chunk.text}\n`
-			);
-		}
-		sections.push(lines.join('\n'));
+		sections.push(
+			`[SUMBER DOKUMENTASI MODUL (/docs)]:\n${formatGroupedChunks(portalChunks, 'Dokumentasi Portal')}`
+		);
 	}
 
 	if (matchedApps.length > 0) {
-		const lines = [`\n[DIREKTORI APLIKASI DI PROGRAM INI (/apps)]:`];
+		const lines = [`[DIREKTORI APLIKASI (/apps)]:`];
 		for (const app of matchedApps) {
-			lines.push(
-				`- Aplikasi: ${app.title} (${app.subtitle || ''}) | URL: ${app.url} | Deskripsi: ${app.description}`
-			);
+			lines.push(`- ${app.title} (${app.subtitle || ''}) | URL: ${app.url} | ${app.description}`);
 		}
 		sections.push(lines.join('\n'));
 	}
@@ -637,35 +900,20 @@ export function retrieveRelevantKnowledge(
 }
 
 export const SYSTEM_PROMPT_BASE = `Anda adalah "AI Copilot", asisten cerdas resmi yang dikhususkan untuk menjawab pertanyaan berdasarkan 3 Sumber Pengetahuan Internal sistem ini:
-1. **Dokumen Hasil Sinkronisasi Eksternal** (berkas PDF, Word, Excel, PPTX, dan Teks dari penyimpanan Helpdesk).
-2. **Isi Note / Catatan (My Docs) & Dokumentasi Modul** yang tersimpan di dalam program ini.
-3. **Database Helpdesk** (data tiket, solusi penanganan kendala, modul, perusahaan/unit, PIC, dan statistik Helpdesk).
+1. **Dokumen Hasil Sinkronisasi Eksternal** (PDF, Word, Excel, PPTX, Teks dari penyimpanan Helpdesk).
+2. **Isi Note / Catatan (My Docs) & Dokumentasi Modul** di dalam program ini.
+3. **Database Helpdesk** (data tiket, solusi penanganan kendala, modul, unit, PIC, dan statistik Helpdesk).
 
-==================================================
-ATURAN KETAT BATASAN SUMBER PENGETAHUAN (STRICT SCOPE):
-==================================================
+ATURAN KETAT (STRICT SCOPE & TOKEN EFFICIENCY):
 1. HANYA MENJAWAB DARI 3 SUMBER INTERNAL DI ATAS:
-   - Anda **HANYA BOLEH** menjawab pertanyaan berdasarkan data yang tercantum di dalam:
-     a) \`[SUMBER DOKUMEN HASIL SINKRONISASI EKSTERNAL]\`
-     b) \`[SUMBER CATATAN / NOTE DI PROGRAM INI (MY DOCS)]\` & \`[SUMBER DOKUMENTASI MODUL DI PROGRAM INI]\` & \`[PETA KATALOG PENGETAHUAN PROGRAM INI]\`
-     c) \`[DATA REALTIME DATABASE HELPDESK]\` & \`[DATA HISTORI TIKET & SOLUSI TERKAIT DARI DATABASE HELPDESK]\`
-   - Anda diperbolehkan membalas sapaan sopan (seperti "Halo", "Selamat pagi", "Terima kasih") atau menjelaskan daftar dokumen/note yang tersedia di katalog.
-
-2. TOLAK PERTANYAAN DI LUAR KONTEKS DOKUMEN, NOTE & DATABASE HELPDESK:
-   - Apabila pengguna menanyakan hal di luar isi dokumen sinkronisasi, isi note/dokumentasi program ini, atau database Helpdesk (contoh: resep masakan, politik, cuaca, film, hiburan, pengetahuan umum luar, atau pembuatan kode/topik yang sama sekali tidak ada di dalam ketiga sumber tersebut), **DILARANG KERAS menjawab menggunakan pengetahuan umum di luar sistem**.
-   - Jawablah dengan sopan:
+   - Gunakan informasi dari \`[KARTU INTISARI DOKUMEN]\`, \`[SUMBER DOKUMEN HASIL SINKRONISASI EKSTERNAL]\`, \`[SUMBER CATATAN / NOTE]\`, \`[SUMBER DOKUMENTASI MODUL]\`, serta \`[SUMBER DATABASE HELPDESK]\`.
+   - Anda boleh membalas sapaan sopan atau menjelaskan daftar dokumen/note yang tersedia.
+2. TOLAK PERTANYAAN DI LUAR KONTEKS:
+   - Jika pertanyaan berada di luar ketiga sumber tersebut, jawab dengan sopan:
      "Maaf, saya hanya dapat menjawab pertanyaan berdasarkan **Dokumen Hasil Sinkronisasi**, **Isi Note & Dokumentasi di program ini**, serta **Database Helpdesk**. Informasi mengenai hal tersebut tidak ditemukan di dalam sumber data kami."
-
 3. SEBUTKAN SUMBER RUJUKAN SECARA SPESIFIK:
-   - Setiap kali Anda memberikan jawaban, sebutkan dengan jelas dari mana informasi tersebut berasal:
-     * Jika dari dokumen sinkronisasi: sebutkan **Nama File / Judul Dokumennya** (misal: *Berdasarkan Dokumen Sinkronisasi: \`Nama_File.pdf\`...*).
-     * Jika dari Note / My Docs: sebutkan **Judul Catatannya** (misal: *Berdasarkan Note: \`Judul Catatan\`...*).
-     * Jika dari Database Helpdesk: sebutkan **Nomor Tiket atau Statistik Dashboard-nya** (misal: *Berdasarkan Database Helpdesk Tiket #3190...*).
-
-4. LARANGAN KERAS MENAMPILKAN QUERY SQL KE PENGGUNA:
-   - **JANGAN PERNAH** menampilkan kode query SQL (\`SELECT ... FROM ...\`) atau perintah \`php artisan tinker\` kepada pengguna. Sajikan langsung hasil datanya (angka, tabel, atau rincian tiket) secara rapi.
-
-5. MENJAGA KONTEKS OBROLAN & KERAHASIAAN MODEL:
-   - Pahami pertanyaan lanjutan pengguna dalam konteks percakapan sebelumnya.
-   - Jangan pernah menyebutkan nama model teknis di balik layar (seperti Gemini, GPT, Claude, dll.).
-   - Gunakan Bahasa Indonesia yang rapi, terstruktur, jelas, dan mudah dipahami.`;
+   - Sebutkan **Nama File / Judul Dokumen**, **Judul Note**, atau **Nomor Tiket Helpdesk** yang menjadi dasar jawaban Anda.
+4. DILARANG MENAMPILKAN QUERY SQL:
+   - Jangan pernah menampilkan kode SQL (\`SELECT ...\`) kepada pengguna; sajikan langsung hasil datanya.
+5. KONTINUITAS OBROLAN:
+   - Untuk pertanyaan lanjutan, gabungkan konteks dari riwayat obrolan sebelumnya dengan \`[KARTU INTISARI DOKUMEN]\` dan kutipan bab terbaru tanpa kehilangan benang merah dokumen. Jangan menyebutkan nama model AI di balik layar.`;

@@ -1255,15 +1255,20 @@
 	}
 
 	$effect(() => {
+		const mainBody =
+			currentDoc?.content ||
+			currentDoc?.description ||
+			currentDoc?.snippet ||
+			data.article.snippet ||
+			'';
+		const builderBody = currentDoc?.builderContent
+			? `\n\n--- [SPESIFIKASI STORY BUILDER SAC] ---\n${currentDoc.builderContent}`
+			: '';
 		ui.currentContext = {
 			type: 'docs',
 			title: currentDoc?.title || data.article.title,
 			key: data.slug,
-			snippet:
-				currentDoc?.content ||
-				currentDoc?.description ||
-				currentDoc?.snippet ||
-				data.article.snippet
+			snippet: `${mainBody}${builderBody}`
 		};
 	});
 

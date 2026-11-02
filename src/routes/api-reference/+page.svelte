@@ -90,6 +90,22 @@
     }
   ]
 }`
+		},
+		{
+			id: 'sync-external',
+			method: 'POST',
+			path: '/api/docs/sync-external',
+			title: 'External Document Indexer & Background Sync',
+			description: 'Menjalankan proses ekstraksi dan pengindeksan dokumen eksternal (PDF, DOCX, XLSX) di latar belakang dengan checkpoint pintar.',
+			request: `{
+  "types": ["pdf", "docx", "xlsx"],
+  "force": false
+}`,
+			response: `{
+  "status": "started",
+  "message": "Proses sinkronisasi dokumen eksternal berhasil dimulai.",
+  "isSyncRunning": true
+}`
 		}
 	];
 </script>
@@ -184,7 +200,7 @@
 									<span>Salin</span>
 								</button>
 							</div>
-							<pre class="rounded-xl border border-border bg-zinc-950 p-4 text-xs font-mono text-zinc-100 overflow-x-auto"><code>{ep.request}</code></pre>
+							<pre class="rounded-xl border border-border bg-muted/50 p-4 text-xs font-mono text-foreground overflow-x-auto"><code>{ep.request}</code></pre>
 						</div>
 					{/if}
 
@@ -204,7 +220,7 @@
 								<span>Salin</span>
 							</button>
 						</div>
-						<pre class="rounded-xl border border-border bg-zinc-950 p-4 text-xs font-mono text-emerald-400 overflow-x-auto"><code>{ep.response}</code></pre>
+						<pre class="rounded-xl border border-border bg-muted/50 p-4 text-xs font-mono text-emerald-600 dark:text-emerald-400 overflow-x-auto"><code>{ep.response}</code></pre>
 					</div>
 				</CardContent>
 			</Card>
