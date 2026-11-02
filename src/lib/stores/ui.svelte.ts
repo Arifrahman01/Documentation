@@ -9,6 +9,8 @@ class UiStore {
 	isDark = $state(true);
 	isSearchOpen = $state(false);
 	isAiOpen = $state(false);
+	isSyncModalOpen = $state(false);
+	syncModalAutoTrigger = $state(false);
 	currentContext = $state<AppContext>({ type: 'home', title: 'Portal Dokumentasi' });
 	aiInitialPrompt = $state('');
 
@@ -63,6 +65,16 @@ class UiStore {
 
 	closeAi() {
 		this.isAiOpen = false;
+	}
+
+	openSyncModal(autoTrigger = true) {
+		this.syncModalAutoTrigger = autoTrigger;
+		this.isSyncModalOpen = true;
+	}
+
+	closeSyncModal() {
+		this.isSyncModalOpen = false;
+		this.syncModalAutoTrigger = false;
 	}
 }
 

@@ -65,6 +65,7 @@ export function loadExternalDocuments(): DocumentItem[] {
 
 		const parsed = JSON.parse(fs.readFileSync(targetFile, 'utf8')) as DocumentItem[];
 		externalDocsCache = { mtimeMs: stat.mtimeMs, data: parsed };
+		dataVersion++;
 		return parsed.map((d) => ({ ...d }));
 	} catch (e: any) {
 		console.error('Error reading external documents database:', e?.message);

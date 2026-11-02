@@ -2,6 +2,7 @@ import http from 'node:http';
 import crypto from 'node:crypto';
 import Fuse from 'fuse.js';
 import { loadDocuments, loadExternalDocuments, loadApps, getDataVersion, type DocumentItem } from './docs';
+import { loadAllUserNotes, getUserNotesVersion } from './userDocs';
 import { ensureEnvLoaded } from './auth';
 
 ensureEnvLoaded();
@@ -41,6 +42,10 @@ export function setCache(key: string, data: any, ttlMs = CACHE_TTL_MS) {
 
 export function getCacheSize(): number {
 	return aiResponseCache.size;
+}
+
+export function clearAiCache() {
+	aiResponseCache.clear();
 }
 
 export function hashString(str: string): string {
@@ -95,7 +100,7 @@ export function checkAiHealth(): Promise<{ status: string; service: string; cach
 export function callAiChat(
 	messages: Array<{ role: string; content: string }>,
 	model?: string,
-	maxTokens = 1800,
+	maxTokens = 2000,
 	temperature = 0.1,
 	timeoutMs = AI_CONFIG.timeoutMs
 ): Promise<{ model?: string; message: string; usage?: any }> {
@@ -157,28 +162,217 @@ export function callAiChat(
 	});
 }
 
-let fuseCacheVersion = -1;
-let cachedDocFuse: Fuse<DocumentItem> | null = null;
+// ============================================================================
+// 4-PILLAR ADVANCED RAG ENGINE
+// (Smart Chunking + Hybrid BM25/Fuzzy + Multi-Turn Context Locking + Catalog Map)
+// ============================================================================
+
+export interface DocChunk {
+	chunkId: string;
+	docId: string;
+	sourceType: 'SYNC_DOC' | 'USER_NOTE' | 'PORTAL_DOC';
+	title: string;
+	fileName: string;
+	category: string;
+	subcategory?: string;
+	pathOrLoc: string;
+	ownerName?: string;
+	tags: string[];
+	partNumber: number;
+	totalParts: number;
+	text: string;
+	titleLower: string;
+	metaLower: string;
+	textLower: string;
+}
+
+const STOPWORDS = new Set([
+	'apa', 'apakah', 'bagaimana', 'gimana', 'cara', 'tolong', 'jelaskan', 'sebutkan',
+	'berikan', 'kasih', 'tahu', 'info', 'informasi', 'yang', 'di', 'ke', 'dari',
+	'untuk', 'pada', 'dalam', 'dengan', 'adalah', 'ialah', 'merupakan', 'ini', 'itu',
+	'tersebut', 'saya', 'aku', 'kami', 'kita', 'anda', 'kamu', 'dia', 'mereka',
+	'bisa', 'dapat', 'ada', 'tidak', 'tak', 'bukan', 'belum', 'sudah', 'telah',
+	'sedang', 'akan', 'mau', 'ingin', 'tanya', 'bertanya', 'tentang', 'seputar',
+	'mengenai', 'isi', 'dokumen', 'dokument', 'document', 'file', 'berkas', 'note',
+	'notes', 'catatan', 'program', 'aplikasi', 'portal', 'sinkron', 'sinkronisasi',
+	'sync', 'berdasarkan', 'menurut', 'mohon', 'dong', 'ya', 'yah', 'nih', 'deh',
+	'nya', 'dan', 'atau', 'serta', 'jika', 'kalau', 'bila', 'karena', 'sebab',
+	'oleh', 'sebagai', 'seperti', 'saja', 'aja', 'semua', 'seluruh', 'daftar',
+	'list', 'berapa', 'kapan', 'dimana', 'siapa', 'kenapa', 'mengapa', 'the',
+	'is', 'are', 'in', 'on', 'of', 'to', 'for', 'and', 'or', 'with', 'how', 'what'
+]);
+
+/**
+ * Ekstrak kata kunci bermakna dari kalimat pertanyaan (menghapus kata sambung/filler).
+ */
+export function extractQueryKeywords(text: string): string[] {
+	if (!text || typeof text !== 'string') return [];
+	const cleaned = text
+		.toLowerCase()
+		.replace(/[^a-z0-9_/-]+/g, ' ')
+		.trim();
+
+	const tokens = cleaned.split(/\s+/).filter((t) => t.length >= 2 && !STOPWORDS.has(t));
+	return Array.from(new Set(tokens));
+}
+
+/**
+ * Ekstrak frasa 2 kata (bigrams) untuk pencocokan frasa spesifik.
+ */
+function extractQueryBigrams(keywords: string[]): string[] {
+	const bigrams: string[] = [];
+	for (let i = 0; i < keywords.length - 1; i++) {
+		bigrams.push(`${keywords[i]} ${keywords[i + 1]}`);
+	}
+	return bigrams;
+}
+
+/**
+ * Pilar 1: Smart Chunking — Memecah dokumen panjang menjadi bagian-bagian (chunks)
+ * berukuran ~1.300 karakter dengan overlap ~220 karakter agar tidak ada halaman yang terpotong/hilang.
+ */
+function splitDocumentIntoChunks(
+	doc: DocumentItem & { ownerName?: string },
+	sourceType: 'SYNC_DOC' | 'USER_NOTE' | 'PORTAL_DOC',
+	chunkSize = 1350,
+	overlap = 220
+): DocChunk[] {
+	const rawContent = (doc.content || doc.snippet || doc.description || '').trim();
+	if (!rawContent) return [];
+
+	const docId = doc.id || doc.slug || doc.title;
+	const title = (doc.title || doc.fileName || 'Dokumen Tanpa Judul').trim();
+	const fileName = (doc.fileName || doc.title || '').trim();
+	const category = (doc.category || 'Umum').trim();
+	const subcategory = doc.subcategory ? doc.subcategory.trim() : undefined;
+	const pathOrLoc =
+		sourceType === 'SYNC_DOC'
+			? doc.relativePath || doc.category || fileName
+			: sourceType === 'USER_NOTE'
+				? `/my-docs/${doc.slug || doc.id}`
+				: `/docs/${doc.slug || doc.id}`;
+	const tags = Array.isArray(doc.tags) ? doc.tags : [];
+
+	const titleLower = `${title} ${fileName}`.toLowerCase();
+	const metaLower = `${category} ${subcategory || ''} ${tags.join(' ')} ${pathOrLoc} ${doc.ownerName || ''}`.toLowerCase();
+
+	if (rawContent.length <= chunkSize + 150) {
+		return [
+			{
+				chunkId: `${docId}#1`,
+				docId,
+				sourceType,
+				title,
+				fileName,
+				category,
+				subcategory,
+				pathOrLoc,
+				ownerName: doc.ownerName,
+				tags,
+				partNumber: 1,
+				totalParts: 1,
+				text: rawContent,
+				titleLower,
+				metaLower,
+				textLower: rawContent.toLowerCase()
+			}
+		];
+	}
+
+	const textParts: string[] = [];
+	let start = 0;
+	const len = rawContent.length;
+
+	while (start < len) {
+		let end = Math.min(start + chunkSize, len);
+		if (end < len) {
+			// Cari pemisah paragraf atau baris terdekat agar kalimat tidak terpotong di tengah kata
+			const paragraphBreak = rawContent.lastIndexOf('\n\n', end);
+			const lineBreak = rawContent.lastIndexOf('\n', end);
+			const spaceBreak = rawContent.lastIndexOf(' ', end);
+
+			if (paragraphBreak > start + chunkSize * 0.55) {
+				end = paragraphBreak;
+			} else if (lineBreak > start + chunkSize * 0.65) {
+				end = lineBreak;
+			} else if (spaceBreak > start + chunkSize * 0.75) {
+				end = spaceBreak;
+			}
+		}
+
+		const slice = rawContent.slice(start, end).trim();
+		if (slice.length > 0) {
+			textParts.push(slice);
+		}
+
+		if (end >= len) break;
+		start = Math.max(start + 1, end - overlap);
+	}
+
+	const totalParts = textParts.length;
+	return textParts.map((text, idx) => ({
+		chunkId: `${docId}#${idx + 1}`,
+		docId,
+		sourceType,
+		title,
+		fileName,
+		category,
+		subcategory,
+		pathOrLoc,
+		ownerName: doc.ownerName,
+		tags,
+		partNumber: idx + 1,
+		totalParts,
+		text,
+		titleLower,
+		metaLower,
+		textLower: text.toLowerCase()
+	}));
+}
+
+let cachedIndexKey = '';
+let cachedAllChunks: DocChunk[] = [];
+let cachedChunkFuse: Fuse<DocChunk> | null = null;
 let cachedAppFuse: Fuse<any> | null = null;
-let cachedExtFuse: Fuse<DocumentItem> | null = null;
+let cachedCatalogSummary = '';
 
 function getSearchIndices() {
 	const docs = loadDocuments();
-	const apps = loadApps();
+	const userNotes = loadAllUserNotes();
 	const extDocs = loadExternalDocuments();
-	const currentVersion = getDataVersion();
+	const apps = loadApps();
 
-	if (!cachedDocFuse || !cachedAppFuse || !cachedExtFuse || fuseCacheVersion !== currentVersion) {
-		cachedDocFuse = new Fuse(docs, {
+	const indexKey = `${getDataVersion()}_${getUserNotesVersion()}_${docs.length}_${userNotes.length}_${extDocs.length}_${apps.length}`;
+
+	if (!cachedChunkFuse || !cachedAppFuse || cachedIndexKey !== indexKey) {
+		const allChunks: DocChunk[] = [];
+
+		// 1. User Notes (My Docs / Catatan di Program Ini)
+		for (const note of userNotes) {
+			allChunks.push(...splitDocumentIntoChunks(note, 'USER_NOTE'));
+		}
+
+		// 2. Portal Official Documentation (/docs)
+		for (const doc of docs) {
+			allChunks.push(...splitDocumentIntoChunks(doc, 'PORTAL_DOC'));
+		}
+
+		// 3. External Synced Documents (Helpdesk Synced PDF/DOCX/XLSX/PPTX/TXT)
+		for (const ext of extDocs) {
+			allChunks.push(...splitDocumentIntoChunks(ext, 'SYNC_DOC'));
+		}
+
+		cachedAllChunks = allChunks;
+
+		cachedChunkFuse = new Fuse(allChunks, {
 			keys: [
 				{ name: 'title', weight: 0.35 },
-				{ name: 'section', weight: 0.25 },
+				{ name: 'fileName', weight: 0.25 },
 				{ name: 'category', weight: 0.2 },
-				{ name: 'tags', weight: 0.2 },
-				{ name: 'snippet', weight: 0.15 },
-				{ name: 'content', weight: 0.1 }
+				{ name: 'tags', weight: 0.15 },
+				{ name: 'text', weight: 0.2 }
 			],
-			threshold: 0.45,
+			threshold: 0.42,
 			ignoreLocation: true
 		});
 
@@ -193,111 +387,285 @@ function getSearchIndices() {
 			ignoreLocation: true
 		});
 
-		cachedExtFuse = new Fuse(extDocs, {
-			keys: [
-				{ name: 'title', weight: 0.35 },
-				{ name: 'category', weight: 0.25 },
-				{ name: 'tags', weight: 0.2 },
-				{ name: 'fileName', weight: 0.2 },
-				{ name: 'snippet', weight: 0.15 },
-				{ name: 'content', weight: 0.1 }
-			],
-			threshold: 0.45,
-			ignoreLocation: true
-		});
+		// Pilar 4: Bangun Katalog Peta Pengetahuan Global (Global Knowledge Map)
+		const noteTitles = userNotes.map(
+			(n) => `"${n.title}" (Kategori: ${n.category}${n.subcategory ? '/' + n.subcategory : ''}, Pemilik: ${n.ownerName || 'User'})`
+		);
+		const portalTitles = docs.map((d) => `"${d.title}" [${d.section || 'DOC'} - ${d.category}]`);
 
-		fuseCacheVersion = currentVersion;
+		const extCategoryCounts = new Map<string, number>();
+		for (const e of extDocs) {
+			const cat = e.category || 'Umum';
+			extCategoryCounts.set(cat, (extCategoryCounts.get(cat) || 0) + 1);
+		}
+		const extCatSummary = Array.from(extCategoryCounts.entries())
+			.slice(0, 15)
+			.map(([c, count]) => `${c} (${count} berkas)`)
+			.join(', ');
+		const sampleExtTitles = extDocs
+			.slice(0, 35)
+			.map((e) => e.fileName || e.title)
+			.join(', ');
+
+		cachedCatalogSummary = [
+			`[PETA KATALOG PENGETAHUAN PROGRAM INI]:`,
+			`1. Catatan / Note di Program Ini (Menu My Docs - Total ${userNotes.length} catatan):`,
+			noteTitles.length > 0 ? `   - ${noteTitles.join('\n   - ')}` : `   - Belum ada catatan`,
+			`2. Dokumentasi Modul Portal (Menu Documentation - Total ${docs.length} dokumen):`,
+			portalTitles.length > 0 ? `   - ${portalTitles.slice(0, 30).join(', ')}` : `   - Belum ada dokumen`,
+			`3. Dokumen Hasil Sinkronisasi Eksternal Helpdesk (Total ${extDocs.length} berkas terindeks dalam ${allChunks.filter((c) => c.sourceType === 'SYNC_DOC').length} bagian/chunks):`,
+			`   - Kategori Folder: ${extCatSummary || '-'}`,
+			`   - Contoh Berkas Terindeks: ${sampleExtTitles || '-'}`
+		].join('\n');
+
+		cachedIndexKey = indexKey;
 	}
 
-	return { docFuse: cachedDocFuse, appFuse: cachedAppFuse, extFuse: cachedExtFuse };
+	return {
+		allChunks: cachedAllChunks,
+		chunkFuse: cachedChunkFuse!,
+		appFuse: cachedAppFuse!,
+		catalogSummary: cachedCatalogSummary
+	};
 }
 
-export function retrieveRelevantKnowledge(query: string): string {
-	if (!query || typeof query !== 'string' || query.trim().length < 2) return '';
+function countOccurrences(haystack: string, needle: string): number {
+	if (!needle || !haystack) return 0;
+	let count = 0;
+	let pos = 0;
+	while ((pos = haystack.indexOf(needle, pos)) !== -1) {
+		count++;
+		pos += needle.length;
+	}
+	return count;
+}
 
-	const cleanQuery = query.trim();
-	const { docFuse, appFuse, extFuse } = getSearchIndices();
+/**
+ * Pilar 2 & 3: Pencarian Hibrida BM25 + Fuzzy + Multi-Turn Context Locking
+ * Mengambil bagian bab/paragraf (chunks) yang paling relevan dari seluruh dokumen sinkronisasi & note
+ * tanpa harus membaca seluruh ratusan dokumen secara mentah.
+ */
+export function retrieveRelevantKnowledge(
+	query: string,
+	history?: Array<{ role: string; content: string }>
+): { knowledgeText: string; hasMatches: boolean; extractedKeywords: string[] } {
+	const { allChunks, chunkFuse, appFuse, catalogSummary } = getSearchIndices();
 
-	const matchedDocs = docFuse.search(cleanQuery).slice(0, 2).map((r) => r.item);
-	const matchedApps = appFuse.search(cleanQuery).slice(0, 2).map((r) => r.item);
-	const matchedExtDocs = extFuse ? extFuse.search(cleanQuery).slice(0, 2).map((r) => r.item) : [];
+	const cleanQuery = (query || '').trim();
+	const primaryKeywords = extractQueryKeywords(cleanQuery);
 
-	let knowledge = '';
+	// Pilar 3: Multi-Turn Conversational Context Locking
+	// Ambil kata kunci dari 2 giliran percakapan sebelumnya jika pertanyaan saat ini merupakan pertanyaan lanjutan
+	const historyKeywords: string[] = [];
+	if (Array.isArray(history) && history.length > 0) {
+		const recentMessages = history.slice(-4);
+		for (const msg of recentMessages) {
+			if (msg && typeof msg.content === 'string') {
+				const kws = extractQueryKeywords(msg.content);
+				historyKeywords.push(...kws.slice(0, 8));
+			}
+		}
+	}
+
+	const uniqueHistoryKeywords = Array.from(new Set(historyKeywords)).filter(
+		(k) => !primaryKeywords.includes(k)
+	);
+	const allActiveKeywords = [...primaryKeywords, ...uniqueHistoryKeywords.slice(0, 6)];
+	const bigrams = extractQueryBigrams(primaryKeywords);
+
+	// Jika user bertanya tentang daftar seluruh note / dokumen yang ada
+	const qLower = cleanQuery.toLowerCase();
+	const isCatalogQuestion =
+		qLower.includes('dokumen apa saja') ||
+		qLower.includes('note apa saja') ||
+		qLower.includes('catatan apa saja') ||
+		qLower.includes('daftar dokumen') ||
+		qLower.includes('daftar note') ||
+		qLower.includes('daftar catatan') ||
+		qLower.includes('apa saja isi note') ||
+		qLower.includes('apa saja isi dokumen') ||
+		qLower.includes('berapa dokumen');
+
+	// Skor setiap chunk menggunakan BM25-style keyword + phrase + metadata scoring
+	const chunkScores = new Map<string, { chunk: DocChunk; score: number }>();
+
+	for (const chunk of allChunks) {
+		let score = 0;
+		let matchedPrimaryCount = 0;
+
+		// 1. Pencocokan Frasa 2 Kata (Bigrams)
+		for (const bg of bigrams) {
+			if (chunk.titleLower.includes(bg)) score += 22;
+			if (chunk.metaLower.includes(bg)) score += 14;
+			if (chunk.textLower.includes(bg)) score += 15;
+		}
+
+		// 2. Pencocokan Kata Kunci Utama (Primary Query Keywords)
+		for (const kw of primaryKeywords) {
+			let kwMatched = false;
+			if (chunk.titleLower.includes(kw)) {
+				score += 10;
+				kwMatched = true;
+			}
+			if (chunk.metaLower.includes(kw)) {
+				score += 6;
+				kwMatched = true;
+			}
+			const textHits = countOccurrences(chunk.textLower, kw);
+			if (textHits > 0) {
+				// Saturasi frekuensi kata (BM25 style)
+				score += Math.min(textHits, 5) * 3.5;
+				kwMatched = true;
+			}
+			if (kwMatched) matchedPrimaryCount++;
+		}
+
+		// Bonus cakupan multi-kata kunci (Coverage Bonus)
+		if (matchedPrimaryCount >= 2) {
+			score += matchedPrimaryCount * 7;
+		}
+
+		// 3. Pencocokan Konteks Percakapan Sebelumnya (Multi-Turn Context Locking)
+		for (const hkw of uniqueHistoryKeywords.slice(0, 6)) {
+			if (chunk.titleLower.includes(hkw)) score += 4.5;
+			if (chunk.metaLower.includes(hkw)) score += 2.5;
+			if (chunk.textLower.includes(hkw)) score += 1.5;
+		}
+
+		// 4. Prioritas Note jika user menyebut kata "note" atau "catatan"
+		if ((qLower.includes('note') || qLower.includes('catatan') || qLower.includes('my docs')) && chunk.sourceType === 'USER_NOTE') {
+			score += 12;
+		}
+
+		if (score > 0) {
+			chunkScores.set(chunk.chunkId, { chunk, score });
+		}
+	}
+
+	// 5. Tambahkan Fuzzy Search (Fuse.js) untuk menangani typo ejaan
+	const fuseQuery = primaryKeywords.length > 0 ? primaryKeywords.join(' ') : cleanQuery;
+	if (fuseQuery.length >= 2) {
+		const fuseHits = chunkFuse.search(fuseQuery).slice(0, 10);
+		for (let i = 0; i < fuseHits.length; i++) {
+			const item = fuseHits[i].item;
+			const fuseBonus = Math.max(2, 12 - i);
+			const existing = chunkScores.get(item.chunkId);
+			if (existing) {
+				existing.score += fuseBonus;
+			} else {
+				chunkScores.set(item.chunkId, { chunk: item, score: fuseBonus });
+			}
+		}
+	}
+
+	// Urutkan berdasarkan skor tertinggi
+	const rankedChunks = Array.from(chunkScores.values())
+		.sort((a, b) => b.score - a.score)
+		.slice(0, 8);
+
+	// Cari juga di direktori aplikasi jika relevan
+	const matchedApps =
+		fuseQuery.length >= 2
+			? appFuse
+					.search(fuseQuery)
+					.slice(0, 2)
+					.map((r) => r.item)
+			: [];
+
+	const sections: string[] = [catalogSummary];
+
+	// Kelompokkan hasil chunk berdasarkan tipe sumber
+	const noteChunks = rankedChunks.filter((r) => r.chunk.sourceType === 'USER_NOTE');
+	const syncChunks = rankedChunks.filter((r) => r.chunk.sourceType === 'SYNC_DOC');
+	const portalChunks = rankedChunks.filter((r) => r.chunk.sourceType === 'PORTAL_DOC');
+
+	// Jika user secara eksplisit menanyakan tentang note/catatan atau daftar isi, sertakan semua note pengguna
+	if (isCatalogQuestion && noteChunks.length === 0) {
+		const allUserNoteChunks = allChunks.filter((c) => c.sourceType === 'USER_NOTE').slice(0, 5);
+		for (const nc of allUserNoteChunks) {
+			noteChunks.push({ chunk: nc, score: 5 });
+		}
+	}
+
+	if (noteChunks.length > 0) {
+		const lines = [`\n[SUMBER CATATAN / NOTE DI PROGRAM INI (MY DOCS)]:`];
+		for (const { chunk } of noteChunks) {
+			lines.push(
+				`--- Note: "${chunk.title}" (Kategori: ${chunk.category}${chunk.subcategory ? ' / ' + chunk.subcategory : ''}, Pemilik: ${chunk.ownerName || 'User'}, Bagian ${chunk.partNumber}/${chunk.totalParts}, Path: ${chunk.pathOrLoc}) ---\n${chunk.text}\n`
+			);
+		}
+		sections.push(lines.join('\n'));
+	}
+
+	if (syncChunks.length > 0) {
+		const lines = [`\n[SUMBER DOKUMEN HASIL SINKRONISASI EKSTERNAL (HELPDESK STORAGE)]:`];
+		for (const { chunk } of syncChunks) {
+			lines.push(
+				`--- Dokumen Sinkronisasi: "${chunk.title}" (Nama File: ${chunk.fileName}, Lokasi Folder: ${chunk.pathOrLoc}, Bagian ${chunk.partNumber}/${chunk.totalParts}) ---\n${chunk.text}\n`
+			);
+		}
+		sections.push(lines.join('\n'));
+	}
+
+	if (portalChunks.length > 0) {
+		const lines = [`\n[SUMBER DOKUMENTASI MODUL DI PROGRAM INI (/docs)]:`];
+		for (const { chunk } of portalChunks) {
+			lines.push(
+				`--- Dokumentasi Portal: "${chunk.title}" (Kategori: ${chunk.category}, Bagian ${chunk.partNumber}/${chunk.totalParts}, Path: ${chunk.pathOrLoc}) ---\n${chunk.text}\n`
+			);
+		}
+		sections.push(lines.join('\n'));
+	}
 
 	if (matchedApps.length > 0) {
-		knowledge += `\n[DATA APLIKASI ENTERPRISE TERVERIFIKASI]:\n`;
+		const lines = [`\n[DIREKTORI APLIKASI DI PROGRAM INI (/apps)]:`];
 		for (const app of matchedApps) {
-			knowledge += `- Sistem: ${app.title} (${app.subtitle || ''})\n  URL Resmi: ${app.url}\n  Deskripsi: ${app.description}\n  Kategori: ${app.categoryName || app.category}\n  Tags: ${(app.tags || []).join(', ')}\n\n`;
+			lines.push(
+				`- Aplikasi: ${app.title} (${app.subtitle || ''}) | URL: ${app.url} | Deskripsi: ${app.description}`
+			);
 		}
+		sections.push(lines.join('\n'));
 	}
 
-	if (matchedDocs.length > 0) {
-		knowledge += `\n[SUMBER DOKUMEN RESMI PORTAL]:\n`;
-		for (const doc of matchedDocs) {
-			knowledge += `--- Dokumen Resmi: "${doc.title}" (Kategori: ${doc.category}, Path: /docs/${doc.slug}) ---\n${doc.content.slice(0, 1600)}\n\n`;
-		}
-	}
+	const hasMatches = rankedChunks.length > 0 || matchedApps.length > 0 || isCatalogQuestion;
 
-	if (matchedExtDocs.length > 0) {
-		knowledge += `\n[SUMBER ARSIP DOKUMEN INTERNAL / HELPDESK]:\n`;
-		for (const doc of matchedExtDocs) {
-			knowledge += `--- Berkas Internal: "${doc.title}" (File: ${doc.fileName || doc.title}, Lokasi: ${doc.relativePath || doc.category}) ---\n${doc.content.slice(0, 1600)}\n\n`;
-		}
-	}
-
-	return knowledge.trim();
+	return {
+		knowledgeText: sections.join('\n\n').trim(),
+		hasMatches,
+		extractedKeywords: allActiveKeywords
+	};
 }
 
-export const SYSTEM_PROMPT_BASE = `Anda adalah "AI Copilot", asisten teknis dan konsultan cerdas resmi untuk Sistem Helpdesk Enterprise (khususnya Bagian Knowledge Base & Dokumentasi Modul Terpadu).
+export const SYSTEM_PROMPT_BASE = `Anda adalah "AI Copilot", asisten cerdas resmi yang dikhususkan untuk menjawab pertanyaan berdasarkan 3 Sumber Pengetahuan Internal sistem ini:
+1. **Dokumen Hasil Sinkronisasi Eksternal** (berkas PDF, Word, Excel, PPTX, dan Teks dari penyimpanan Helpdesk).
+2. **Isi Note / Catatan (My Docs) & Dokumentasi Modul** yang tersimpan di dalam program ini.
+3. **Database Helpdesk** (data tiket, solusi penanganan kendala, modul, perusahaan/unit, PIC, dan statistik Helpdesk).
 
 ==================================================
-PRINSIP UTAMA: INTEGRASI SATU APLIKASI DENGAN HELPDESK
+ATURAN KETAT BATASAN SUMBER PENGETAHUAN (STRICT SCOPE):
 ==================================================
-1. SATU KESATUAN DENGAN SISTEM HELPDESK (SHARED SESSION):
-   - Portal dokumentasi ini dan Sistem Helpdesk berbagi sesi login (*shared session / single authentication*).
-   - Bagi pengguna, portal dokumentasi ini BUKAN aplikasi terpisah, melainkan SATU KESATUAN APLIKASI HELPDESK (Modul Dokumentasi, Knowledge Base, Panduan Solusi Tiket, dan SOP Modul).
-   - Setiap pertanyaan pengguna harus otomatis dipahami dalam konteks ekosistem Helpdesk dan kebutuhan penyelesaian kendala teknis.
-   - Semua dokumen, artikel teknis, dan catatan di portal ini berfungsi sebagai basis pengetahuan (*Knowledge Base*) resmi untuk menjawab komplain, membimbing user, dan menyelesaikan tiket Helpdesk.
+1. HANYA MENJAWAB DARI 3 SUMBER INTERNAL DI ATAS:
+   - Anda **HANYA BOLEH** menjawab pertanyaan berdasarkan data yang tercantum di dalam:
+     a) \`[SUMBER DOKUMEN HASIL SINKRONISASI EKSTERNAL]\`
+     b) \`[SUMBER CATATAN / NOTE DI PROGRAM INI (MY DOCS)]\` & \`[SUMBER DOKUMENTASI MODUL DI PROGRAM INI]\` & \`[PETA KATALOG PENGETAHUAN PROGRAM INI]\`
+     c) \`[DATA REALTIME DATABASE HELPDESK]\` & \`[DATA HISTORI TIKET & SOLUSI TERKAIT DARI DATABASE HELPDESK]\`
+   - Anda diperbolehkan membalas sapaan sopan (seperti "Halo", "Selamat pagi", "Terima kasih") atau menjelaskan daftar dokumen/note yang tersedia di katalog.
 
-2. PENANGANAN PERTANYAAN OTOMATIS MENGACU KE HELPDESK:
-   - Apabila pengguna menanyakan masalah teknis, kendala sistem, atau tata cara pemakaian fitur:
-     a) Posisikan jawaban Anda sebagai Technical Support & Konsultan Ahli Helpdesk yang ramah, taktis, dan solutif.
-     b) Kaitkan dengan panduan modul dokumen terkait yang ada di portal ini.
-     c) Jika pertanyaan berkaitan dengan status tiket, PIC, atau penanganan issue (dan data database Helpdesk terlampir), sajikan rincian tiket tersebut secara jelas dan transparan.
-     d) Berikan rekomendasi langkah penanganan (Actionable Step-by-Step Troubleshooting) yang bisa langsung dijalankan oleh user atau teknisi Helpdesk.
+2. TOLAK PERTANYAAN DI LUAR KONTEKS DOKUMEN, NOTE & DATABASE HELPDESK:
+   - Apabila pengguna menanyakan hal di luar isi dokumen sinkronisasi, isi note/dokumentasi program ini, atau database Helpdesk (contoh: resep masakan, politik, cuaca, film, hiburan, pengetahuan umum luar, atau pembuatan kode/topik yang sama sekali tidak ada di dalam ketiga sumber tersebut), **DILARANG KERAS menjawab menggunakan pengetahuan umum di luar sistem**.
+   - Jawablah dengan sopan:
+     "Maaf, saya hanya dapat menjawab pertanyaan berdasarkan **Dokumen Hasil Sinkronisasi**, **Isi Note & Dokumentasi di program ini**, serta **Database Helpdesk**. Informasi mengenai hal tersebut tidak ditemukan di dalam sumber data kami."
 
-3. LARANGAN KERAS MENAMPILKAN QUERY SQL / KODE DATABASE KE PENGGUNA:
-   - **JANGAN PERNAH** menjawab pertanyaan tiket/statistik dengan menampilkan kode query SQL (\`SELECT ... FROM ...\`), perintah \`php artisan tinker\`, atau menyuruh pengguna menjalankan query database sendiri.
-   - Aplikasi ini digunakan langsung oleh end-user, teknisi, dan manajemen. Mereka membutuhkan **JAWABAN DATA LANGSUNG** (angka pasti, tabel ringkasan, dan daftar nomor tiket beserta deskripsinya), BUKAN kode query SQL.
-   - Semua perhitungan lintas tabel (termasuk join tabel pivot \`module_ticket\` untuk modul dan \`company_ticket\` untuk perusahaan) sudah dieksekusi otomatis oleh sistem di balik layar dan disediakan di dalam blok \`[DATA REALTIME DATABASE HELPDESK MYSQL]\`. Sajikan langsung hasilnya secara rapi dan profesional.
+3. SEBUTKAN SUMBER RUJUKAN SECARA SPESIFIK:
+   - Setiap kali Anda memberikan jawaban, sebutkan dengan jelas dari mana informasi tersebut berasal:
+     * Jika dari dokumen sinkronisasi: sebutkan **Nama File / Judul Dokumennya** (misal: *Berdasarkan Dokumen Sinkronisasi: \`Nama_File.pdf\`...*).
+     * Jika dari Note / My Docs: sebutkan **Judul Catatannya** (misal: *Berdasarkan Note: \`Judul Catatan\`...*).
+     * Jika dari Database Helpdesk: sebutkan **Nomor Tiket atau Statistik Dashboard-nya** (misal: *Berdasarkan Database Helpdesk Tiket #3190...*).
 
-4. CAKUPAN KEAHLIAN LUAS (SAP, SAC, WEB & IT ENTERPRISE):
-   - Anda memiliki keahlian teknis mendalam untuk menuntaskan tiket/kendala di bidang:
-     a) **SAP Enterprise**: SAP ERP, S/4HANA, ABAP, RFC, BAPI, CDS Views, OData/Gateway, SAP Basis & Performance Tuning (SM50, SM66, ST22, ST05, SAT, ST02, DB02, HANA Studio), modul fungsional (FI, CO, MM, SD, PM, PP, HCM, PS, CS, FM, QM), dan troubleshooting issue SAP di Helpdesk.
-     b) **SAP Analytics Cloud (SAC)**: Story Dashboard, Digital Boardroom, Live Data Connection, Calculated & Restricted Measures, Exception Aggregation, Corporate Planning, dan optimalisasi Story SAC.
-     c) **Web & Software Engineering**: Sistem Helpdesk (Laravel / PHP Stack), SvelteKit, TypeScript, JavaScript, Tailwind CSS, REST API, Database MySQL/PostgreSQL, Keamanan Aplikasi, dan arsitektur sistem.
-     d) **7 Aplikasi Operasional Enterprise** terintegrasi: Fuel Management System (FMS), SAC, Enterprise Marketing, KPI Safety (SHE), PPPN, File Manager, dan Helpdesk.
+4. LARANGAN KERAS MENAMPILKAN QUERY SQL KE PENGGUNA:
+   - **JANGAN PERNAH** menampilkan kode query SQL (\`SELECT ... FROM ...\`) atau perintah \`php artisan tinker\` kepada pengguna. Sajikan langsung hasil datanya (angka, tabel, atau rincian tiket) secara rapi.
 
-5. FLEKSIBEL & TIDAK KAKU PADA DOKUMENTASI (ZERO REJECTION UNTUK PERTANYAAN TEKNIS):
-   - Gunakan data resmi dari [SUMBER DOKUMEN RESMI PORTAL], [DATA APLIKASI ENTERPRISE TERVERIFIKASI], atau [SUMBER ARSIP DOKUMEN INTERNAL / HELPDESK] sebagai rujukan utama.
-   - **PENTING**: Jika pertanyaan teknis belum tertulis di dokumen portal, **ANDA WAJIB TETAP MENJAWABNYA SECARA LENGKAP, SOLUTIF, DAN MENDALAM** menggunakan keahlian Anda. Jangan pernah menolak dengan jawaban kaku seperti "informasi tidak ada di database".
-   - Hanya tolak dengan sopan jika pertanyaan benar-benar di luar konteks pekerjaan/teknologi/perusahaan.
-
-6. IDENTITAS & KERAHASIAAN MODEL:
-   - Jangan menyebutkan nama model AI teknis di balik layar (seperti Gemini, GPT, Claude, dll.).
-   - Jika ditanya siapa Anda, jawab: "Saya adalah AI Copilot resmi Helpdesk & Dokumentasi Modul Enterprise."
-
-Ekosistem Aplikasi Resmi Terdaftar:
-1. 7 Aplikasi Enterprise:
-   - Helpdesk Enterprise (http://helpdesk2.test / https://demo2.jhonlingroup.id) - Pusat pelaporan tiket, penanganan insiden, dan Knowledge Base terpadu.
-   - Fuel Management System (FMS) (http://jgfuel.id) - Pemantauan konsumsi BBM armada & telemetry.
-   - SAP Analytics Cloud (SAC) Dev & Prod - Pelaporan analitik bisnis eksekutif & live CDS views.
-   - Enterprise Marketing System (http://marketing.jhonlingroup.id) - Persetujuan kontrak komersial & CRM.
-   - KPI Safety (SHE) (http://she.jhonlingroup.id/login) - K3 & keselamatan kerja, investigasi insiden.
-   - PPPN (http://38.47.92.151:5000) - Notifikasi penagihan vendor & operasional pabrik.
-   - File Manager (http://file.jhonlingroup.id/login) - Penyimpanan berkas enterprise terpusat.
-2. Arsitektur Portal Dokumentasi:
-   - SvelteKit, Tailwind CSS, Shadcn UI.
-
-Pedoman Format:
-- Gunakan Bahasa Indonesia yang profesional, hangat, solutif, dan terstruktur (gunakan bullet points, langkah bernomor, atau blok kode bila diperlukan).`;
+5. MENJAGA KONTEKS OBROLAN & KERAHASIAAN MODEL:
+   - Pahami pertanyaan lanjutan pengguna dalam konteks percakapan sebelumnya.
+   - Jangan pernah menyebutkan nama model teknis di balik layar (seperti Gemini, GPT, Claude, dll.).
+   - Gunakan Bahasa Indonesia yang rapi, terstruktur, jelas, dan mudah dipahami.`;

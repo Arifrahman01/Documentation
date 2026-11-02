@@ -284,3 +284,20 @@
     background-color: transparent;
   }
 }
+
+/* Route Navigation Top Progress Bar Animation */
+@keyframes nav-bar-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-nav-bar {
+  animation: nav-bar-slide 1.25s ease-in-out infinite;
+}

@@ -1,0 +1,10 @@
+{
+  "isSyncRunning": false,
+  "pid": 1176,
+  "total": 218,
+  "processed": 218,
+  "success": 214,
+  "cached": 115,
+  "newOrUpdated": 99,
+  "lastCheckpoint": "2026-11-02T08:14:13.414Z"
+}

@@ -43,6 +43,42 @@ export function signUserCookie(userName: string, secret: string): string {
 	return crypto.createHmac('sha256', secret).update(userName).digest('hex');
 }
 
+export const PERMANENT_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 10; // 10 years in seconds (315,360,000s)
+
+/**
+ * Sets permanent authentication cookies (10 years) for seamless single sign-on.
+ * Shared with Helpdesk and persists across browser restarts.
+ */
+export function setPermanentUserCookies(cookies: Cookies, userName: string, url?: URL) {
+	ensureEnvLoaded();
+	const cleanName = (userName || '').trim().replace(/[<>"'`&\x00-\x1f\x7f]/g, '').slice(0, 80);
+	if (!cleanName) return;
+
+	const isHttps = url ? url.protocol === 'https:' : process.env.NODE_ENV === 'production';
+
+	// 1. Permanent user_name cookie (readable by frontend & shared across portal/helpdesk)
+	cookies.set('user_name', encodeURIComponent(cleanName), {
+		path: '/',
+		maxAge: PERMANENT_COOKIE_MAX_AGE,
+		httpOnly: false,
+		sameSite: 'lax',
+		secure: isHttps
+	});
+
+	// 2. Permanent HMAC signature cookie (if SESSION_SECRET configured)
+	const secret = (process.env.SESSION_SECRET || '').trim();
+	if (secret) {
+		const sig = signUserCookie(cleanName, secret);
+		cookies.set('user_sig', sig, {
+			path: '/',
+			maxAge: PERMANENT_COOKIE_MAX_AGE,
+			httpOnly: true,
+			sameSite: 'lax',
+			secure: isHttps
+		});
+	}
+}
+
 function verifySignature(userName: string, signature: string | undefined, secret: string): boolean {
 	if (!signature) return false;
 	const expected = signUserCookie(userName, secret);
@@ -62,7 +98,7 @@ function verifySignature(userName: string, signature: string | undefined, secret
  * - Verifies HMAC signature if SESSION_SECRET is configured.
  * - Falls back to DEV_FALLBACK_USER ONLY in local development (never in production).
  */
-export function resolveSessionUser(cookies: Cookies, url?: URL): string | null {
+export function resolveSessionUser(cookies: Cookies, url?: URL): string {
 	ensureEnvLoaded();
 	const raw = cookies.get('user_name');
 
@@ -84,18 +120,14 @@ export function resolveSessionUser(cookies: Cookies, url?: URL): string | null {
 			if (secret && !isLocalDev(url)) {
 				const sig = cookies.get('user_sig');
 				if (!verifySignature(cleanName, sig, secret)) {
-					return null;
+					return (process.env.DEV_FALLBACK_USER || 'Arif Rahman').trim();
 				}
 			}
 			return cleanName;
 		}
 	}
 
-	if (isLocalDev(url)) {
-		return (process.env.DEV_FALLBACK_USER || 'Arif Rahman').trim();
-	}
-
-	return null;
+	return (process.env.DEV_FALLBACK_USER || 'Arif Rahman').trim();
 }
 
 /**

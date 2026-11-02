@@ -319,6 +319,15 @@ export function generateSmartQueryForQuestion(query: string): string | null {
 	const selectTicketCols = `SELECT t.id, t.ticket_number, t.status, t.severity, t.category, t.created_by, COALESCE(NULLIF(t.pic_helpdesk, ''), '-') as pic_helpdesk, COALESCE(GROUP_CONCAT(DISTINCT m.code SEPARATOR ', '), '-') as modules, COALESCE(GROUP_CONCAT(DISTINCT c.code SEPARATOR ', '), '-') as companies, LEFT(COALESCE(NULLIF(t.title, ''), t.description), 160) as description, t.created_at FROM tickets t LEFT JOIN module_ticket mt ON t.id = mt.ticket_id LEFT JOIN modules m ON mt.module_id = m.id LEFT JOIN company_ticket ct ON t.id = ct.ticket_id LEFT JOIN companies c ON ct.company_id = c.id`;
 	const groupByTicket = `GROUP BY t.id, t.ticket_number, t.status, t.severity, t.category, t.created_by, t.pic_helpdesk, t.title, t.description, t.created_at`;
 
+	// 0. Pencarian Nomor Tiket Spesifik (misal #3190, tiket 90000017, no 125)
+	const ticketNumMatch = query.match(/(?:#|\btiket\s+|\bticket\s+|\bnomor\s+|\bno\.?\s*)(\d{2,12})\b/i) || query.match(/\b(9\d{7})\b/);
+	if (ticketNumMatch) {
+		const num = ticketNumMatch[1].replace(/[^0-9]/g, '');
+		if (num) {
+			return `SELECT t.id, t.ticket_number, t.ticket_type, t.status, t.severity, t.category, t.created_by, COALESCE(NULLIF(t.pic_helpdesk, ''), '-') as pic_helpdesk, COALESCE(NULLIF(t.dev_assigned_to, ''), '-') as dev_assigned_to, COALESCE(GROUP_CONCAT(DISTINCT m.code SEPARATOR ', '), '-') as modules, COALESCE(GROUP_CONCAT(DISTINCT c.code SEPARATOR ', '), '-') as companies, t.title, LEFT(t.description, 800) as description, LEFT(COALESCE(t.solutions, ''), 800) as solutions, LEFT(COALESCE(t.dev_notes, ''), 500) as dev_notes, t.created_at, t.closed_at FROM tickets t LEFT JOIN module_ticket mt ON t.id = mt.ticket_id LEFT JOIN modules m ON mt.module_id = m.id LEFT JOIN company_ticket ct ON t.id = ct.ticket_id LEFT JOIN companies c ON ct.company_id = c.id WHERE t.deleted_at IS NULL AND (t.ticket_number = '${num}' OR t.id = '${num}') GROUP BY t.id, t.ticket_number, t.ticket_type, t.status, t.severity, t.category, t.created_by, t.pic_helpdesk, t.dev_assigned_to, t.title, t.description, t.solutions, t.dev_notes, t.created_at, t.closed_at LIMIT 5`;
+		}
+	}
+
 	// 1. Tiket yang sedang Open (sesuai Kartu/Tab Open di Dashboard: Open + Escalated to Dev + In Development + Ready for Testing)
 	if (q.includes('open') || q.includes('terbuka') || q.includes('aktif') || q.includes('belum selesai')) {
 		return `${selectTicketCols} WHERE ${baseWhere} AND t.status IN ('Open', 'Escalated to Dev', 'In Development', 'Ready for Testing') ${groupByTicket} ORDER BY t.id DESC LIMIT 25`;
@@ -536,4 +545,78 @@ export async function buildRealtimeDbContext(query: string): Promise<string> {
 2. Jika pengguna menanyakan tiket pada modul tertentu (misalnya Modul PM, MM, HCM, FI, SD, dll.) atau status tertentu (seperti Open), langsung sebutkan angkanya secara pasti beserta rincian nomor tiketnya dari data di atas.
 3. DILARANG KERAS menulis atau menyarankan kode query SQL (\`SELECT ... FROM ...\`) atau perintah \`tinker\` di dalam jawaban Anda kepada pengguna.`
 	);
+}
+
+/**
+ * Mencari histori tiket, kendala, dan solusi dari database Helpdesk berdasarkan kata kunci pertanyaan.
+ * Memungkinkan AI menjawab kendala teknis berdasarkan riwayat penyelesaian tiket di database Helpdesk.
+ */
+export async function searchRelevantTicketsByKeywords(keywords: string[]): Promise<string> {
+	const validKeywords = (keywords || [])
+		.map((k) => k.trim().replace(/['"\\%_]/g, ''))
+		.filter((k) => k.length >= 3)
+		.slice(0, 6);
+
+	if (validKeywords.length === 0) return '';
+
+	try {
+		const p = getDbPool();
+		const scoreParts: string[] = [];
+		const whereParts: string[] = [];
+		const params: string[] = [];
+
+		for (const kw of validKeywords) {
+			const likeVal = `%${kw}%`;
+			scoreParts.push(
+				`(CASE WHEN t.title LIKE ? THEN 4 ELSE 0 END + CASE WHEN CAST(t.ticket_number AS CHAR) LIKE ? THEN 5 ELSE 0 END + CASE WHEN t.description LIKE ? THEN 2 ELSE 0 END + CASE WHEN t.solutions LIKE ? THEN 3 ELSE 0 END + CASE WHEN t.dev_notes LIKE ? THEN 2 ELSE 0 END + CASE WHEN t.created_by LIKE ? OR t.pic_helpdesk LIKE ? THEN 2 ELSE 0 END)`
+			);
+			params.push(likeVal, likeVal, likeVal, likeVal, likeVal, likeVal, likeVal);
+		}
+
+		for (const kw of validKeywords) {
+			const likeVal = `%${kw}%`;
+			whereParts.push(
+				`(t.title LIKE ? OR CAST(t.ticket_number AS CHAR) LIKE ? OR t.description LIKE ? OR t.solutions LIKE ? OR t.dev_notes LIKE ? OR t.created_by LIKE ? OR t.pic_helpdesk LIKE ?)`
+			);
+			params.push(likeVal, likeVal, likeVal, likeVal, likeVal, likeVal, likeVal);
+		}
+
+		const sql = `
+			SELECT 
+				t.id,
+				t.ticket_number,
+				t.ticket_type,
+				t.status,
+				COALESCE(t.severity, '-') as severity,
+				COALESCE(t.category, '-') as category,
+				t.created_by,
+				COALESCE(NULLIF(t.pic_helpdesk, ''), '-') as pic_helpdesk,
+				COALESCE(NULLIF(t.dev_assigned_to, ''), '-') as dev_assigned_to,
+				COALESCE(t.title, '-') as title,
+				LEFT(COALESCE(t.description, ''), 450) as description,
+				LEFT(COALESCE(t.solutions, ''), 450) as solutions,
+				LEFT(COALESCE(t.dev_notes, ''), 300) as dev_notes,
+				DATE_FORMAT(t.created_at, '%Y-%m-%d') as created_at,
+				(${scoreParts.join(' + ')}) as relevance_score
+			FROM tickets t
+			WHERE t.deleted_at IS NULL AND (${whereParts.join(' OR ')})
+			ORDER BY relevance_score DESC, t.id DESC
+			LIMIT 5
+		`;
+
+		const [rows]: any = await p.query(sql, params);
+		if (!Array.isArray(rows) || rows.length === 0) return '';
+
+		const lines: string[] = [
+			`[DATA HISTORI TIKET & SOLUSI TERKAIT DARI DATABASE HELPDESK]:`
+		];
+		for (const r of rows) {
+			lines.push(
+				`- Tiket #${r.ticket_number} (${r.ticket_type} | Status: ${r.status} | Kategori: ${r.category} | Tgl: ${r.created_at} | Pembuat: ${r.created_by} | PIC: ${r.pic_helpdesk}):\n  Judul: ${r.title}\n  Deskripsi Masalah: ${r.description.replace(/\r?\n/g, ' ')}${r.solutions ? `\n  Solusi / Penyelesaian: ${r.solutions.replace(/\r?\n/g, ' ')}` : ''}${r.dev_notes ? `\n  Catatan Dev: ${r.dev_notes.replace(/\r?\n/g, ' ')}` : ''}`
+			);
+		}
+		return lines.join('\n');
+	} catch {
+		return '';
+	}
 }

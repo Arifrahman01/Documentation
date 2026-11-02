@@ -113,6 +113,12 @@ export function getUserDocStorage(userName: string): UserDocFile {
 	return initialData;
 }
 
+let userNotesVersion = 1;
+
+export function getUserNotesVersion(): number {
+	return userNotesVersion;
+}
+
 export function saveUserDocStorage(userName: string, data: UserDocFile) {
 	const userPath = getUserFilePath(userName);
 	const rootPath = getRootUserFilePath(userName);
@@ -121,6 +127,40 @@ export function saveUserDocStorage(userName: string, data: UserDocFile) {
 	try {
 		atomicWrite(rootPath, data);
 	} catch {}
+	userNotesVersion++;
+}
+
+export function loadAllUserNotes(): Array<DocumentItem & { ownerName?: string }> {
+	const result: Array<DocumentItem & { ownerName?: string }> = [];
+	const seenIds = new Set<string>();
+	const dirs = [DATA_USER_DIR, ROOT_USER_DIR];
+
+	for (const dir of dirs) {
+		if (!fs.existsSync(dir)) continue;
+		try {
+			const files = fs.readdirSync(dir).filter((f) => f.endsWith('.json'));
+			for (const file of files) {
+				try {
+					const fullPath = path.join(dir, file);
+					const parsed = JSON.parse(fs.readFileSync(fullPath, 'utf8')) as UserDocFile;
+					if (parsed && Array.isArray(parsed.documents)) {
+						for (const doc of parsed.documents) {
+							const key = doc.id || doc.slug;
+							if (!key || seenIds.has(key)) continue;
+							seenIds.add(key);
+							result.push({
+								...doc,
+								section: 'NOTE',
+								ownerName: parsed.userName || 'Pengguna'
+							});
+						}
+					}
+				} catch {}
+			}
+		} catch {}
+	}
+
+	return result;
 }
 
 export function buildUserDocTree(documents: DocumentItem[], folders: UserFolderItem[] = []) {

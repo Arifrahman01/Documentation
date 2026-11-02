@@ -73,7 +73,8 @@
 		Maximize2,
 		Minimize2,
 		Layers,
-		MoreHorizontal
+		MoreHorizontal,
+		RefreshCw
 	} from '@lucide/svelte';
 	import type { PageData } from './$types';
 
@@ -129,6 +130,15 @@
 				expandedFolders[`subfolder-${catSlug}-${subcatSlug}`] = true;
 			}
 		}
+	});
+
+	$effect(() => {
+		ui.currentContext = {
+			type: 'my-docs',
+			title: `Note: ${editorTitle || currentDoc?.title || 'Catatan Pribadi'}`,
+			key: currentDoc?.slug || data.doc?.slug,
+			snippet: editorContent || currentDoc?.content || ''
+		};
 	});
 
 	$effect(() => {
@@ -1108,7 +1118,7 @@
 					role="region"
 					aria-label="File Explorer Pribadi"
 				>
-					<!-- Sidebar Header: Title -->
+					<!-- Sidebar Header: Title & Auto-sync Button for Arif Rahman -->
 					<div class="flex items-center justify-between py-1">
 						<div class="flex items-center gap-1.5 truncate">
 							<BookUser class="h-4 w-4 text-primary shrink-0" />
@@ -1116,6 +1126,18 @@
 								My Docs ({data.userName})
 							</span>
 						</div>
+						{#if data.userName && data.userName.toLowerCase().trim() === 'arif rahman'}
+							<Button
+								variant="ghost"
+								size="sm"
+								onclick={() => ui.openSyncModal(true)}
+								class="h-6 gap-1 px-1.5 text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/15 cursor-pointer shrink-0 active:scale-95 transition-transform"
+								title="Buka Detail & Jalankan Sinkronisasi Dokumen Eksternal"
+							>
+								<RefreshCw class="h-3 w-3" />
+								<span>Sync Docs</span>
+							</Button>
+						{/if}
 					</div>
 
 					<!-- Quiet Filter Input (Matches /docs) -->

@@ -32,10 +32,236 @@
 			} catch (_) {
 				document.documentElement.classList.add('dark');
 			}
+			window.__pendingAiOpen = false;
+			window.__pendingSearchOpen = false;
 		</script>
+		<style id="app-loading-styles">
+			#app-loading-screen {
+				position: fixed;
+				inset: 0;
+				z-index: 999999;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				background-color: #09090b;
+				color: #f4f4f5;
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+				transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1), transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+				user-select: none;
+				-webkit-user-select: none;
+				overflow: hidden;
+			}
+			html:not(.dark) #app-loading-screen {
+				background-color: #ffffff;
+				color: #09090b;
+			}
+			#app-loading-screen.is-loaded {
+				opacity: 0;
+				transform: scale(1.02);
+				pointer-events: none;
+			}
+			.als-glow {
+				position: absolute;
+				width: 380px;
+				height: 380px;
+				border-radius: 50%;
+				background: radial-gradient(circle, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+				top: 50%;
+				left: 50%;
+				transform: translate(-50%, -50%);
+				pointer-events: none;
+				animation: alsPulse 3s ease-in-out infinite alternate;
+			}
+			html:not(.dark) .als-glow {
+				background: radial-gradient(circle, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0) 70%);
+			}
+			.als-card {
+				position: relative;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				text-align: center;
+				padding: 32px 24px;
+				max-width: 400px;
+				width: 90%;
+				z-index: 2;
+			}
+			.als-emblem-wrap {
+				position: relative;
+				width: 72px;
+				height: 72px;
+				border-radius: 20px;
+				background: rgba(255, 255, 255, 0.06);
+				border: 1px solid rgba(255, 255, 255, 0.14);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				margin-bottom: 22px;
+				box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+				animation: alsBreath 2.6s ease-in-out infinite;
+			}
+			html:not(.dark) .als-emblem-wrap {
+				background: rgba(0, 0, 0, 0.04);
+				border: 1px solid rgba(0, 0, 0, 0.1);
+				box-shadow: 0 10px 24px -5px rgba(0, 0, 0, 0.08);
+				animation: alsBreathLight 2.6s ease-in-out infinite;
+			}
+			.als-svg {
+				width: 38px;
+				height: 38px;
+				stroke: #f4f4f5;
+			}
+			html:not(.dark) .als-svg {
+				stroke: #18181b;
+			}
+			.als-title {
+				font-size: 19px;
+				font-weight: 700;
+				letter-spacing: -0.025em;
+				margin: 0 0 6px 0;
+				color: inherit;
+			}
+			.als-desc {
+				font-size: 13px;
+				opacity: 0.7;
+				margin: 0 0 24px 0;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				gap: 4px;
+			}
+			.als-ellipsis {
+				display: inline-block;
+				animation: alsDots 1.4s infinite;
+				letter-spacing: 2px;
+				font-weight: 600;
+			}
+			.als-progress-track {
+				width: 220px;
+				height: 4px;
+				background: rgba(255, 255, 255, 0.12);
+				border-radius: 9999px;
+				overflow: hidden;
+				position: relative;
+				box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
+			}
+			html:not(.dark) .als-progress-track {
+				background: rgba(0, 0, 0, 0.08);
+				box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+			}
+			.als-progress-bar {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				width: 42%;
+				border-radius: 9999px;
+				background: linear-gradient(90deg, #71717a 0%, #ffffff 50%, #71717a 100%);
+				animation: alsShimmer 1.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+			}
+			html:not(.dark) .als-progress-bar {
+				background: linear-gradient(90deg, #a1a1aa 0%, #18181b 50%, #a1a1aa 100%);
+			}
+			.als-status-pill {
+				margin-top: 20px;
+				display: inline-flex;
+				align-items: center;
+				gap: 7px;
+				padding: 4px 12px;
+				border-radius: 9999px;
+				background: rgba(255, 255, 255, 0.05);
+				border: 1px solid rgba(255, 255, 255, 0.08);
+				font-size: 11px;
+				font-weight: 500;
+				opacity: 0.75;
+				letter-spacing: 0.02em;
+			}
+			html:not(.dark) .als-status-pill {
+				background: rgba(0, 0, 0, 0.04);
+				border: 1px solid rgba(0, 0, 0, 0.07);
+			}
+			.als-status-dot {
+				width: 6.5px;
+				height: 6.5px;
+				border-radius: 50%;
+				background-color: #10b981;
+				box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+				animation: alsDotPulse 1.8s ease-in-out infinite;
+			}
+			@keyframes alsShimmer {
+				0% { left: -45%; }
+				100% { left: 110%; }
+			}
+			@keyframes alsPulse {
+				0% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.5; }
+				100% { transform: translate(-50%, -50%) scale(1.08); opacity: 0.95; }
+			}
+			@keyframes alsBreath {
+				0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.12); }
+				70% { transform: scale(1.03); box-shadow: 0 0 0 12px rgba(255, 255, 255, 0); }
+				100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+			}
+			@keyframes alsBreathLight {
+				0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 0, 0, 0.08); }
+				70% { transform: scale(1.03); box-shadow: 0 0 0 12px rgba(0, 0, 0, 0); }
+				100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(0, 0, 0, 0); }
+			}
+			@keyframes alsDotPulse {
+				0%, 100% { opacity: 0.5; transform: scale(0.9); }
+				50% { opacity: 1; transform: scale(1.2); }
+			}
+			@keyframes alsDots {
+				0%, 20% { opacity: 0; }
+				40% { opacity: 0.5; }
+				60%, 100% { opacity: 1; }
+			}
+		</style>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover" class="bg-background text-foreground antialiased">
+		<!-- Initial App Loading Screen (Zero-Flash, Instant First Paint) -->
+		<div id="app-loading-screen" aria-live="polite" aria-busy="true">
+			<div class="als-glow" aria-hidden="true"></div>
+			<div class="als-card">
+				<!-- Animated Emblem Box -->
+				<div class="als-emblem-wrap">
+					<svg viewBox="0 0 24 24" class="als-svg" fill="none" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20" />
+						<circle cx="12" cy="8" r="2.2" fill="currentColor" />
+						<path d="M15.5 13.5a3.5 3.5 0 1 0-7 0" />
+					</svg>
+				</div>
+
+				<!-- App Title & Subtitle -->
+				<h1 class="als-title">Portal Dokumentasi Enterprise</h1>
+				<div class="als-desc">
+					<span>Menyiapkan modul dokumentasi & asisten AI</span>
+					<span class="als-ellipsis">...</span>
+				</div>
+
+				<!-- Progress Bar -->
+				<div class="als-progress-track" role="progressbar" aria-label="Memuat aplikasi">
+					<div class="als-progress-bar"></div>
+				</div>
+
+				<!-- Status Badge -->
+				<div class="als-status-pill">
+					<span class="als-status-dot"></span>
+					<span>Knowledge Base & AI Navigator</span>
+				</div>
+			</div>
+		</div>
+
+		<script>
+			// Failsafe auto-dismiss after 4.5 seconds if hydration was delayed
+			setTimeout(function() {
+				var el = document.getElementById('app-loading-screen');
+				if (el && !el.classList.contains('is-loaded')) {
+					el.classList.add('is-loaded');
+					setTimeout(function() { if (el.parentNode) el.parentNode.removeChild(el); }, 450);
+				}
+			}, 4500);
+		</script>
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

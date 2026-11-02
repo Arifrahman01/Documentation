@@ -166,6 +166,7 @@
 			inputQuery = '';
 			if (inputEl) inputEl.style.height = '40px';
 		}
+		const priorHistory = messages.slice(-8).map((m) => ({ role: m.role, content: m.content }));
 		messages = [...messages, { role: 'user', content: query, label: actionLabel }];
 		isLoading = true;
 
@@ -184,7 +185,7 @@
 					},
 					documentContext: doc?.content || doc?.description || '',
 					currentRoute: doc?.title || '',
-					history: messages.slice(-6).map((m) => ({ role: m.role, content: m.content }))
+					history: priorHistory
 				})
 			});
 

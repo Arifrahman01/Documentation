@@ -26,20 +26,54 @@ if (fs.existsSync(envPath)) {
   }
 }
 
-// 2. Determine target external directory
-const targetDir = process.env.EXTERNAL_DOCS_DIR || process.argv[2] || 'D:\\Project\\helpdesk2\\storage\\app\\private';
-const OUTPUT_DATA = path.resolve(__dirname, '..', 'data', 'external-documents.json');
-const OUTPUT_LIB = path.resolve(__dirname, '..', 'src', 'lib', 'data', 'external-documents.json');
+// 2. Parse CLI Arguments
+const args = process.argv.slice(2);
+let customDir = null;
+let selectedTypesArg = null;
+let forceFullReindex = false;
+let checkpointInterval = 20;
 
-console.log('====================================================');
-console.log(' External Document Indexer for AI Copilot');
-console.log(' Target Folder :', targetDir);
-console.log('====================================================');
+for (const arg of args) {
+  if (arg.startsWith('--types=')) {
+    selectedTypesArg = arg.slice(8).toLowerCase().trim();
+  } else if (arg === '--force' || arg === '--no-cache') {
+    forceFullReindex = true;
+  } else if (arg.startsWith('--checkpoint=')) {
+    const val = parseInt(arg.slice(13), 10);
+    if (!isNaN(val) && val > 0) checkpointInterval = val;
+  } else if (arg.startsWith('--dir=')) {
+    customDir = arg.slice(6).trim();
+  } else if (!arg.startsWith('--') && !customDir) {
+    customDir = arg;
+  }
+}
 
-if (!fs.existsSync(targetDir)) {
-  console.error(`\n[ERROR] Target folder does not exist: ${targetDir}`);
-  console.log('Please set EXTERNAL_DOCS_DIR in .env or provide a valid path as argument.');
-  process.exit(1);
+// 3. Document Extension Mapping
+const EXT_MAP = {
+  pdf: ['.pdf'],
+  docx: ['.docx', '.doc'],
+  xlsx: ['.xlsx', '.xls'],
+  pptx: ['.pptx', '.ppt'],
+  txt: ['.txt', '.md', '.csv']
+};
+
+let ALLOWED_EXTS = new Set();
+if (selectedTypesArg) {
+  const types = selectedTypesArg.split(',').map(t => t.trim());
+  for (const t of types) {
+    if (EXT_MAP[t]) {
+      EXT_MAP[t].forEach(ext => ALLOWED_EXTS.add(ext));
+    } else if (t.startsWith('.')) {
+      ALLOWED_EXTS.add(t);
+    } else {
+      ALLOWED_EXTS.add('.' + t);
+    }
+  }
+} else {
+  // Default: Dokumen resmi PDF, Word & Excel
+  ['pdf', 'docx', 'xlsx', 'pptx'].forEach(t => {
+    EXT_MAP[t].forEach(ext => ALLOWED_EXTS.add(ext));
+  });
 }
 
 // Directories to ignore
@@ -54,21 +88,26 @@ const IGNORE_DIRS = new Set([
   '.temp_fsd'
 ]);
 
-// Allowed document extensions
-const ALLOWED_EXTS = new Set([
-  '.pdf',
-  '.docx',
-  '.xlsx',
-  '.xls',
-  '.pptx',
-  '.txt',
-  '.csv',
-  '.sql',
-  '.md',
-  '.json'
-]);
+// 4. Determine Target & Output Directories
+const targetDir = customDir || process.env.EXTERNAL_DOCS_DIR || 'D:\\Project\\helpdesk2\\storage\\app\\private';
+const OUTPUT_DATA = path.resolve(__dirname, '..', 'data', 'external-documents.json');
+const OUTPUT_LIB = path.resolve(__dirname, '..', 'src', 'lib', 'data', 'external-documents.json');
+const STATUS_FILE = path.resolve(__dirname, '..', 'data', 'sync-status.json');
 
-// Skip files larger than 25MB (usually huge raw telemetry or binary dumps)
+console.log('====================================================');
+console.log(' External Document Indexer for AI Copilot');
+console.log(' Target Folder   :', targetDir);
+console.log(' Jenis Dokumen   :', Array.from(ALLOWED_EXTS).join(', '));
+console.log(' Mode Sinkron    :', forceFullReindex ? 'Full Re-index (Paksa Semua)' : 'Inkremental / Cepat (Dengan Cache)');
+console.log(' Checkpoint Tiap :', checkpointInterval, 'berkas');
+console.log('====================================================');
+
+if (!fs.existsSync(targetDir)) {
+  console.error(`\n[ERROR] Target folder tidak ditemukan: ${targetDir}`);
+  process.exit(1);
+}
+
+// Skip files larger than 25MB
 const MAX_FILE_SIZE = 25 * 1024 * 1024;
 
 // Recursively collect candidate files
@@ -105,17 +144,7 @@ function scanDirectory(dir, baseDir, fileList = []) {
   return fileList;
 }
 
-// Mute verbose PDF.js console warnings during extraction
-function withMutedWarnings(fn) {
-  const origWarn = console.warn;
-  console.warn = () => {};
-  try {
-    return fn();
-  } finally {
-    console.warn = origWarn;
-  }
-}
-
+// Extractors
 async function extractPdfText(filePath) {
   const origWarn = console.warn;
   console.warn = () => {};
@@ -140,17 +169,16 @@ async function extractDocxText(filePath) {
 }
 
 function extractExcelText(filePath) {
-  // Read max 80 rows per sheet to keep extraction fast and context relevant
-  const wb = XLSX.readFile(filePath, { sheetRows: 80, dense: true });
+  const wb = XLSX.readFile(filePath, { sheetRows: 150, dense: true });
   const parts = [];
-  const maxSheets = Math.min(wb.SheetNames.length, 12);
+  const maxSheets = Math.min(wb.SheetNames.length, 15);
   for (let s = 0; s < maxSheets; s++) {
     const sheetName = wb.SheetNames[s];
     const sheet = wb.Sheets[sheetName];
     if (!sheet) continue;
     const csv = XLSX.utils.sheet_to_csv(sheet);
     if (csv && csv.trim()) {
-      parts.push(`[Sheet: ${sheetName}]\n${csv.trim().substring(0, 3000)}`);
+      parts.push(`[Sheet: ${sheetName}]\n${csv.trim().substring(0, 6000)}`);
     }
   }
   return parts.join('\n\n');
@@ -184,30 +212,99 @@ function cleanText(text) {
   if (!text) return '';
   return text
     .replace(/\r\n/g, '\n')
-    .replace(/\0/g, '') // remove null bytes
-    .replace(/[ \t]+/g, ' ') // collapse multi-spaces
-    .replace(/\n{3,}/g, '\n\n') // collapse multiple empty lines
+    .replace(/\0/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 
+// Checkpoint Saver (Anti-Data Loss on Abort/Crash)
+function saveCheckpoint(docs, stats) {
+  try {
+    fs.mkdirSync(path.dirname(OUTPUT_DATA), { recursive: true });
+    fs.mkdirSync(path.dirname(OUTPUT_LIB), { recursive: true });
+    const jsonStr = JSON.stringify(docs, null, 2);
+    fs.writeFileSync(OUTPUT_DATA, jsonStr, 'utf8');
+    fs.writeFileSync(OUTPUT_LIB, jsonStr, 'utf8');
+
+    // Save lightweight sync status
+    fs.writeFileSync(STATUS_FILE, JSON.stringify({
+      isSyncRunning: stats.isRunning,
+      pid: process.pid,
+      total: stats.total,
+      processed: stats.processed,
+      success: docs.length,
+      cached: stats.cached,
+      newOrUpdated: stats.newOrUpdated,
+      lastCheckpoint: new Date().toISOString()
+    }, null, 2), 'utf8');
+  } catch (err) {
+    console.error('[CHECKPOINT WARNING]:', err.message);
+  }
+}
+
+// Graceful Shutdown on SIGTERM / SIGINT
+let isShuttingDown = false;
+let currentDocuments = [];
+let currentStats = { isRunning: true, total: 0, processed: 0, cached: 0, newOrUpdated: 0 };
+
+function handleTerminationSignal(sig) {
+  if (isShuttingDown) return;
+  isShuttingDown = true;
+  console.log(`\n\n[INFO] Sinyal ${sig} diterima. Menyimpan checkpoint dokumen...`);
+  currentStats.isRunning = false;
+  saveCheckpoint(currentDocuments, currentStats);
+  console.log(`[INFO] Checkpoint berhasil disimpan (${currentDocuments.length} dokumen). Proses berhenti aman.`);
+  process.exit(0);
+}
+
+process.on('SIGTERM', () => handleTerminationSignal('SIGTERM'));
+process.on('SIGINT', () => handleTerminationSignal('SIGINT'));
+
 async function run() {
   const startTime = Date.now();
-  console.log('Memindai direktori dokumen...');
+  console.log('Memindai direktori dokumen sesuai filter jenis...');
   const allFiles = scanDirectory(targetDir, targetDir);
-  console.log(`Ditemukan ${allFiles.length} berkas potensial.`);
+  console.log(`Ditemukan ${allFiles.length} berkas kandidat.`);
+
+  // Load Existing Index for Smart Incremental Caching
+  const existingDocsMap = new Map();
+  if (!forceFullReindex && fs.existsSync(OUTPUT_DATA)) {
+    try {
+      const raw = fs.readFileSync(OUTPUT_DATA, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        for (const d of parsed) {
+          if (d.relativePath) {
+            existingDocsMap.set(d.relativePath, d);
+          }
+        }
+      }
+      console.log(`Memuat cache inkremental: ${existingDocsMap.size} dokumen sebelumnya tersedia.`);
+    } catch (_) {}
+  }
 
   const stats = {
+    isRunning: true,
     total: allFiles.length,
+    processed: 0,
     success: 0,
+    cached: 0,
+    newOrUpdated: 0,
     skippedSize: 0,
     failed: 0,
     byExt: {}
   };
+  currentStats = stats;
 
   const documents = [];
+  currentDocuments = documents;
 
   for (let i = 0; i < allFiles.length; i++) {
+    if (isShuttingDown) break;
+
     const file = allFiles[i];
+    stats.processed = i + 1;
     stats.byExt[file.ext] = (stats.byExt[file.ext] || 0) + 1;
 
     if (file.size > MAX_FILE_SIZE) {
@@ -215,18 +312,36 @@ async function run() {
       continue;
     }
 
+    // Smart Cache Hit Check (0ms per unchanged file)
+    const existing = existingDocsMap.get(file.relativePath);
+    if (
+      existing &&
+      existing.sizeBytes === file.size &&
+      existing.updatedAt === file.mtime.toISOString()
+    ) {
+      documents.push(existing);
+      stats.cached++;
+      stats.success++;
+
+      if ((i + 1) % 25 === 0 || i === allFiles.length - 1) {
+        const pct = Math.round(((i + 1) / allFiles.length) * 100);
+        process.stdout.write(`\rProgres pemrosesan: ${i + 1}/${allFiles.length} (${pct}%) [${stats.cached} dari cache, ${stats.newOrUpdated} baru]...`);
+      }
+      continue;
+    }
+
+    // New or Modified File -> Extract text
     try {
       let rawText = '';
       if (file.ext === '.pdf') {
         rawText = await extractPdfText(file.fullPath);
-      } else if (file.ext === '.docx') {
+      } else if (file.ext === '.docx' || file.ext === '.doc') {
         rawText = await extractDocxText(file.fullPath);
       } else if (file.ext === '.xlsx' || file.ext === '.xls') {
         rawText = extractExcelText(file.fullPath);
-      } else if (file.ext === '.pptx') {
+      } else if (file.ext === '.pptx' || file.ext === '.ppt') {
         rawText = await extractPptxText(file.fullPath);
       } else {
-        // Plain text, SQL, Markdown, CSV, JSON
         rawText = fs.readFileSync(file.fullPath, 'utf8');
       }
 
@@ -240,9 +355,8 @@ async function run() {
       const category = folderParts.length > 0 ? folderParts.join(' / ') : 'General';
       const id = 'ext_' + crypto.createHash('md5').update(file.relativePath).digest('hex').substring(0, 12);
 
-      // Cap content length per document to 15,000 characters
-      const cappedContent = text.length > 15000 
-        ? text.substring(0, 15000) + '\n\n[...Konten dokumen dipotong untuk batas memori context...]' 
+      const cappedContent = text.length > 45000 
+        ? text.substring(0, 45000) + '\n\n[...Konten dokumen dipotong pada 45.000 karakter...]' 
         : text;
       const snippet = text.substring(0, 260).replace(/\n/g, ' ').trim();
 
@@ -268,37 +382,38 @@ async function run() {
         content: cappedContent
       });
 
+      stats.newOrUpdated++;
       stats.success++;
-      if ((i + 1) % 20 === 0 || i === allFiles.length - 1) {
-        process.stdout.write(`\rProgres pemrosesan: ${i + 1}/${allFiles.length} berkas...`);
+
+      const pct = Math.round(((i + 1) / allFiles.length) * 100);
+      process.stdout.write(`\rProgres pemrosesan: ${i + 1}/${allFiles.length} (${pct}%) [${stats.cached} dari cache, ${stats.newOrUpdated} baru]...`);
+
+      // Auto-save checkpoint every interval
+      if (stats.newOrUpdated > 0 && stats.newOrUpdated % checkpointInterval === 0) {
+        saveCheckpoint(documents, stats);
       }
     } catch (err) {
       stats.failed++;
     }
   }
 
-  console.log('\n\nMenyimpan berkas indeks dokumen...');
-
-  fs.mkdirSync(path.dirname(OUTPUT_DATA), { recursive: true });
-  fs.mkdirSync(path.dirname(OUTPUT_LIB), { recursive: true });
-
-  const jsonStr = JSON.stringify(documents, null, 2);
-  fs.writeFileSync(OUTPUT_DATA, jsonStr, 'utf8');
-  fs.writeFileSync(OUTPUT_LIB, jsonStr, 'utf8');
+  stats.isRunning = false;
+  console.log('\n\nMenyimpan berkas indeks dokumen final...');
+  saveCheckpoint(documents, stats);
 
   const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
+  const jsonStr = JSON.stringify(documents, null, 2);
   const sizeMb = (Buffer.byteLength(jsonStr, 'utf8') / (1024 * 1024)).toFixed(2);
 
   console.log('====================================================');
   console.log(' Selesai Pengindeksan Dokumen!');
   console.log(` Durasi              : ${durationSec} detik`);
-  console.log(` Dokumen Terindeks   : ${documents.length} berkas`);
+  console.log(` Total Terindeks     : ${documents.length} berkas`);
+  console.log(`   - Dari Cache      : ${stats.cached} berkas (0 detik)`);
+  console.log(`   - Ekstraksi Baru  : ${stats.newOrUpdated} berkas`);
   console.log(` Berkas Dilewati     : ${stats.skippedSize} (>25MB), ${stats.failed} (non-teks/error)`);
   console.log(` Ukuran Indeks JSON  : ${sizeMb} MB`);
-  console.log(` Lokasi Output       :`);
-  console.log(`   - ${OUTPUT_DATA}`);
-  console.log(`   - ${OUTPUT_LIB}`);
-  console.log(' Komposisi Ekstensi  :');
+  console.log(` Komposisi Ekstensi  :`);
   for (const [ext, count] of Object.entries(stats.byExt)) {
     console.log(`   - ${ext.padEnd(7)} : ${count} berkas`);
   }

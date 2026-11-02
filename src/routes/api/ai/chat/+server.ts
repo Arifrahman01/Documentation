@@ -11,7 +11,8 @@ import {
 } from '$lib/server/ai';
 import {
 	isDatabaseQueryIntent,
-	buildRealtimeDbContext
+	buildRealtimeDbContext,
+	searchRelevantTicketsByKeywords
 } from '$lib/server/database';
 
 export const POST: RequestHandler = async ({ request }) => {
@@ -31,10 +32,13 @@ export const POST: RequestHandler = async ({ request }) => {
 
 		let messageList = messages;
 		if (!messageList && (query || history)) {
-			messageList = [
-				...(Array.isArray(history) ? history : []),
-				...(query ? [{ role: 'user', content: query }] : [])
-			];
+			const histArray = Array.isArray(history) ? history : [];
+			const lastHist = histArray[histArray.length - 1];
+			if (query && (!lastHist || lastHist.role !== 'user' || lastHist.content !== query)) {
+				messageList = [...histArray, { role: 'user', content: query }];
+			} else {
+				messageList = [...histArray];
+			}
 		}
 
 		if (!messageList || !Array.isArray(messageList) || messageList.length === 0) {
@@ -51,7 +55,7 @@ export const POST: RequestHandler = async ({ request }) => {
 			const docCategory = docMeta?.category || 'Umum';
 			const docSlug = docMeta?.slug ? `/docs/${docMeta.slug}` : '';
 
-			contextualPrompt = `Anda adalah "AI Assistant Dokumen", asisten analisis khusus yang HANYA bertugas menjelaskan, merangkum, dan menjawab pertanyaan berdasarkan SATU dokumen yang sedang dibuka pengguna.
+			contextualPrompt = `Anda adalah "AI Assistant Dokumen", asisten analisis khusus yang HANYA bertugas menjelaskan, merangkum, dan menjawab pertanyaan berdasarkan SATU dokumen/note yang sedang dibuka pengguna.
 
 ==================================================
 ATURAN LINGKUP DOKUMEN TUNGGAL (STRICT DOCUMENT SCOPE):
@@ -61,7 +65,7 @@ ATURAN LINGKUP DOKUMEN TUNGGAL (STRICT DOCUMENT SCOPE):
    - DILARANG mengambil, mencampur, atau mengarang informasi di luar isi dokumen "${docTitle}" ini.
 2. JIKA TIDAK ADA DI DOKUMEN INI:
    - Apabila pengguna menanyakan topik yang tidak dibahas di dalam dokumen "${docTitle}", jawab dengan sopan:
-     "Topik tersebut tidak dibahas di dalam dokumen **${docTitle}** ini. Silakan gunakan **Chat AI Copilot (Global)** di pojok kanan atas jika ingin mencari informasi lintas seluruh dokumen portal."
+     "Topik tersebut tidak dibahas di dalam dokumen **${docTitle}** ini. Silakan gunakan **AI Copilot** di pojok kanan atas jika ingin mencari informasi lintas seluruh dokumen sinkronisasi, note, dan database Helpdesk."
 3. GAYA JAWABAN:
    - Gunakan Bahasa Indonesia yang terstruktur, jelas, dan mudah dipahami.
    - Gunakan format Markdown (poin-poin, tabel, bold, atau blok kode sesuai isi dokumen).
@@ -75,41 +79,76 @@ ${docSlug ? `- Path: ${docSlug}` : ''}
 
 [ISI LENGKAP DOKUMEN AKTIF]:
 """
-${docCtx.substring(0, 12000)}
+${docCtx.substring(0, 18000)}
 """`;
 		} else {
-			// GLOBAL PORTAL CHAT AI COPILOT SCOPE
+			// GLOBAL PORTAL CHAT AI COPILOT SCOPE (Restricted to Synced Docs, Notes/Docs in this App, & Helpdesk DB)
 			const lastUserQuery =
 				query || messageList.filter((m: any) => m.role === 'user').pop()?.content || '';
-			const relevantKnowledge = retrieveRelevantKnowledge(lastUserQuery);
+			const priorHistory = messageList.slice(0, -1);
 
-			// Realtime Database Query Integration (Metode 2 + Dashboard KPI & Cross-Tab Module Pivot)
+			// 1. Retrieve chunks from Synced Documents, User Notes (My Docs), and Portal Docs with Multi-Turn Context
+			const { knowledgeText, extractedKeywords } = retrieveRelevantKnowledge(
+				lastUserQuery,
+				priorHistory
+			);
+
+			// 2. Retrieve Realtime Helpdesk Database Context (KPIs + Ticket Search by Keywords)
 			let liveDbKnowledge = '';
-			const hasDbIntent = isDatabaseQueryIntent(lastUserQuery);
+			let ticketKeywordKnowledge = '';
+
+			const combinedRecentText = [
+				lastUserQuery,
+				...priorHistory
+					.filter((m: any) => m.role === 'user')
+					.slice(-2)
+					.map((m: any) => m.content)
+			].join(' ');
+
+			const hasDbIntent = isDatabaseQueryIntent(combinedRecentText);
 			if (hasDbIntent) {
 				try {
-					liveDbKnowledge = await buildRealtimeDbContext(lastUserQuery);
+					liveDbKnowledge = await buildRealtimeDbContext(lastUserQuery || combinedRecentText);
+				} catch (_) {}
+			}
+
+			if (extractedKeywords.length > 0) {
+				try {
+					ticketKeywordKnowledge = await searchRelevantTicketsByKeywords(extractedKeywords);
 				} catch (_) {}
 			}
 
 			contextualPrompt = SYSTEM_PROMPT_BASE;
 			if (currentRoute) {
-				contextualPrompt += `\nLOKASI PENGGUNA SAAT INI DI PORTAL: ${currentRoute}`;
+				contextualPrompt += `\nLOKASI HALAMAN PENGGUNA SAAT INI: ${currentRoute}`;
 			}
 			if (docCtx && docCtx.trim()) {
-				contextualPrompt += `\n\n[KONTEKS DOKUMEN AKTIF SAAT INI]:\n"""\n${docCtx.substring(0, 3500)}\n"""`;
+				contextualPrompt += `\n\n[KONTEKS HALAMAN / CATATAN YANG SEDANG DIBUKA PENGGUNA]:\n"""\n${docCtx.substring(0, 4500)}\n"""`;
 			}
 			if (liveDbKnowledge) {
-				contextualPrompt += liveDbKnowledge;
+				contextualPrompt += `\n\n[SUMBER DATABASE HELPDESK REALTIME (STATISTIK & TIKET)]:\n${liveDbKnowledge}`;
 			}
-			if (relevantKnowledge) {
-				contextualPrompt += `\n\n[REFERENSI DOKUMENTASI & PANDUAN MODUL KNOWLEDGE BASE HELPDESK]:\n${relevantKnowledge}\n\nInstruksi Integrasi Helpdesk: Pengguna memandang portal dokumentasi ini sebagai satu kesatuan resmi dari sistem Helpdesk. Rujuk panduan modul dan solusi di atas untuk membantu menjawab kendala atau tiket pengguna.`;
-			} else if (!liveDbKnowledge) {
-				contextualPrompt += `\n\nInstruksi Integrasi Helpdesk: Posisikan jawaban Anda sebagai Technical Support Helpdesk ahli. Jawab pertanyaan pengguna seputar kendala sistem, tiket, panduan modul SAP/SAC/Web, maupun arsitektur sistem secara solutif, aplikatif, dan terstruktur.`;
+			if (ticketKeywordKnowledge) {
+				contextualPrompt += `\n\n${ticketKeywordKnowledge}`;
 			}
+			if (knowledgeText) {
+				contextualPrompt += `\n\n${knowledgeText}`;
+			}
+
+			contextualPrompt += `\n\n==================================================
+INSTRUKSI WAJIB SEBELUM MENJAWAB:
+1. Jawablah pertanyaan pengguna HANYA berdasarkan data dari:
+   - Dokumen Hasil Sinkronisasi Eksternal
+   - Isi Note (My Docs) & Dokumentasi di program ini
+   - Database Helpdesk (Tiket, Solusi, Modul, & Statistik)
+2. Sebutkan sumber rujukan secara jelas (Nama File Dokumen Sinkronisasi, Judul Note, atau Nomor Tiket Helpdesk).
+3. Apabila pertanyaan pengguna berada di luar isi dokumen sinkronisasi, isi note program ini, dan database Helpdesk, TOLAK dengan sopan dan jangan mengarang jawaban di luar sumber tersebut.
+==================================================`;
 		}
 
-		const fullMessages = [{ role: 'system', content: contextualPrompt }, ...messageList];
+		// Keep recent conversation history (up to last 10 messages) so context stays sharp
+		const trimmedMessages = messageList.slice(-10);
+		const fullMessages = [{ role: 'system', content: contextualPrompt }, ...trimmedMessages];
 
 		// Check cache for identical message thread
 		const cacheKey = hashString(JSON.stringify(fullMessages));

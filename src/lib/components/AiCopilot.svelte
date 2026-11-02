@@ -22,10 +22,20 @@
 		content: string;
 	}
 
+	const WELCOME_MESSAGE =
+		'Halo! Saya adalah **AI Copilot**, asisten khusus yang dikunci pada **3 Sumber Data Internal** Anda:\n\n1. **Dokumen Hasil Sinkronisasi Eksternal** (PDF, Word, Excel, PPTX)\n2. **Isi Note (My Docs) & Dokumentasi** di program ini\n3. **Database Helpdesk** (Tiket, Solusi, Modul & Statistik)\n\nSilakan tanyakan isi dokumen, catatan Anda, atau data tiket Helpdesk!';
+
+	const quickSuggestions = [
+		'Apa saja isi note yang ada di program ini?',
+		'Ringkasan status tiket di database Helpdesk',
+		'Jelaskan panduan SAP RAP dari note saya',
+		'Dokumen apa saja yang sudah disinkronkan?'
+	];
+
 	let messages = $state<Message[]>([
 		{
 			role: 'assistant',
-			content: 'Halo! Saya adalah **AI Copilot**, asisten terpadu untuk Helpdesk & Knowledge Base Dokumen Enterprise.\n\nKarena sistem dokumentasi ini terintegrasi penuh dengan Helpdesk, Anda dapat menanyakan:\n• Panduan teknis & SOP modul (SAP, SAC, FMS, Web, dll.)\n• Kendala sistem atau status tiket Helpdesk\n• Solusi penanganan masalah (*troubleshooting*) dan perangkuman dokumen\n\nSilakan ketik pertanyaan atau kendala yang ingin Anda konsultasikan!'
+			content: WELCOME_MESSAGE
 		}
 	]);
 
@@ -70,21 +80,19 @@
 		if (inputEl) {
 			inputEl.style.height = '40px';
 		}
+		const priorHistory = messages.slice(-8).map((m) => ({ role: m.role, content: m.content }));
 		messages = [...messages, { role: 'user', content: query }];
 		isLoading = true;
 
 		try {
-			const systemContext = `Konteks pengguna saat ini: Tipe: ${ui.currentContext.type}, Judul Halaman: ${ui.currentContext.title || 'Overview'}.`;
-			
 			const res = await fetch('/api/ai/chat', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					query: query,
-					context: systemContext,
 					documentContext: ui.currentContext.snippet || '',
 					currentRoute: ui.currentContext.title || '',
-					history: messages.slice(-6).map((m) => ({ role: m.role, content: m.content }))
+					history: priorHistory
 				})
 			});
 
@@ -157,7 +165,7 @@
 		messages = [
 			{
 				role: 'assistant',
-				content: 'Riwayat percakapan telah dibersihkan. Silakan ajukan pertanyaan baru mengenai dokumentasi atau aplikasi!'
+				content: WELCOME_MESSAGE
 			}
 		];
 	}
@@ -305,6 +313,25 @@
 					</div>
 				{/each}
 
+				{#if messages.length === 1 && !isLoading}
+					<div class="pl-10 space-y-1.5">
+						<div class="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+							Contoh Pertanyaan Cepat:
+						</div>
+						<div class="flex flex-wrap gap-1.5">
+							{#each quickSuggestions as suggestion}
+								<button
+									type="button"
+									onclick={() => sendMessage(suggestion)}
+									class="rounded-lg border border-border bg-card hover:bg-muted px-2.5 py-1.5 text-left text-[11px] text-foreground transition-colors cursor-pointer active:scale-95"
+								>
+									{suggestion}
+								</button>
+							{/each}
+						</div>
+					</div>
+				{/if}
+
 				{#if isLoading}
 					<div class="flex items-center gap-3">
 						<div class="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-foreground">
@@ -312,7 +339,7 @@
 						</div>
 						<div class="flex items-center gap-2 rounded-xl bg-muted/60 px-4 py-2.5 text-xs text-muted-foreground border border-border">
 							<Loader2 class="h-3.5 w-3.5 animate-spin" />
-							<span>Menyiapkan jawaban cerdas...</span>
+							<span>Mencari di dokumen, note & database Helpdesk...</span>
 						</div>
 					</div>
 				{/if}
@@ -328,7 +355,7 @@
 							onkeydown={handleKeydown}
 							oninput={autoResize}
 							rows={1}
-							placeholder="Tanyakan kendala, status tiket, atau panduan modul Helpdesk..."
+							placeholder="Tanyakan isi dokumen sinkronisasi, isi note, atau database Helpdesk..."
 							class="w-full rounded-md border border-input bg-background px-3 py-2.5 pr-10 text-xs leading-relaxed outline-none focus-visible:ring-2 focus-visible:ring-ring min-h-[40px] max-h-40 resize-none overflow-y-auto block whitespace-pre-wrap"
 						></textarea>
 						<Button

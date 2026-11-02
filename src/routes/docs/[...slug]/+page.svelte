@@ -1259,7 +1259,11 @@
 			type: 'docs',
 			title: currentDoc?.title || data.article.title,
 			key: data.slug,
-			snippet: currentDoc?.description || currentDoc?.snippet || data.article.snippet
+			snippet:
+				currentDoc?.content ||
+				currentDoc?.description ||
+				currentDoc?.snippet ||
+				data.article.snippet
 		};
 	});
 
