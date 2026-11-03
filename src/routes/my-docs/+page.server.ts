@@ -1,6 +1,6 @@
 import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { getUserDocStorage, sanitizeUserName } from '$lib/server/userDocs';
+import { getUserDocStorage, saveUserDoc } from '$lib/server/userDocs';
 import { resolveSessionUser } from '$lib/server/auth';
 
 export const load: PageServerLoad = async ({ cookies, url }) => {
@@ -13,12 +13,17 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 	}
 
 	const storage = getUserDocStorage(userName);
-	const firstDoc = storage.documents[0];
+	let firstDoc = storage.documents[0];
 
-	if (firstDoc && firstDoc.slug) {
-		throw redirect(302, `/my-docs/${firstDoc.slug}`);
+	// Jika user menghapus semua catatan (termasuk halaman selamat datang),
+	// otomatis inisialisasi catatan baru agar tidak 404
+	if (!firstDoc) {
+		firstDoc = saveUserDoc(userName, {
+			title: 'Catatan Baru',
+			content: '# Catatan Baru\n\n*Tuliskan catatan Anda di sini...*',
+			category: 'Catatan Harian'
+		});
 	}
 
-	const userSlug = sanitizeUserName(userName);
-	throw redirect(302, `/my-docs/${userSlug}/catatan-harian/selamat-datang`);
+	throw redirect(302, `/my-docs/${firstDoc.slug}`);
 };
