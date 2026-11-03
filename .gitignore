@@ -60,5 +60,6 @@ static/uploads/*
 # Runtime / dynamic sync data
 data/external-documents.json
 data/sync-status.json
+data/sync-manifest.json
 src/lib/data/external-documents.json
 

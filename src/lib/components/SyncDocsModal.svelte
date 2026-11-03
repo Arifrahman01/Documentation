@@ -27,6 +27,8 @@
 		processed?: number;
 		success?: number;
 		cached?: number;
+		duplicates?: number;
+		skippedKnown?: number;
 		newOrUpdated?: number;
 		failed?: number;
 		currentFile?: string;
@@ -366,11 +368,17 @@
 						</div>
 						<div class="flex items-center gap-2 text-[11px] text-muted-foreground shrink-0">
 							<span class="text-emerald-600 dark:text-emerald-400 font-medium">
-								{checkpoint.cached || 0} cache
+								{checkpoint.cached || 0} sudah ada (skip)
 							</span>
+							{#if (checkpoint.duplicates ?? 0) > 0}
+								<span>•</span>
+								<span class="text-sky-600 dark:text-sky-400 font-medium">
+									{checkpoint.duplicates} duplikat
+								</span>
+							{/if}
 							<span>•</span>
 							<span class="text-amber-600 dark:text-amber-400 font-medium">
-								{checkpoint.newOrUpdated || 0} baru
+								{checkpoint.newOrUpdated || 0} diekstrak baru
 							</span>
 						</div>
 					</div>
