@@ -61,5 +61,5 @@ static/uploads/*
 data/external-documents.json
 data/sync-status.json
 data/sync-manifest.json
-src/lib/data/external-documents.json
+src/lib/data/*
 
