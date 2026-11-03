@@ -56,3 +56,9 @@ desktop.ini
 coverage/
 .nyc_output/
 static/uploads/*
+
+# Runtime / dynamic sync data
+data/external-documents.json
+data/sync-status.json
+src/lib/data/external-documents.json
+
