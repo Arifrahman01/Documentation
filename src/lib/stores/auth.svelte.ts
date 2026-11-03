@@ -1,5 +1,5 @@
 const PERMANENT_STORAGE_KEY = 'portal_permanent_user';
-const PERMANENT_COOKIE_SECONDS = 315360000; // 10 years
+const PERMANENT_COOKIE_SECONDS = 2592000; // 30 days
 
 class AuthStore {
 	userName = $state<string | null>(null);

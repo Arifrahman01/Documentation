@@ -5,6 +5,9 @@ import {
 	saveUserDoc,
 	addUserFolder,
 	deleteUserFolder,
+	renameUserFolder,
+	moveUserFolder,
+	renameUserDoc,
 	buildUserDocTree
 } from '$lib/server/userDocs';
 import { resolveSessionUser, verifyWriteAccess } from '$lib/server/auth';
@@ -60,6 +63,42 @@ export const POST: RequestHandler = async (event) => {
 			const storage = getUserDocStorage(userName);
 			const treeData = buildUserDocTree(storage.documents, storage.folders);
 			return json({ success, treeData });
+		}
+
+		// Action: Rename folder/subfolder at any depth
+		if (body.action === 'rename-folder') {
+			const { category, subcategory, newName } = body;
+			const result = renameUserFolder(userName, category, subcategory, newName);
+			if (!result.success) {
+				return json({ error: result.error || 'Gagal mengubah nama folder' }, { status: 400 });
+			}
+			const storage = getUserDocStorage(userName);
+			const treeData = buildUserDocTree(storage.documents, storage.folders);
+			return json({ success: true, category: result.category, subcategory: result.subcategory, treeData });
+		}
+
+		// Action: Move folder into another folder at any depth
+		if (body.action === 'move-folder') {
+			const { category, subcategory, targetCategory, targetSubcategory } = body;
+			const result = moveUserFolder(userName, category, subcategory, targetCategory, targetSubcategory);
+			if (!result.success) {
+				return json({ error: result.error || 'Gagal memindahkan folder' }, { status: 400 });
+			}
+			const storage = getUserDocStorage(userName);
+			const treeData = buildUserDocTree(storage.documents, storage.folders);
+			return json({ success: true, treeData });
+		}
+
+		// Action: Rename a note
+		if (body.action === 'rename-doc') {
+			const { id, newTitle } = body;
+			const result = renameUserDoc(userName, id, newTitle);
+			if (!result.success) {
+				return json({ error: result.error || 'Gagal mengubah nama catatan' }, { status: 400 });
+			}
+			const storage = getUserDocStorage(userName);
+			const treeData = buildUserDocTree(storage.documents, storage.folders);
+			return json({ success: true, doc: result.doc, treeData });
 		}
 
 		// Action: Create new document

@@ -3,7 +3,7 @@ import type { RequestHandler } from './$types';
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadExternalDocuments } from '$lib/server/docs';
-import { ensureEnvLoaded } from '$lib/server/auth';
+import { ensureEnvLoaded, resolveSessionUser } from '$lib/server/auth';
 
 const MIME_MAP: Record<string, string> = {
 	'.pdf': 'application/pdf',
@@ -18,8 +18,13 @@ const MIME_MAP: Record<string, string> = {
 	'.csv': 'text/csv; charset=utf-8'
 };
 
-export const GET: RequestHandler = async ({ url }) => {
+export const GET: RequestHandler = async ({ url, cookies }) => {
 	ensureEnvLoaded();
+
+	if (!resolveSessionUser(cookies, url)) {
+		throw error(401, 'Sesi login diperlukan untuk mengunduh dokumen');
+	}
+
 	const id = (url.searchParams.get('id') || '').trim();
 	if (!id) {
 		throw error(400, 'Parameter id dokumen diperlukan');
@@ -31,13 +36,19 @@ export const GET: RequestHandler = async ({ url }) => {
 		throw error(404, 'Dokumen eksternal tidak ditemukan dalam indeks');
 	}
 
-	const rootDir = path.resolve(
-		process.env.EXTERNAL_DOCS_ROOT || 'D:\\Share All Doc Before Go Live\\10 Helpdesk'
-	);
+	// Same variable as scripts/index-external-docs.cjs (EXTERNAL_DOCS_ROOT kept as legacy alias)
+	const configuredRoot = (process.env.EXTERNAL_DOCS_DIR || process.env.EXTERNAL_DOCS_ROOT || '').trim();
+	if (!configuredRoot) {
+		throw error(503, 'EXTERNAL_DOCS_DIR belum dikonfigurasi di server');
+	}
+	const rootDir = path.resolve(configuredRoot);
 	const resolvedFile = path.resolve(rootDir, doc.relativePath);
 
-	// Prevent path traversal outside rootDir
-	if (!resolvedFile.toLowerCase().startsWith(rootDir.toLowerCase())) {
+	// Prevent path traversal outside rootDir (compare against root + separator, not a bare prefix)
+	const rootWithSep = rootDir.endsWith(path.sep) ? rootDir : rootDir + path.sep;
+	const cmpFile = process.platform === 'win32' ? resolvedFile.toLowerCase() : resolvedFile;
+	const cmpRoot = process.platform === 'win32' ? rootWithSep.toLowerCase() : rootWithSep;
+	if (!cmpFile.startsWith(cmpRoot)) {
 		throw error(403, 'Akses path dokumen ditolak');
 	}
 

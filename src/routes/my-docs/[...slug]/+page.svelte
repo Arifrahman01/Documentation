@@ -75,6 +75,7 @@
 		Minimize2,
 		Layers,
 		MoreHorizontal,
+		PenLine,
 		RefreshCw
 	} from '@lucide/svelte';
 	import type { PageData } from './$types';
@@ -122,16 +123,29 @@
 			}
 		}
 
-		// Auto-expand folder of current document so it is immediately visible
+		// Auto-expand folder & all nested parent subfolders of current document
 		if (data.doc?.category) {
-			const catSlug = data.doc.category.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-			expandedFolders[`folder-${catSlug}`] = true;
-			if (data.doc.subcategory) {
-				const subcatSlug = String(data.doc.subcategory).toLowerCase().replace(/[^a-z0-9]+/g, '-');
-				expandedFolders[`subfolder-${catSlug}-${subcatSlug}`] = true;
-			}
+			expandFolderHierarchy(data.doc.category, data.doc.subcategory);
 		}
 	});
+
+	function expandFolderHierarchy(category: string, subcategory?: string) {
+		if (!category) return;
+		const catSlug = category.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+		expandedFolders[`folder-${catSlug}`] = true;
+		if (subcategory) {
+			const parts = String(subcategory)
+				.split('/')
+				.map((s) => s.trim())
+				.filter(Boolean);
+			let acc = '';
+			for (const part of parts) {
+				acc = acc ? `${acc}/${part}` : part;
+				const subSlug = acc.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+				expandedFolders[`subfolder-${catSlug}-${subSlug}`] = true;
+			}
+		}
+	}
 
 	$effect(() => {
 		ui.currentContext = {
@@ -322,14 +336,47 @@
 		}
 	}
 
-	// Drag and Drop File Moving
+	// Drag and Drop (notes & folders) — every folder at any depth is a valid drop target
 	let draggedDoc = $state<any>(null);
+	let draggedFolder = $state<any>(null);
 	let activeDropTargetId = $state<string | null>(null);
 	let isMovingFile = $state(false);
 	let hoverExpandTimer: ReturnType<typeof setTimeout> | null = null;
 
+	function folderCat(node: any): string {
+		return node?.category ?? node?.title ?? '';
+	}
+
+	function folderSub(node: any): string | undefined {
+		return node?.subcategory || undefined;
+	}
+
+	function folderTarget(node: any) {
+		return {
+			isFolder: true,
+			isSubfolder: Boolean(node.isSubfolder),
+			title: node.title,
+			category: folderCat(node),
+			subcategory: folderSub(node)
+		};
+	}
+
+	function isNodeExpanded(node: any): boolean {
+		// Searching auto-expands every matching branch
+		if (filterQuery.trim()) return true;
+		return expandedFolders[node.id] ?? !node.isSubfolder;
+	}
+
+	function clearHoverExpandTimer() {
+		if (hoverExpandTimer) {
+			clearTimeout(hoverExpandTimer);
+			hoverExpandTimer = null;
+		}
+	}
+
 	function handleDragStart(e: DragEvent, doc: any) {
 		draggedDoc = doc;
+		draggedFolder = null;
 		if (e.dataTransfer) {
 			e.dataTransfer.setData(
 				'text/plain',
@@ -345,25 +392,55 @@
 		}
 	}
 
-	function handleDragEnd() {
+	function handleFolderItemDragStart(e: DragEvent, node: any) {
+		e.stopPropagation();
 		draggedDoc = null;
-		activeDropTargetId = null;
-		if (hoverExpandTimer) {
-			clearTimeout(hoverExpandTimer);
-			hoverExpandTimer = null;
+		draggedFolder = {
+			category: folderCat(node),
+			subcategory: folderSub(node),
+			title: node.title
+		};
+		if (e.dataTransfer) {
+			e.dataTransfer.setData('text/plain', JSON.stringify(draggedFolder));
+			e.dataTransfer.effectAllowed = 'move';
 		}
 	}
 
-	function handleFolderDragOver(e: DragEvent, folder: any) {
-		if (!draggedDoc) return;
+	function handleDragEnd() {
+		draggedDoc = null;
+		draggedFolder = null;
+		activeDropTargetId = null;
+		clearHoverExpandTimer();
+	}
+
+	/** A folder cannot be dropped into itself, its own descendants, or its current parent. */
+	function canDropOn(node: any): boolean {
+		if (draggedDoc) return true;
+		if (!draggedFolder) return false;
+		const cat = folderCat(node);
+		const sub = folderSub(node);
+		const srcCat = draggedFolder.category;
+		const srcSub: string | undefined = draggedFolder.subcategory;
+
+		if (srcCat !== cat) return true;
+		if (!srcSub) return false; // root folder onto itself / its own children
+		if (!sub) return srcSub.includes('/'); // already at category root if no '/'
+		if (sub === srcSub || sub.startsWith(`${srcSub}/`)) return false;
+		const srcParent = srcSub.split('/').slice(0, -1).join('/');
+		return sub !== srcParent;
+	}
+
+	function handleFolderDragOver(e: DragEvent, node: any) {
+		if (!draggedDoc && !draggedFolder) return;
+		if (!canDropOn(node)) return;
 		e.preventDefault();
 		e.stopPropagation();
 		if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-		activeDropTargetId = folder.id;
+		activeDropTargetId = node.id;
 
-		if (!expandedFolders[folder.id] && !hoverExpandTimer) {
+		if (!isNodeExpanded(node) && !hoverExpandTimer) {
 			hoverExpandTimer = setTimeout(() => {
-				expandedFolders[folder.id] = true;
+				expandedFolders[node.id] = true;
 				hoverExpandTimer = null;
 			}, 500);
 		}
@@ -373,58 +450,27 @@
 		if (activeDropTargetId === folderId) {
 			activeDropTargetId = null;
 		}
-		if (hoverExpandTimer) {
-			clearTimeout(hoverExpandTimer);
-			hoverExpandTimer = null;
-		}
+		clearHoverExpandTimer();
 	}
 
-	async function handleFolderDrop(e: DragEvent, folder: any) {
+	async function handleFolderDrop(e: DragEvent, node: any) {
 		e.preventDefault();
 		e.stopPropagation();
 		const docToMove = draggedDoc;
+		const folderToMove = draggedFolder;
 		activeDropTargetId = null;
-		if (hoverExpandTimer) {
-			clearTimeout(hoverExpandTimer);
-			hoverExpandTimer = null;
+		clearHoverExpandTimer();
+
+		const cat = folderCat(node);
+		const sub = folderSub(node);
+
+		if (docToMove) {
+			if (docToMove.category === cat && (docToMove.subcategory || undefined) === sub) return;
+			await moveDocumentTo(docToMove, cat, sub);
+		} else if (folderToMove) {
+			if (!canDropOn(node)) return;
+			await moveFolderTo(folderToMove, cat, sub);
 		}
-		if (!docToMove) return;
-
-		// If already in this category without subcategory, skip
-		if (docToMove.category === folder.title && !docToMove.subcategory) {
-			return;
-		}
-
-		await moveDocumentTo(docToMove, folder.title, undefined);
-	}
-
-	function handleSubfolderDragOver(e: DragEvent, node: any) {
-		if (!draggedDoc) return;
-		e.preventDefault();
-		e.stopPropagation();
-		if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-		activeDropTargetId = node.id;
-	}
-
-	function handleSubfolderDragLeave(e: DragEvent, subfolderId: string) {
-		if (activeDropTargetId === subfolderId) {
-			activeDropTargetId = null;
-		}
-	}
-
-	async function handleSubfolderDrop(e: DragEvent, node: any) {
-		e.preventDefault();
-		e.stopPropagation();
-		const docToMove = draggedDoc;
-		activeDropTargetId = null;
-		if (!docToMove) return;
-
-		// If already in this category and this subcategory, skip
-		if (docToMove.category === node.category && docToMove.subcategory === node.subcategory) {
-			return;
-		}
-
-		await moveDocumentTo(docToMove, node.category, node.subcategory);
 	}
 
 	async function moveDocumentTo(doc: any, newCategory: string, newSubcategory?: string) {
@@ -445,18 +491,12 @@
 				throw new Error(dataRes.error || 'Gagal memindahkan berkas');
 			}
 
-			// Update tree
 			if (dataRes.treeData) {
 				customTree = dataRes.treeData;
 			}
 
-			// Auto-expand destination folder and subfolder
-			const catSlug = newCategory.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-			expandedFolders[`folder-${catSlug}`] = true;
-			if (newSubcategory) {
-				const subSlug = newSubcategory.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-				expandedFolders[`subfolder-${catSlug}-${subSlug}`] = true;
-			}
+			// Auto-expand destination folder and every parent subfolder
+			expandFolderHierarchy(newCategory, newSubcategory);
 
 			// If the moved document is the currently active one, update editor doc/breadcrumbs
 			if (currentDoc.slug === doc.slug || currentDoc.id === doc.id) {
@@ -476,6 +516,37 @@
 		} finally {
 			isMovingFile = false;
 			draggedDoc = null;
+		}
+	}
+
+	async function moveFolderTo(src: any, targetCategory: string, targetSubcategory?: string) {
+		isMovingFile = true;
+		try {
+			const res = await fetch('/api/my-docs', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					action: 'move-folder',
+					category: src.category,
+					subcategory: src.subcategory,
+					targetCategory,
+					targetSubcategory
+				})
+			});
+			const dataRes = await res.json();
+			if (!res.ok || !dataRes.success) {
+				throw new Error(dataRes.error || 'Gagal memindahkan folder');
+			}
+			if (dataRes.treeData) customTree = dataRes.treeData;
+			expandFolderHierarchy(targetCategory, targetSubcategory);
+			const targetName = targetSubcategory ? `${targetCategory} / ${targetSubcategory}` : targetCategory;
+			showToast(`✓ Folder "${src.title}" berhasil dipindahkan ke "${targetName}"`);
+			await invalidateAll();
+		} catch (err: any) {
+			showToast(err.message || 'Gagal memindahkan folder', true);
+		} finally {
+			isMovingFile = false;
+			draggedFolder = null;
 		}
 	}
 
@@ -522,20 +593,26 @@
 
 	function handleContextMenuCreate(target: any) {
 		closeContextMenu();
-		if (target?.isFolder) {
-			openNewDocInFolder(target.category || target.title, target.subcategory);
-		} else if (target?.category) {
-			openNewDocInFolder(target.category, target.subcategory);
+		if (target?.category) {
+			startCreate('file', target.category, target.subcategory);
 		} else {
-			showNewDocModal = true;
+			startCreate('file', currentDoc.category, currentDoc.subcategory);
 		}
 	}
 
 	function handleContextMenuCreateFolder(target: any) {
 		closeContextMenu();
-		newFolderCategory = target?.category || target?.title || '';
-		newFolderSubcategory = '';
-		showNewFolderModal = true;
+		if (target?.category) {
+			// Works at any depth: the new folder is created INSIDE the targeted folder
+			startCreate('folder', target.category, target.subcategory);
+		} else {
+			startCreate('folder', '', undefined);
+		}
+	}
+
+	function handleContextMenuRename(target: any) {
+		closeContextMenu();
+		startRename(target);
 	}
 
 	async function handleContextMenuDuplicate(target: any) {
@@ -645,17 +722,31 @@
 		};
 	}
 
-	// New doc form state
-	let newDocTitle = $state('');
-	let newDocCategory = $state('Catatan Harian');
-	let newDocSubcategory = $state('');
-	let newDocTemplate = $state('blank');
-	let isCreatingDoc = $state(false);
+	// Inline creator (VS Code / Obsidian style): new note or folder at any depth
+	let explorerCreator = $state({
+		open: false,
+		type: 'file' as 'file' | 'folder',
+		category: '',
+		subcategory: '',
+		name: '',
+		isSubmitting: false,
+		error: ''
+	});
 
-	// New folder form state
-	let newFolderCategory = $state('');
-	let newFolderSubcategory = $state('');
-	let isCreatingFolder = $state(false);
+	// Inline rename for folders (any depth) and notes
+	let explorerRename = $state({
+		open: false,
+		kind: 'folder' as 'folder' | 'doc',
+		category: '',
+		subcategory: '',
+		id: '',
+		name: '',
+		original: '',
+		isSubmitting: false
+	});
+
+	// Last clicked folder (target for the F2 shortcut)
+	let selectedFolder = $state<any>(null);
 
 	// Toast notification
 	let toast = $state<{ message: string; isError?: boolean } | null>(null);
@@ -667,15 +758,96 @@
 	}
 
 	// Toggle folder collapse
-	function toggleFolder(folderId: string) {
-		expandedFolders[folderId] = !expandedFolders[folderId];
+	function toggleFolder(node: any) {
+		expandedFolders[node.id] = !isNodeExpanded(node);
 	}
 
-	// Quick add to folder
-	function openNewDocInFolder(category: string, subcategory?: string) {
-		newDocCategory = category;
-		newDocSubcategory = subcategory || '';
-		showNewDocModal = true;
+	function focusInput(id: string) {
+		setTimeout(() => {
+			const el = document.getElementById(id) as HTMLInputElement | null;
+			if (el) {
+				el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+				el.focus();
+				el.select();
+			}
+		}, 40);
+	}
+
+	/** Start inline creation of a note/folder inside any folder (empty category = root folder). */
+	function startCreate(type: 'file' | 'folder', category: string, subcategory?: string) {
+		explorerRename.open = false;
+		isFocusMode = false;
+		isMobileSidebarOpen = true;
+		explorerCreator = {
+			open: true,
+			type,
+			category: category || '',
+			subcategory: subcategory || '',
+			name: '',
+			isSubmitting: false,
+			error: ''
+		};
+		if (category) expandFolderHierarchy(category, subcategory);
+		focusInput('explorer-creator-input');
+	}
+
+	function isCreatorAt(node: any): boolean {
+		return (
+			explorerCreator.open &&
+			explorerCreator.category === folderCat(node) &&
+			(explorerCreator.subcategory || '') === (node.subcategory || '')
+		);
+	}
+
+	function startRename(target: any) {
+		if (!target) return;
+		explorerCreator.open = false;
+		isFocusMode = false;
+		isMobileSidebarOpen = true;
+		if (target.isFolder) {
+			const leaf = target.subcategory
+				? String(target.subcategory).split('/').pop() || target.title
+				: target.category || target.title;
+			explorerRename = {
+				open: true,
+				kind: 'folder',
+				category: target.category || target.title,
+				subcategory: target.subcategory || '',
+				id: '',
+				name: leaf,
+				original: leaf,
+				isSubmitting: false
+			};
+		} else {
+			explorerRename = {
+				open: true,
+				kind: 'doc',
+				category: '',
+				subcategory: '',
+				id: target.id || target.slug,
+				name: target.title || '',
+				original: target.title || '',
+				isSubmitting: false
+			};
+		}
+		focusInput('explorer-rename-input');
+	}
+
+	function isRenamingFolder(node: any): boolean {
+		return (
+			explorerRename.open &&
+			explorerRename.kind === 'folder' &&
+			explorerRename.category === folderCat(node) &&
+			(explorerRename.subcategory || '') === (node.subcategory || '')
+		);
+	}
+
+	function isSelectedFolder(node: any): boolean {
+		return (
+			!!selectedFolder &&
+			selectedFolder.category === folderCat(node) &&
+			(selectedFolder.subcategory || '') === (node.subcategory || '')
+		);
 	}
 
 	// Save document handler
@@ -751,12 +923,19 @@
 		}
 		if (e.altKey && e.key.toLowerCase() === 'n') {
 			e.preventDefault();
-			showNewDocModal = true;
+			startCreate('file', currentDoc.category, currentDoc.subcategory);
 			return;
 		}
 		if (e.altKey && e.key.toLowerCase() === 'f') {
 			e.preventDefault();
-			showNewFolderModal = true;
+			startCreate('folder', currentDoc.category, currentDoc.subcategory);
+			return;
+		}
+		if (e.key === 'F2') {
+			const tag = (e.target as HTMLElement | null)?.tagName;
+			if (tag === 'INPUT' || tag === 'TEXTAREA') return;
+			e.preventDefault();
+			startRename(selectedFolder || currentDoc);
 			return;
 		}
 	}
@@ -854,103 +1033,127 @@
 		}
 	}
 
-	// Create new doc
-	async function handleCreateDoc() {
-		const cleanTitle = (newDocTitle || 'Catatan Baru').trim();
-		isCreatingDoc = true;
+	// Create a new note / folder from the inline explorer input
+	async function submitCreator(e?: Event) {
+		if (e) e.preventDefault();
+		const cleanName = explorerCreator.name
+			.trim()
+			.replace(/^\/+|\/+$/g, '')
+			.replace(/\s*\/\s*/g, '/');
+		if (!cleanName || explorerCreator.isSubmitting) return;
+
+		explorerCreator.isSubmitting = true;
+		explorerCreator.error = '';
+
 		try {
-			const initialBody = `# ${cleanTitle}\n\n`;
-
-			const res = await fetch('/api/my-docs', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					title: cleanTitle,
-					category: newDocCategory.trim() || currentDoc.category || 'Catatan Harian',
-					subcategory: newDocSubcategory.trim() || currentDoc.subcategory || undefined,
-					content: initialBody,
-					tags: ['Pribadi']
-				})
-			});
-
-			if (res.ok) {
-				const json = await res.json();
-				showNewDocModal = false;
-				newDocTitle = '';
-				newDocSubcategory = '';
-
-				// 1. Instantly update tree in memory so sidebar renders immediately without refresh
-				if (json.treeData) {
-					customTree = json.treeData;
+			if (explorerCreator.type === 'folder') {
+				// "Mining/CS" creates the whole chain in one go; at root the first part is the category
+				let category = explorerCreator.category;
+				let subcategory: string | undefined;
+				if (!category) {
+					const parts = cleanName.split('/').filter(Boolean);
+					category = parts[0];
+					subcategory = parts.slice(1).join('/') || undefined;
+				} else {
+					subcategory = [explorerCreator.subcategory, cleanName].filter(Boolean).join('/');
 				}
 
-				// 2. Auto-expand folder of new document
-				if (json.doc) {
-					editorDoc = json.doc;
-					const catSlug = (json.doc.category || '').toLowerCase().replace(/[^a-z0-9]+/g, '-');
-					expandedFolders[`folder-${catSlug}`] = true;
-					if (json.doc.subcategory) {
-						const subcatSlug = String(json.doc.subcategory).toLowerCase().replace(/[^a-z0-9]+/g, '-');
-						expandedFolders[`subfolder-${catSlug}-${subcatSlug}`] = true;
-					}
+				const res = await fetch('/api/my-docs', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ action: 'add-folder', category, subcategory })
+				});
+				const json = await res.json().catch(() => ({}));
+				if (!res.ok) throw new Error(json.error || 'Gagal membuat folder');
+				if (json.treeData) customTree = json.treeData;
+				if (json.success === false) {
+					explorerCreator.error = 'Folder dengan nama tersebut sudah ada';
+					return;
 				}
 
+				expandFolderHierarchy(category, subcategory);
+				explorerCreator.open = false;
+				showToast(`✓ Folder "${subcategory || category}" berhasil dibuat`);
+				await invalidateAll();
+			} else {
+				const title = cleanName.replace(/\.md$/i, '');
+				const category = explorerCreator.category || currentDoc.category || 'Catatan Harian';
+				const res = await fetch('/api/my-docs', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						title,
+						category,
+						subcategory: explorerCreator.subcategory || undefined,
+						content: `# ${title}\n\n`,
+						tags: ['Pribadi']
+					})
+				});
+				const json = await res.json().catch(() => ({}));
+				if (!res.ok) throw new Error(json.error || 'Gagal membuat catatan');
+
+				if (json.treeData) customTree = json.treeData;
+				expandFolderHierarchy(category, explorerCreator.subcategory || undefined);
+				explorerCreator.open = false;
 				showToast('✓ Catatan baru berhasil dibuat');
-
-				// 3. Invalidate server load data and navigate to the newly created document directly in edit mode
 				await invalidateAll();
 				if (json.doc?.slug) {
 					viewMode = 'split';
 					await goto(`/my-docs/${json.doc.slug}?mode=edit`, { invalidateAll: true });
 				}
-			} else {
-				const err = await res.json().catch(() => ({}));
-				showToast(err.error || 'Gagal membuat dokumen baru', true);
 			}
-		} catch {
-			showToast('Terjadi kesalahan saat membuat dokumen', true);
+		} catch (err: any) {
+			explorerCreator.error = err?.message || 'Terjadi kesalahan';
 		} finally {
-			isCreatingDoc = false;
+			explorerCreator.isSubmitting = false;
 		}
 	}
 
-	// Create new folder
-	async function handleCreateFolder() {
-		if (!newFolderCategory.trim()) {
-			showToast('Nama kategori wajib diisi', true);
+	// Rename a folder (any depth) or a note from the inline explorer input
+	async function submitRename() {
+		if (!explorerRename.open || explorerRename.isSubmitting) return;
+		const newName = explorerRename.name.trim();
+		if (!newName || newName === explorerRename.original) {
+			explorerRename.open = false;
+			return;
+		}
+		if (explorerRename.kind === 'folder' && newName.includes('/')) {
+			showToast("Nama folder tidak boleh mengandung karakter '/'", true);
 			return;
 		}
 
-		isCreatingFolder = true;
+		explorerRename.isSubmitting = true;
 		try {
+			const payload =
+				explorerRename.kind === 'folder'
+					? {
+							action: 'rename-folder',
+							category: explorerRename.category,
+							subcategory: explorerRename.subcategory || undefined,
+							newName
+						}
+					: { action: 'rename-doc', id: explorerRename.id, newTitle: newName };
+
 			const res = await fetch('/api/my-docs', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify({
-					action: 'add-folder',
-					category: newFolderCategory.trim(),
-					subcategory: newFolderSubcategory.trim() || undefined
-				})
+				body: JSON.stringify(payload)
 			});
+			const json = await res.json().catch(() => ({}));
+			if (!res.ok || !json.success) throw new Error(json.error || 'Gagal mengubah nama');
 
-			if (res.ok) {
-				const json = await res.json();
-				if (json.treeData) customTree = json.treeData;
-				showNewFolderModal = false;
-				const catSlug = newFolderCategory.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-');
-				expandedFolders[`folder-${catSlug}`] = true;
-				newFolderCategory = '';
-				newFolderSubcategory = '';
-				showToast('✓ Kategori baru berhasil dibuat');
-				await invalidateAll();
-			} else {
-				const err = await res.json().catch(() => ({}));
-				showToast(err.error || 'Gagal membuat kategori', true);
+			if (json.treeData) customTree = json.treeData;
+			if (explorerRename.kind === 'folder') {
+				expandFolderHierarchy(json.category, json.subcategory);
+				selectedFolder = null;
 			}
-		} catch {
-			showToast('Terjadi kesalahan saat membuat kategori', true);
+			explorerRename.open = false;
+			showToast(`✓ Berhasil diubah menjadi "${newName}"`);
+			await invalidateAll();
+		} catch (err: any) {
+			showToast(err?.message || 'Gagal mengubah nama', true);
 		} finally {
-			isCreatingFolder = false;
+			explorerRename.isSubmitting = false;
 		}
 	}
 
@@ -977,7 +1180,12 @@
 					deleteTarget.open = false;
 					showToast(`✓ Folder "${folderTitle}" berhasil dihapus`);
 					await invalidateAll();
-					if (currentDoc.category === deleteTarget.category) {
+					const curSub = currentDoc.subcategory || '';
+					const delSub = deleteTarget.subcategory || '';
+					if (
+						currentDoc.category === deleteTarget.category &&
+						(!delSub || curSub === delSub || curSub.startsWith(`${delSub}/`))
+					) {
 						await goto('/my-docs', { invalidateAll: true });
 					}
 				} else {
@@ -1061,33 +1269,257 @@
 	// Derived outline and filtered tree
 	let outlineTree = $derived(extractOutlineTree(editorContent || currentDoc.content || ''));
 
+	// Recursive filter: keeps matching notes/folders at ANY depth (SAP -> Mining -> CS -> ...)
+	function filterNodes(nodes: any[], q: string): any[] {
+		const out: any[] = [];
+		for (const n of nodes || []) {
+			const selfMatch = (n.title || '').toLowerCase().includes(q);
+			if (n.isFolder) {
+				const kids = selfMatch ? n.nodes || [] : filterNodes(n.nodes || [], q);
+				if (selfMatch || kids.length > 0) out.push({ ...n, nodes: kids });
+			} else if (selfMatch) {
+				out.push(n);
+			}
+		}
+		return out;
+	}
+
 	let filteredTree = $derived.by(() => {
 		if (!filterQuery.trim()) return treeData;
-		const q = filterQuery.toLowerCase();
-
-		return treeData
-			.map((folder: any) => {
-				const matchingNodes = (folder.nodes || []).filter((node: any) => {
-					if (node.isSubfolder) {
-						return (
-							node.title.toLowerCase().includes(q) ||
-							(node.nodes || []).some((subDoc: any) => subDoc.title.toLowerCase().includes(q))
-						);
-					}
-					return node.title.toLowerCase().includes(q);
-				});
-
-				if (matchingNodes.length > 0 || folder.title.toLowerCase().includes(q)) {
-					return {
-						...folder,
-						nodes: matchingNodes
-					};
-				}
-				return null;
-			})
-			.filter(Boolean);
+		return filterNodes(treeData, filterQuery.trim().toLowerCase());
 	});
 </script>
+
+<!-- Inline create row (new note / folder) rendered inside whichever folder is targeted -->
+{#snippet creatorRow()}
+	<form onsubmit={submitCreator} class="px-1 py-0.5">
+		<div class="flex items-center gap-1.5">
+			{#if explorerCreator.type === 'folder'}
+				<Folder class="h-3.5 w-3.5 shrink-0 text-primary" />
+			{:else}
+				<FileText class="h-3.5 w-3.5 shrink-0 text-primary" />
+			{/if}
+			<input
+				id="explorer-creator-input"
+				type="text"
+				bind:value={explorerCreator.name}
+				disabled={explorerCreator.isSubmitting}
+				placeholder={explorerCreator.type === 'folder'
+					? explorerCreator.category
+						? 'Nama folder (boleh a/b/c)...'
+						: 'Nama folder utama...'
+					: 'Nama catatan...'}
+				class="h-6 min-w-0 flex-1 rounded border border-primary/60 bg-background px-1.5 text-xs outline-none focus:ring-1 focus:ring-primary/50"
+				onkeydown={(e) => {
+					if (e.key === 'Escape') {
+						e.preventDefault();
+						e.stopPropagation();
+						explorerCreator.open = false;
+					}
+				}}
+				onblur={() => {
+					if (!explorerCreator.name.trim() && !explorerCreator.isSubmitting) {
+						explorerCreator.open = false;
+					}
+				}}
+			/>
+		</div>
+		{#if explorerCreator.error}
+			<p class="pl-5 pt-0.5 text-[10px] text-destructive">{explorerCreator.error}</p>
+		{:else}
+			<p class="pl-5 pt-0.5 text-[10px] text-muted-foreground/70">Enter untuk membuat • Esc batal</p>
+		{/if}
+	</form>
+{/snippet}
+
+<!-- Recursive explorer tree: folders nest to unlimited depth (SAP -> Mining -> CS -> ...) -->
+{#snippet explorerNodes(nodes: any[], depth: number)}
+	{#each nodes as node (node.id)}
+		{#if node.isFolder}
+			{@const expanded = isNodeExpanded(node)}
+			{@const isDropActive = activeDropTargetId === node.id}
+			{@const renamingThis = isRenamingFolder(node)}
+			{@const selected = isSelectedFolder(node)}
+			<div
+				class="rounded-md transition-all {isDropActive ? 'ring-2 ring-primary/80 bg-primary/10' : ''}"
+				oncontextmenu={(e) => openContextMenu(e, folderTarget(node))}
+				ondragover={(e) => handleFolderDragOver(e, node)}
+				ondragleave={(e) => handleFolderDragLeave(e, node.id)}
+				ondrop={(e) => handleFolderDrop(e, node)}
+				role="group"
+			>
+				<div
+					class="group/row flex items-center rounded-md pr-1 transition-colors {isDropActive
+						? 'bg-primary/15 text-primary'
+						: selected
+							? 'bg-accent'
+							: 'hover:bg-accent/60'}"
+					draggable={!renamingThis}
+					ondragstart={(e) => handleFolderItemDragStart(e, node)}
+					ondragend={handleDragEnd}
+					role="treeitem"
+					aria-selected={selected}
+					aria-expanded={expanded}
+					tabindex="-1"
+				>
+					{#if renamingThis}
+						<div class="flex min-w-0 flex-1 items-center gap-1 py-0.5 pl-1.5">
+							<Folder class="h-3.5 w-3.5 shrink-0 text-primary" />
+							<input
+								id="explorer-rename-input"
+								type="text"
+								bind:value={explorerRename.name}
+								class="h-6 min-w-0 flex-1 rounded border border-primary/60 bg-background px-1.5 text-xs outline-none focus:ring-1 focus:ring-primary/50"
+								onkeydown={(e) => {
+									if (e.key === 'Enter') {
+										e.preventDefault();
+										submitRename();
+									} else if (e.key === 'Escape') {
+										e.preventDefault();
+										e.stopPropagation();
+										explorerRename.open = false;
+									}
+								}}
+								onblur={submitRename}
+							/>
+						</div>
+					{:else}
+						<button
+							type="button"
+							onclick={() => {
+								selectedFolder = folderTarget(node);
+								toggleFolder(node);
+							}}
+							ondblclick={() => startRename(folderTarget(node))}
+							class="flex min-w-0 flex-1 items-center gap-1 py-1 pl-1 pr-1 text-left text-xs {depth === 0
+								? 'font-semibold text-foreground'
+								: 'font-medium text-foreground/80'}"
+							title={node.subcategory ? `${node.category} / ${node.subcategory}` : node.title}
+						>
+							<ChevronRight
+								class="h-3 w-3 shrink-0 text-muted-foreground transition-transform duration-150 {expanded
+									? 'rotate-90'
+									: ''}"
+							/>
+							{#if expanded}
+								<FolderOpen class="h-3.5 w-3.5 shrink-0 text-primary" />
+							{:else}
+								<Folder class="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+							{/if}
+							<span class="truncate">{node.title}</span>
+						</button>
+
+						{#if isDropActive && (draggedDoc || draggedFolder)}
+							<span class="shrink-0 rounded bg-background/80 px-1 py-0.5 text-[9px] font-bold text-primary shadow-2xs">
+								Lepas di sini
+							</span>
+						{:else}
+							<div class="shrink-0 items-center gap-0.5 {selected ? 'flex' : 'hidden group-hover/row:flex'}">
+								<button
+									type="button"
+									title="Catatan baru di dalam folder ini"
+									onclick={(e) => {
+										e.stopPropagation();
+										startCreate('file', folderCat(node), folderSub(node));
+									}}
+									class="rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground"
+								>
+									<FilePlus class="h-3.5 w-3.5" />
+								</button>
+								<button
+									type="button"
+									title="Sub-folder baru di dalam folder ini"
+									onclick={(e) => {
+										e.stopPropagation();
+										startCreate('folder', folderCat(node), folderSub(node));
+									}}
+									class="rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground"
+								>
+									<FolderPlus class="h-3.5 w-3.5" />
+								</button>
+								<button
+									type="button"
+									title="Ubah nama folder (F2)"
+									onclick={(e) => {
+										e.stopPropagation();
+										startRename(folderTarget(node));
+									}}
+									class="rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground"
+								>
+									<PenLine class="h-3.5 w-3.5" />
+								</button>
+							</div>
+							<span class="shrink-0 pl-1 font-mono text-[10px] text-muted-foreground/60 {selected ? 'hidden' : 'group-hover/row:hidden'}">
+								{node.count ?? (node.nodes?.length || 0)}
+							</span>
+						{/if}
+					{/if}
+				</div>
+
+				{#if expanded}
+					<div class="ml-2.5 mt-0.5 space-y-0.5 border-l border-border/60 pl-1.5">
+						{#if isCreatorAt(node)}
+							{@render creatorRow()}
+						{/if}
+						{@render explorerNodes(node.nodes || [], depth + 1)}
+						{#if (node.nodes || []).length === 0 && !isCreatorAt(node)}
+							<div class="px-2 py-1 text-[10px] italic text-muted-foreground/60">Folder kosong</div>
+						{/if}
+					</div>
+				{/if}
+			</div>
+		{:else}
+			{@const isCurrent = currentDoc.slug === node.slug || currentDoc.id === node.id}
+			{@const isThisDragged = draggedDoc?.id === node.id || draggedDoc?.slug === node.slug}
+			{@const renamingDoc = explorerRename.open && explorerRename.kind === 'doc' && explorerRename.id === (node.id || node.slug)}
+			{#if renamingDoc}
+				<div class="flex items-center gap-1.5 px-1.5 py-0.5">
+					<FileText class="h-3 w-3 shrink-0 text-primary" />
+					<input
+						id="explorer-rename-input"
+						type="text"
+						bind:value={explorerRename.name}
+						class="h-6 min-w-0 flex-1 rounded border border-primary/60 bg-background px-1.5 text-xs outline-none focus:ring-1 focus:ring-primary/50"
+						onkeydown={(e) => {
+							if (e.key === 'Enter') {
+								e.preventDefault();
+								submitRename();
+							} else if (e.key === 'Escape') {
+								e.preventDefault();
+								e.stopPropagation();
+								explorerRename.open = false;
+							}
+						}}
+						onblur={submitRename}
+					/>
+				</div>
+			{:else}
+				<a
+					href="/my-docs/{node.slug}"
+					draggable="true"
+					ondragstart={(e) => handleDragStart(e, node)}
+					ondragend={handleDragEnd}
+					onclick={(e) => {
+						if (draggedDoc || draggedFolder) {
+							e.preventDefault();
+							return;
+						}
+						selectedFolder = null;
+						isMobileSidebarOpen = false;
+					}}
+					oncontextmenu={(e) => openContextMenu(e, node)}
+					class="flex items-center gap-2 rounded-md px-2 py-1 text-xs transition-colors cursor-grab active:cursor-grabbing {isCurrent
+						? 'bg-secondary font-semibold text-foreground'
+						: 'text-muted-foreground hover:bg-muted hover:text-foreground'} {isThisDragged ? 'opacity-30 border border-dashed border-primary/50' : ''}"
+					title="Geser mouse untuk memindahkan ke folder lain"
+				>
+					<FileText class="h-3 w-3 shrink-0 {isCurrent ? 'text-primary' : 'text-muted-foreground'}" />
+					<span class="truncate">{node.title}</span>
+				</a>
+			{/if}
+		{/if}
+	{/each}
+{/snippet}
 
 <svelte:window onkeydown={handleKeydown} />
 
@@ -1157,6 +1589,29 @@
 						{/if}
 					</div>
 
+					<!-- Explorer Toolbar: create note / folder (like VS Code Explorer & Obsidian) -->
+					<div class="flex items-center justify-between">
+						<span class="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Explorer</span>
+						<div class="flex items-center gap-0.5">
+							<button
+								type="button"
+								onclick={() => startCreate('file', selectedFolder?.category || currentDoc.category, selectedFolder ? selectedFolder.subcategory : currentDoc.subcategory)}
+								class="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+								title="Catatan baru (Alt+N) — di folder yang dipilih"
+							>
+								<FilePlus class="h-3.5 w-3.5" />
+							</button>
+							<button
+								type="button"
+								onclick={() => startCreate('folder', '', undefined)}
+								class="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+								title="Folder utama baru. Untuk sub-folder, arahkan mouse ke folder lalu klik ikon folder (+), atau klik kanan"
+							>
+								<FolderPlus class="h-3.5 w-3.5" />
+							</button>
+						</div>
+					</div>
+
 					<!-- Quiet Filter Input (Matches /docs) -->
 					<div class="relative">
 						<Search class="absolute left-2.5 top-2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
@@ -1182,18 +1637,22 @@
 						{/if}
 					</div>
 
-					<!-- Clean Folder & File Tree Navigation -->
-					{#if draggedDoc}
+					<!-- Clean Folder & File Tree Navigation (unlimited nesting, VS Code / Obsidian style) -->
+					{#if draggedDoc || draggedFolder}
 						<div class="mb-1.5 flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary animate-in fade-in">
 							<FolderInput class="h-3.5 w-3.5 shrink-0 animate-pulse" />
 							<span class="truncate">Lepaskan di folder tujuan...</span>
 						</div>
 					{/if}
 
-					<nav class="space-y-0.5 max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
+					<nav class="space-y-0.5 max-h-[calc(100vh-260px)] overflow-y-auto pr-1">
+						{#if explorerCreator.open && !explorerCreator.category}
+							{@render creatorRow()}
+						{/if}
+
 						{#if filteredTree.length === 0}
 							<div class="py-8 text-center text-xs text-muted-foreground space-y-2">
-								<p>Tidak ada catatan yang cocok.</p>
+								<p>{filterQuery ? 'Tidak ada catatan yang cocok.' : 'Belum ada folder. Klik ikon folder (+) di atas untuk membuat.'}</p>
 								{#if filterQuery}
 									<Button
 										variant="ghost"
@@ -1206,145 +1665,7 @@
 								{/if}
 							</div>
 						{:else}
-							{#each filteredTree as folder}
-								{@const isExpanded = expandedFolders[folder.id] ?? true}
-								{@const isFolderDropActive = activeDropTargetId === folder.id}
-								<div
-									class="group/folder rounded-md transition-all {isFolderDropActive ? 'ring-2 ring-primary/80 bg-primary/10' : ''}"
-									oncontextmenu={(e) =>
-										openContextMenu(e, {
-											isFolder: true,
-											title: folder.title,
-											category: folder.title
-										})}
-									ondragover={(e) => handleFolderDragOver(e, folder)}
-									ondragleave={(e) => handleFolderDragLeave(e, folder.id)}
-									ondrop={(e) => handleFolderDrop(e, folder)}
-									role="group"
-								>
-									<div class="flex items-center justify-between rounded-md pr-1 transition-all {isFolderDropActive ? 'bg-primary/15 font-semibold text-primary' : 'hover:bg-accent/60'}">
-										<button
-											type="button"
-											onclick={() => toggleFolder(folder.id)}
-											class="flex flex-1 items-center gap-1.5 px-2 py-1.5 text-left text-xs font-semibold text-foreground truncate"
-										>
-											{#if isExpanded}
-												<FolderOpen class="h-3.5 w-3.5 text-primary shrink-0" />
-											{:else}
-												<Folder class="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-											{/if}
-											<span class="truncate">{folder.title}</span>
-										</button>
-
-										<div class="flex items-center gap-1 shrink-0 pr-1">
-											{#if isFolderDropActive && draggedDoc}
-												<span class="text-[9px] font-bold text-primary bg-background/80 px-1 py-0.5 rounded shadow-2xs">
-													Lepas di sini
-												</span>
-											{:else}
-												<span class="text-[10px] text-muted-foreground/60 font-mono">
-													{folder.nodes?.length || 0}
-												</span>
-											{/if}
-											<button
-												type="button"
-												onclick={() => toggleFolder(folder.id)}
-												class="p-0.5 text-muted-foreground"
-											>
-												<ChevronRight class="h-3 w-3 transition-transform {isExpanded ? 'rotate-90' : ''}" />
-											</button>
-										</div>
-									</div>
-
-									{#if isExpanded && folder.nodes}
-										<div class="ml-2.5 mt-0.5 space-y-0.5 border-l border-border/70 pl-2">
-											{#each folder.nodes as node}
-												{#if node.isSubfolder}
-													<!-- Subfolder Group -->
-													{@const isSubDropActive = activeDropTargetId === node.id}
-													<div
-														class="pt-0.5"
-														oncontextmenu={(e) =>
-															openContextMenu(e, {
-																isFolder: true,
-																isSubfolder: true,
-																title: node.title,
-																category: node.category,
-																subcategory: node.subcategory
-															})}
-														ondragover={(e) => handleSubfolderDragOver(e, node)}
-														ondragleave={(e) => handleSubfolderDragLeave(e, node.id)}
-														ondrop={(e) => handleSubfolderDrop(e, node)}
-														role="group"
-													>
-														<div class="flex items-center justify-between rounded px-1.5 py-0.5 text-[11px] font-medium transition-all {isSubDropActive ? 'ring-2 ring-primary/80 bg-primary/15 font-semibold text-primary' : 'text-muted-foreground'}">
-															<span class="truncate">{node.title}</span>
-															{#if isSubDropActive && draggedDoc}
-																<span class="text-[9px] font-bold text-primary bg-background/80 px-1 rounded shadow-2xs">
-																	Lepas di sini
-																</span>
-															{/if}
-														</div>
-
-														<div class="ml-2 space-y-0.5 border-l border-border/50 pl-1.5">
-															{#each node.nodes as subDoc}
-																{@const isCurrent = currentDoc.slug === subDoc.slug || currentDoc.id === subDoc.id}
-																{@const isThisDragged = draggedDoc?.id === subDoc.id || draggedDoc?.slug === subDoc.slug}
-																<a
-																	href="/my-docs/{subDoc.slug}"
-																	draggable="true"
-																	ondragstart={(e) => handleDragStart(e, subDoc)}
-																	ondragend={handleDragEnd}
-																	onclick={(e) => {
-																		if (draggedDoc) {
-																			e.preventDefault();
-																			return;
-																		}
-																		isMobileSidebarOpen = false;
-																	}}
-																	oncontextmenu={(e) => openContextMenu(e, subDoc)}
-																	class="flex items-center gap-2 rounded-md px-2 py-1 text-xs transition-colors cursor-grab active:cursor-grabbing {isCurrent
-																		? 'bg-secondary font-semibold text-foreground'
-																		: 'text-muted-foreground hover:bg-muted hover:text-foreground'} {isThisDragged ? 'opacity-30 border border-dashed border-primary/50' : ''}"
-																	title="Geser mouse untuk memindahkan ke folder lain"
-																>
-																	<FileText class="h-3 w-3 shrink-0 {isCurrent ? 'text-primary' : 'text-muted-foreground'}" />
-																	<span class="truncate">{subDoc.title}</span>
-																</a>
-															{/each}
-														</div>
-													</div>
-												{:else}
-													<!-- Direct Document Item -->
-													{@const isCurrent = currentDoc.slug === node.slug || currentDoc.id === node.id}
-													{@const isThisDragged = draggedDoc?.id === node.id || draggedDoc?.slug === node.slug}
-													<a
-														href="/my-docs/{node.slug}"
-														draggable="true"
-														ondragstart={(e) => handleDragStart(e, node)}
-														ondragend={handleDragEnd}
-														onclick={(e) => {
-															if (draggedDoc) {
-																e.preventDefault();
-																return;
-															}
-															isMobileSidebarOpen = false;
-														}}
-														oncontextmenu={(e) => openContextMenu(e, node)}
-														class="flex items-center gap-2 rounded-md px-2 py-1 text-xs transition-colors cursor-grab active:cursor-grabbing {isCurrent
-															? 'bg-secondary font-semibold text-foreground'
-															: 'text-muted-foreground hover:bg-muted hover:text-foreground'} {isThisDragged ? 'opacity-30 border border-dashed border-primary/50' : ''}"
-														title="Geser mouse untuk memindahkan ke folder lain"
-													>
-														<FileText class="h-3 w-3 shrink-0 {isCurrent ? 'text-primary' : 'text-muted-foreground'}" />
-														<span class="truncate">{node.title}</span>
-													</a>
-												{/if}
-											{/each}
-										</div>
-									{/if}
-								</div>
-							{/each}
+							{@render explorerNodes(filteredTree, 0)}
 						{/if}
 					</nav>
 				</div>
@@ -1379,10 +1700,10 @@
 						<a href="/my-docs" class="hover:text-foreground transition-colors font-medium">My Docs</a>
 						<ChevronRight class="h-3 w-3 text-muted-foreground/60" />
 						<span class="text-foreground/80 font-medium">{currentDoc.category}</span>
-						{#if currentDoc.subcategory}
+						{#each (currentDoc.subcategory || '').split('/').filter(Boolean) as crumb}
 							<ChevronRight class="h-3 w-3 text-muted-foreground/60" />
-							<span>{currentDoc.subcategory}</span>
-						{/if}
+							<span>{crumb}</span>
+						{/each}
 					</nav>
 				</div>
 
@@ -1827,125 +2148,6 @@
 	</div>
 </div>
 
-<!-- Dialog: Buat Catatan Baru -->
-<Dialog bind:open={showNewDocModal}>
-	<DialogContent class="sm:max-w-[400px]">
-		<DialogHeader>
-			<div class="flex items-center gap-2 text-primary">
-				<FileText class="h-4.5 w-4.5" />
-				<DialogTitle>Catatan Baru</DialogTitle>
-			</div>
-			<DialogDescription>
-				Folder tujuan: <strong class="text-foreground">{newDocCategory}</strong>
-			</DialogDescription>
-		</DialogHeader>
-
-		<form
-			onsubmit={(e) => {
-				e.preventDefault();
-				handleCreateDoc();
-			}}
-			class="space-y-4 pt-2"
-		>
-			<Input
-				id="new-doc-title-input"
-				bind:value={newDocTitle}
-				placeholder="Nama catatan (contoh: Ringkasan Rapat)"
-				class="text-sm"
-				autofocus
-			/>
-
-			<DialogFooter>
-				<Button
-					type="button"
-					variant="outline"
-					size="sm"
-					onclick={() => (showNewDocModal = false)}
-					class="text-xs"
-				>
-					Batal
-				</Button>
-				<Button
-					type="submit"
-					size="sm"
-					disabled={isCreatingDoc || !newDocTitle.trim()}
-					class="text-xs font-semibold"
-				>
-					{#if isCreatingDoc}
-						<Loader2 class="h-3.5 w-3.5 animate-spin mr-1.5" />
-						<span>Membuat...</span>
-					{:else}
-						<span>Buat Catatan</span>
-					{/if}
-				</Button>
-			</DialogFooter>
-		</form>
-	</DialogContent>
-</Dialog>
-
-<!-- Dialog: Tambah Kategori Baru -->
-<Dialog bind:open={showNewFolderModal}>
-	<DialogContent class="sm:max-w-[420px]">
-		<DialogHeader>
-			<div class="flex items-center gap-2 text-primary">
-				<FolderPlus class="h-4.5 w-4.5" />
-				<DialogTitle>Tambah Kategori Baru</DialogTitle>
-			</div>
-			<DialogDescription>
-				Kelompokkan catatan pribadi Anda dalam kategori folder baru
-			</DialogDescription>
-		</DialogHeader>
-
-		<div class="space-y-3 pt-2">
-			<div class="space-y-1.5">
-				<Label for="new-folder-cat-input" class="text-xs font-medium">
-					Nama Kategori Utama <span class="text-destructive">*</span>
-				</Label>
-				<Input
-					id="new-folder-cat-input"
-					bind:value={newFolderCategory}
-					placeholder="Misal: Arsitektur Microservices"
-					class="text-sm"
-				/>
-			</div>
-
-			<div class="space-y-1.5">
-				<Label for="new-folder-subcat-input" class="text-xs font-medium">Subkategori Awal (Opsional)</Label>
-				<Input
-					id="new-folder-subcat-input"
-					bind:value={newFolderSubcategory}
-					placeholder="Misal: API Gateway"
-					class="text-sm"
-				/>
-			</div>
-		</div>
-
-		<DialogFooter>
-			<Button
-				variant="outline"
-				size="sm"
-				onclick={() => (showNewFolderModal = false)}
-				class="text-xs"
-			>
-				Batal
-			</Button>
-			<Button
-				size="sm"
-				onclick={handleCreateFolder}
-				disabled={isCreatingFolder || !newFolderCategory.trim()}
-				class="text-xs font-semibold"
-			>
-				{#if isCreatingFolder}
-					<Loader2 class="h-3.5 w-3.5 animate-spin mr-1.5" />
-					<span>Menyimpan...</span>
-				{:else}
-					<span>Simpan Kategori</span>
-				{/if}
-			</Button>
-		</DialogFooter>
-	</DialogContent>
-</Dialog>
-
 <!-- Alert Dialog: Konfirmasi Hapus Catatan / Folder -->
 <AlertDialog bind:open={deleteTarget.open}>
 	<AlertDialogContent>
@@ -2000,6 +2202,7 @@
 	onEdit={handleContextMenuEdit}
 	onCreate={handleContextMenuCreate}
 	onCreateFolder={handleContextMenuCreateFolder}
+	onRename={handleContextMenuRename}
 	onDuplicate={handleContextMenuDuplicate}
 	onAskAi={handleContextMenuAi}
 	onCopyLink={handleContextMenuCopyLink}

@@ -108,7 +108,7 @@
 					<div class="flex items-center gap-2">
 						<FolderPlus class="h-3.5 w-3.5 text-muted-foreground" />
 						<span>
-							{isFolderTarget && !targetDoc?.subcategory
+							{isFolderTarget
 								? 'Buat Sub-Folder di Sini'
 								: 'Buat Folder Baru'}
 						</span>

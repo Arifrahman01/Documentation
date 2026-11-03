@@ -180,10 +180,10 @@ export function runExternalDocsSync(
 			`[SYNC DOCS ${timeStart}] Memulai sinkronisasi (types=${types.join(',')}, force=${isForce}, batch=${batchLimit})...`
 		);
 
-		// Spawn process with strict 768MB heap limit + explicit GC to prevent laptop RAM exhaustion / hang
+		// Spawn process with 1536MB heap limit + explicit GC to safely handle 6,000+ files
 		const proc = spawn(
 			process.execPath,
-			['--max-old-space-size=768', '--expose-gc', scriptPath, ...cliArgs],
+			['--max-old-space-size=1536', '--expose-gc', scriptPath, ...cliArgs],
 			{
 				cwd: process.cwd(),
 				env: { ...process.env },

@@ -225,14 +225,23 @@ function loadDocuments() {
   return [];
 }
 
+let externalDocsCache = { mtimeMs: 0, data: [] };
+
 function loadExternalDocuments() {
   try {
-    if (fs.existsSync(EXTERNAL_DOCS_FILE)) {
-      return JSON.parse(fs.readFileSync(EXTERNAL_DOCS_FILE, 'utf8'));
+    const targetFile = fs.existsSync(EXTERNAL_DOCS_FILE)
+      ? EXTERNAL_DOCS_FILE
+      : fs.existsSync(FRONTEND_EXTERNAL_DOCS_FILE)
+        ? FRONTEND_EXTERNAL_DOCS_FILE
+        : null;
+    if (!targetFile) return [];
+    const stat = fs.statSync(targetFile);
+    if (externalDocsCache.data.length > 0 && externalDocsCache.mtimeMs === stat.mtimeMs) {
+      return externalDocsCache.data;
     }
-    if (fs.existsSync(FRONTEND_EXTERNAL_DOCS_FILE)) {
-      return JSON.parse(fs.readFileSync(FRONTEND_EXTERNAL_DOCS_FILE, 'utf8'));
-    }
+    const parsed = JSON.parse(fs.readFileSync(targetFile, 'utf8'));
+    externalDocsCache = { mtimeMs: stat.mtimeMs, data: parsed };
+    return parsed;
   } catch (e) {
     console.error('Error reading external documents database:', e.message);
   }
@@ -1147,7 +1156,7 @@ function startBackgroundSyncWorker(options = {}) {
   };
 
   const { spawn } = require('child_process');
-  const p = spawn(process.execPath, ['--max-old-space-size=768', '--expose-gc', scriptPath, ...cliArgs], {
+  const p = spawn(process.execPath, ['--max-old-space-size=1536', '--expose-gc', scriptPath, ...cliArgs], {
     cwd: __dirname,
     env: { ...process.env },
     stdio: ['ignore', 'pipe', 'pipe']

@@ -61,7 +61,7 @@ const args = process.argv.slice(2);
 let customDir = null;
 let selectedTypesArg = null;
 let forceFullReindex = false;
-let checkpointInterval = 10;
+let checkpointInterval = 50; // Save checkpoint every 50 new files (optimal for 6,000+ file scale)
 let batchLimit = 0; // 0 = process all with throttling, >0 = max new extractions per run
 let throttleDelayMs = 180; // Pause between each new file extraction so CPU/Disk stays cool
 
@@ -160,6 +160,7 @@ if (!fs.existsSync(targetDir)) {
 const MAX_PDF_DOCX_SIZE = 20 * 1024 * 1024; // 20 MB
 const MAX_EXCEL_PPTX_SIZE = 12 * 1024 * 1024; // 12 MB
 const PER_FILE_TIMEOUT_MS = 12000; // 12 seconds max per file
+const MAX_CONTENT_CHARS = 20000; // Optimal cap (~8-10 dense pages) for 6,000+ file scale
 
 function getMtimeSec(dateOrIso) {
   const ms = new Date(dateOrIso).getTime();
@@ -269,7 +270,7 @@ function loadSyncManifest() {
 function saveSyncManifest(manifest) {
   try {
     manifest.updatedAt = new Date().toISOString();
-    atomicWriteFile(MANIFEST_FILE, JSON.stringify(manifest, null, 2));
+    atomicWriteFile(MANIFEST_FILE, JSON.stringify(manifest));
   } catch (_) {}
 }
 
@@ -429,13 +430,19 @@ function buildSafeDocumentList(docs, isFinal) {
   return merged;
 }
 
-function saveCheckpoint(docs, stats, isFinal = false) {
+function saveCheckpoint(docs, stats, isFinal = false, skipDataWrite = false) {
   try {
-    const safeDocs = buildSafeDocumentList(docs, isFinal);
-    const jsonStr = JSON.stringify(safeDocs, null, 2);
-    atomicWriteFile(OUTPUT_DATA, jsonStr);
-    if (isFinal) {
-      atomicWriteFile(OUTPUT_LIB, jsonStr);
+    if (!skipDataWrite) {
+      const safeDocs = buildSafeDocumentList(docs, isFinal);
+      // Save compact JSON (no indentation) to single primary file to minimize size & disk I/O at 6,000+ file scale
+      const jsonStr = JSON.stringify(safeDocs);
+      atomicWriteFile(OUTPUT_DATA, jsonStr);
+      // Clean up legacy duplicate copy in src/lib/data if present
+      if (isFinal && fs.existsSync(OUTPUT_LIB)) {
+        try {
+          fs.unlinkSync(OUTPUT_LIB);
+        } catch (_) {}
+      }
     }
     saveSyncManifest(currentManifest);
     writeStatusFile(stats);
@@ -450,9 +457,8 @@ function handleTerminationSignal(sig) {
   console.log(`\n[INFO] Sinyal ${sig} diterima. Menyimpan seluruh cache & checkpoint secara aman...`);
   currentStats.isRunning = false;
   const safeDocs = buildSafeDocumentList(currentDocuments, false);
-  const jsonStr = JSON.stringify(safeDocs, null, 2);
+  const jsonStr = JSON.stringify(safeDocs);
   atomicWriteFile(OUTPUT_DATA, jsonStr);
-  atomicWriteFile(OUTPUT_LIB, jsonStr);
   saveSyncManifest(currentManifest);
   writeStatusFile(currentStats);
   console.log(`[INFO] Checkpoint berhasil disimpan (${safeDocs.length} dokumen terjaga). Proses berhenti aman.`);
@@ -495,9 +501,14 @@ async function run() {
       ? OUTPUT_LIB
       : null;
 
+  let hasIndexChanges = forceFullReindex || fs.existsSync(OUTPUT_LIB);
+
   if (existingSource) {
     try {
       const raw = fs.readFileSync(existingSource, 'utf8');
+      if (raw.startsWith('[\n') || raw.startsWith('[\r\n')) {
+        hasIndexChanges = true; // Compact pretty-printed JSON once
+      }
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
         for (const d of parsed) {
@@ -628,10 +639,19 @@ async function run() {
         if (!existing.fileHash) {
           try {
             existing.fileHash = computeFileHash(file.fullPath);
+            hasIndexChanges = true;
           } catch (_) {}
         }
         if (!existing.contentHash) {
           existing.contentHash = computeTextHash(existing.content);
+          hasIndexChanges = true;
+        }
+        // Trim legacy oversized content (> 20,000 chars) once to keep 6,000+ file index lightweight
+        if (existing.content && existing.content.length > MAX_CONTENT_CHARS + 200) {
+          existing.content =
+            existing.content.substring(0, MAX_CONTENT_CHARS) +
+            `\n\n[...Konten dokumen dipotong pada ${MAX_CONTENT_CHARS.toLocaleString('id-ID')} karakter...]`;
+          hasIndexChanges = true;
         }
 
         // Check if this cached document is actually a duplicate of an earlier document
@@ -650,6 +670,7 @@ async function run() {
           };
           stats.duplicates++;
           stats.cached++;
+          hasIndexChanges = true;
           continue;
         }
 
@@ -692,6 +713,7 @@ async function run() {
         documents.push(existing);
         stats.cached++;
         stats.success++;
+        hasIndexChanges = true;
         continue;
       }
 
@@ -799,8 +821,9 @@ async function run() {
         'ext_' + crypto.createHash('md5').update(file.relativePath).digest('hex').substring(0, 12);
 
       const cappedContent =
-        text.length > 45000
-          ? text.substring(0, 45000) + '\n\n[...Konten dokumen dipotong pada 45.000 karakter...]'
+        text.length > MAX_CONTENT_CHARS
+          ? text.substring(0, MAX_CONTENT_CHARS) +
+            `\n\n[...Konten dokumen dipotong pada ${MAX_CONTENT_CHARS.toLocaleString('id-ID')} karakter...]`
           : text;
       const snippet = text.substring(0, 260).replace(/\n/g, ' ').trim();
 
@@ -841,6 +864,7 @@ async function run() {
 
       stats.newOrUpdated++;
       stats.success++;
+      hasIndexChanges = true;
 
       const pct = Math.round(((i + 1) / allFiles.length) * 100);
       console.log(
@@ -876,14 +900,27 @@ async function run() {
     }
   }
 
+  if (documents.length !== existingDocsMap.size) {
+    hasIndexChanges = true;
+  }
+
   stats.isRunning = false;
   triggerGc();
-  console.log('\nMenyimpan berkas indeks dokumen & manifest cache final...');
-  saveCheckpoint(documents, stats, true);
+  const skipFinalDataWrite = !hasIndexChanges && fs.existsSync(OUTPUT_DATA);
+  if (skipFinalDataWrite) {
+    console.log('\nTidak ada perubahan dokumen baru. Melewati penulisan ulang indeks utama (0ms I/O)...');
+  } else {
+    console.log('\nMenyimpan berkas indeks dokumen (compact) & manifest cache final...');
+  }
+  saveCheckpoint(documents, stats, true, skipFinalDataWrite);
 
   const durationSec = ((Date.now() - startTime) / 1000).toFixed(1);
-  const jsonStr = JSON.stringify(documents, null, 2);
-  const sizeMb = (Buffer.byteLength(jsonStr, 'utf8') / (1024 * 1024)).toFixed(2);
+  let sizeMb = '0.00';
+  try {
+    if (fs.existsSync(OUTPUT_DATA)) {
+      sizeMb = (fs.statSync(OUTPUT_DATA).size / (1024 * 1024)).toFixed(2);
+    }
+  } catch (_) {}
 
   console.log('====================================================');
   console.log(' Selesai Pengindeksan Dokumen!');

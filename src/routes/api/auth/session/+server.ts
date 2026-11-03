@@ -15,13 +15,13 @@ export const GET: RequestHandler = async ({ cookies, url }) => {
 };
 
 /**
- * POST: Persist or sync permanent user session
+ * POST: Refresh the permanent cookies of the ALREADY-VERIFIED session user.
+ * The identity is never taken from the request body, otherwise any client could
+ * mint a (signed) session for an arbitrary user name.
  */
-export const POST: RequestHandler = async ({ request, cookies, url }) => {
+export const POST: RequestHandler = async ({ cookies, url }) => {
 	try {
-		const body = await request.json().catch(() => ({}));
-		const requestedUser = typeof body?.userName === 'string' ? body.userName.trim() : '';
-		const targetUser = requestedUser || resolveSessionUser(cookies, url);
+		const targetUser = resolveSessionUser(cookies, url);
 
 		if (!targetUser) {
 			return json(

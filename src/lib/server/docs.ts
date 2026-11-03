@@ -60,13 +60,13 @@ export function loadExternalDocuments(): DocumentItem[] {
 
 		const stat = fs.statSync(targetFile);
 		if (externalDocsCache && externalDocsCache.mtimeMs === stat.mtimeMs) {
-			return externalDocsCache.data.map((d) => ({ ...d }));
+			return externalDocsCache.data;
 		}
 
 		const parsed = JSON.parse(fs.readFileSync(targetFile, 'utf8')) as DocumentItem[];
 		externalDocsCache = { mtimeMs: stat.mtimeMs, data: parsed };
 		dataVersion++;
-		return parsed.map((d) => ({ ...d }));
+		return parsed;
 	} catch (e: any) {
 		console.error('Error reading external documents database:', e?.message);
 	}
@@ -257,6 +257,15 @@ export function saveDocuments(docs: DocumentItem[]) {
 	}
 }
 
+/** Normalizes  / b//c into /b/c so folders can be nested at any depth. */
+export function normalizeSubcategoryPath(sub?: string | null): string {
+	return String(sub || '')
+		.split('/')
+		.map((s) => s.trim())
+		.filter(Boolean)
+		.join('/');
+}
+
 export function buildDocTree(docs: DocumentItem[]) {
 	const sections = ['SAP', 'SAC', 'WEB'];
 	const sectionStats: Record<string, number> = { SAP: 0, SAC: 0, WEB: 0, all: docs.length };
@@ -286,8 +295,14 @@ export function buildDocTree(docs: DocumentItem[]) {
 				subfolders: new Set()
 			});
 		}
-		if (subcat && subcat.trim()) {
-			folderMetaMap.get(key)!.subfolders.add(subcat.trim());
+		const normalizedSub = normalizeSubcategoryPath(subcat);
+		if (normalizedSub) {
+			// Register every ancestor so SAP -> Mining -> CS always renders as a chain of folders
+			let acc = '';
+			for (const part of normalizedSub.split('/')) {
+				acc = acc ? `${acc}/${part}` : part;
+				folderMetaMap.get(key)!.subfolders.add(acc);
+			}
 		}
 		if (!sectionMap[normalizedSec]) sectionMap[normalizedSec] = new Map();
 		if (!sectionMap[normalizedSec].has(cleanCat)) {
@@ -308,7 +323,7 @@ export function buildDocTree(docs: DocumentItem[]) {
 	for (const f of explicitFolders) {
 		const sec = (f.section || 'SAP').toUpperCase();
 		const cat = (f.category || 'General').trim();
-		const subcat = (f.subcategory || '').trim();
+		const subcat = normalizeSubcategoryPath(f.subcategory);
 		ensureFolder(sec, cat, subcat);
 
 		if (typeof f.order === 'number') {
@@ -325,14 +340,14 @@ export function buildDocTree(docs: DocumentItem[]) {
 		const sec = inferSection(doc);
 		doc.section = sec;
 		let cat = doc.category || 'General';
-		let subcat = (doc.subcategory || '').trim();
+		let subcat = normalizeSubcategoryPath(doc.subcategory);
 
 		// Support "Kategori / Sub-Kategori" notation automatically
 		if (!subcat && cat.includes('/')) {
 			const parts = cat.split('/').map((s) => s.trim()).filter(Boolean);
 			if (parts.length >= 2) {
 				cat = parts[0];
-				subcat = parts.slice(1).join(' / ');
+				subcat = normalizeSubcategoryPath(parts.slice(1).join('/'));
 			}
 		}
 

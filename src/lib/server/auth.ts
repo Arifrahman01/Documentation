@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 let envLoaded = false;
+let warnedMissingSecret = false;
 
 export function ensureEnvLoaded() {
 	if (envLoaded) return;
@@ -43,10 +44,10 @@ export function signUserCookie(userName: string, secret: string): string {
 	return crypto.createHmac('sha256', secret).update(userName).digest('hex');
 }
 
-export const PERMANENT_COOKIE_MAX_AGE = 60 * 60 * 24 * 365 * 10; // 10 years in seconds (315,360,000s)
+export const PERMANENT_COOKIE_MAX_AGE = 60 * 60 * 24 * 30; // 30 days in seconds (2,592,000s)
 
 /**
- * Sets permanent authentication cookies (10 years) for seamless single sign-on.
+ * Sets long-lived authentication cookies (30 days) for seamless single sign-on.
  * Shared with Helpdesk and persists across browser restarts.
  */
 export function setPermanentUserCookies(cookies: Cookies, userName: string, url?: URL) {
@@ -100,7 +101,8 @@ function verifySignature(userName: string, signature: string | undefined, secret
  */
 export function resolveSessionUser(cookies: Cookies, url?: URL): string | null {
 	ensureEnvLoaded();
-	const raw = cookies.get('user_name') || url?.searchParams.get('user_name') || undefined;
+	// Identity only comes from the cookie (never from the query string, which is trivially forgeable).
+	const raw = cookies.get('user_name') || undefined;
 
 	if (raw) {
 		let decoded = raw;
@@ -117,6 +119,12 @@ export function resolveSessionUser(cookies: Cookies, url?: URL): string | null {
 
 		if (cleanName) {
 			const secret = (process.env.SESSION_SECRET || '').trim();
+			if (!secret && !dev && !warnedMissingSecret) {
+				warnedMissingSecret = true;
+				console.warn(
+					'[AUTH] SESSION_SECRET kosong: cookie user_name TIDAK diverifikasi dan bisa dipalsukan. Wajib diisi di production.'
+				);
+			}
 			if (secret && !isLocalDev(url)) {
 				const sig = cookies.get('user_sig');
 				if (!verifySignature(cleanName, sig, secret)) {

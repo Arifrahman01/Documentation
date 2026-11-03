@@ -45,6 +45,7 @@
 		FileText,
 		FilePlus,
 		FolderPlus,
+		FolderInput,
 		Folder,
 		FolderOpen,
 		Plus,
@@ -200,9 +201,11 @@
 		error: ''
 	});
 
-	// Drag & Drop Folder Reordering state
-	let draggedFolder = $state<{ section: string; category: string } | null>(null);
-	let dragOverFolderCategory = $state<string | null>(null);
+	// Drag & Drop state: folders (any depth) and notes can be dropped into any folder
+	let draggedFolder = $state<{ section: string; category: string; subcategory?: string; title?: string } | null>(null);
+	let draggedDoc = $state<any>(null);
+	let activeDropKey = $state<string | null>(null);
+	let hoverExpandTimer: ReturnType<typeof setTimeout> | null = null;
 
 	// =========================================================================
 	// OBSIDIAN IN-PAGE NOTE EDITOR STATE (Write Directly Inside the Note!)
@@ -329,7 +332,7 @@
 
 	function isSubcategoryExpanded(catTitle: string, subGroup: any): boolean {
 		if (sidebarFilter.trim()) return true;
-		const key = `${catTitle}::${subGroup.title}`;
+		const key = `${catTitle}::${subGroup.subcategory ?? subGroup.title}`;
 		if (expandedSubcategories[key] !== undefined) {
 			return expandedSubcategories[key];
 		}
@@ -337,8 +340,85 @@
 	}
 
 	function toggleSubcategory(catTitle: string, subGroup: any) {
-		const key = `${catTitle}::${subGroup.title}`;
+		const key = `${catTitle}::${subGroup.subcategory ?? subGroup.title}`;
 		expandedSubcategories[key] = !isSubcategoryExpanded(catTitle, subGroup);
+	}
+
+	// Obsidian-style nested folders: normalizes "a / b//c" into "a/b/c"
+	const normSubPath = (s?: string | null) =>
+		String(s || '')
+			.split('/')
+			.map((x) => x.trim())
+			.filter(Boolean)
+			.join('/');
+
+	/** Builds an unlimited-depth folder hierarchy (SAP -> Mining -> CS -> ...) for one category. */
+	function buildFolderHierarchy(group: any, groupSec: string, sectionNodes: any[]) {
+		const paths: string[] = [];
+		const seen = new Set<string>();
+		const addPath = (raw?: string) => {
+			const full = normSubPath(raw);
+			if (!full) return;
+			let acc = '';
+			for (const part of full.split('/')) {
+				acc = acc ? `${acc}/${part}` : part;
+				if (!seen.has(acc)) {
+					seen.add(acc);
+					paths.push(acc);
+				}
+			}
+		};
+		for (const sf of group.subfolders || []) addPath(sf);
+		for (const n of sectionNodes) addPath(n.subcategory);
+
+		const byPath = new Map<string, any>();
+		const rootFolders: any[] = [];
+		for (const p of paths) {
+			const parts = p.split('/');
+			const folder = {
+				isFolder: true,
+				key: `${groupSec}::${group.title}::${p}`,
+				title: parts[parts.length - 1],
+				section: groupSec,
+				category: group.title,
+				subcategory: p,
+				folders: [] as any[],
+				files: [] as any[],
+				count: 0
+			};
+			byPath.set(p, folder);
+			const parent = parts.length > 1 ? byPath.get(parts.slice(0, -1).join('/')) : null;
+			(parent ? parent.folders : rootFolders).push(folder);
+		}
+
+		const rootFiles: any[] = [];
+		for (const n of sectionNodes) {
+			const sub = normSubPath(n.subcategory);
+			if (sub) byPath.get(sub)!.files.push(n);
+			else rootFiles.push(n);
+		}
+		return { rootFolders, rootFiles };
+	}
+
+	function fileMatchesQuery(n: any, q: string): boolean {
+		return (
+			!q ||
+			(n.title || '').toLowerCase().includes(q) ||
+			(n.category && n.category.toLowerCase().includes(q)) ||
+			(n.subcategory && n.subcategory.toLowerCase().includes(q))
+		);
+	}
+
+	/** Recursively prunes folders/files that do not match the search query (any depth). */
+	function pruneFolder(folder: any, q: string): any | null {
+		const selfMatch = !q || folder.title.toLowerCase().includes(q);
+		const children = folder.folders
+			.map((c: any) => pruneFolder(c, selfMatch ? '' : q))
+			.filter(Boolean);
+		const files = selfMatch ? folder.files : folder.files.filter((n: any) => fileMatchesQuery(n, q));
+		if (q && !selfMatch && children.length === 0 && files.length === 0) return null;
+		const count = files.length + children.reduce((sum: number, c: any) => sum + c.count, 0);
+		return { ...folder, folders: children, files, count };
 	}
 
 	const filteredTree = $derived.by(() => {
@@ -349,51 +429,101 @@
 				const matchesGroupSection = activeSection === 'ALL' || groupSec === activeSection;
 				if (!matchesGroupSection) return null;
 
-				const nodes = (group.nodes || []).filter((n: any) => {
+				const sectionNodes = (group.nodes || []).filter((n: any) => {
 					const nodeSec = n.section || groupSec;
-					const matchesSection = activeSection === 'ALL' || nodeSec === activeSection;
-					const matchesQuery =
-						!q ||
-						n.title.toLowerCase().includes(q) ||
-						(n.category && n.category.toLowerCase().includes(q)) ||
-						(n.subcategory && n.subcategory.toLowerCase().includes(q));
-					return matchesSection && matchesQuery;
+					return activeSection === 'ALL' || nodeSec === activeSection;
 				});
 
-				// Group into subcategories + directNodes (including empty subfolders!)
-				const subMap = new Map<string, any[]>();
-				if (Array.isArray(group.subfolders)) {
-					for (const sf of group.subfolders) {
-						if (sf && (!q || sf.toLowerCase().includes(q))) {
-							subMap.set(sf, []);
-						}
-					}
-				}
+				const { rootFolders, rootFiles } = buildFolderHierarchy(group, groupSec, sectionNodes);
+				const groupMatch = !q || group.title.toLowerCase().includes(q);
+				const folders = rootFolders
+					.map((f: any) => pruneFolder(f, groupMatch ? '' : q))
+					.filter(Boolean);
+				const files = groupMatch ? rootFiles : rootFiles.filter((n: any) => fileMatchesQuery(n, q));
+				if (q && !groupMatch && folders.length === 0 && files.length === 0) return null;
 
-				const directNodes: any[] = [];
-				for (const n of nodes) {
-					const sub = (n.subcategory || '').trim();
-					if (sub) {
-						if (!subMap.has(sub)) subMap.set(sub, []);
-						subMap.get(sub)!.push(n);
-					} else {
-						directNodes.push(n);
-					}
-				}
-				const subcategories = Array.from(subMap.entries()).map(([title, subNodes]) => ({
-					title,
-					nodes: subNodes
-				}));
-
-				const matchesFolderQuery = !q || group.title.toLowerCase().includes(q);
-				if (q && nodes.length === 0 && subcategories.length === 0 && !matchesFolderQuery) {
-					return null;
-				}
-
-				return { ...group, section: groupSec, nodes, subcategories, directNodes };
+				const count = files.length + folders.reduce((sum: number, c: any) => sum + c.count, 0);
+				return { ...group, section: groupSec, nodes: sectionNodes, folders, files, count };
 			})
 			.filter(Boolean);
 	});
+
+	// Uniform helpers for root folders (categories) and nested sub-folders
+	function folderCategoryOf(node: any): string {
+		return node.category ?? node.title;
+	}
+
+	function isFolderOpen(node: any): boolean {
+		return node.subcategory
+			? isSubcategoryExpanded(node.category, node)
+			: isCategoryExpanded(node);
+	}
+
+	function setFolderOpen(node: any, open: boolean) {
+		if (node.subcategory) {
+			expandedSubcategories[`${node.category}::${node.subcategory}`] = open;
+		} else {
+			expandedCategories[node.title] = open;
+		}
+	}
+
+	function toggleFolderNode(node: any) {
+		if (node.subcategory) toggleSubcategory(node.category, node);
+		else toggleCategory(node.title, node);
+	}
+
+	function folderCtx(node: any) {
+		return {
+			isFolder: true,
+			nodeCount: node.count ?? 0,
+			section: node.section,
+			category: folderCategoryOf(node),
+			subcategory: node.subcategory || undefined,
+			title: node.subcategory
+				? `${folderCategoryOf(node)} / ${String(node.subcategory).split('/').join(' / ')}`
+				: node.title
+		};
+	}
+
+	/** Opens a folder and every ancestor so a freshly created/moved item is visible. */
+	function expandFolderPath(category: string, subcategory?: string) {
+		if (!category) return;
+		expandedCategories[category] = true;
+		let acc = '';
+		for (const part of normSubPath(subcategory).split('/').filter(Boolean)) {
+			acc = acc ? `${acc}/${part}` : part;
+			expandedSubcategories[`${category}::${acc}`] = true;
+		}
+	}
+
+	function isCreatorAt(node: any): boolean {
+		return (
+			explorerCreator.open &&
+			!explorerCreator.isRootFolder &&
+			explorerCreator.section === node.section &&
+			explorerCreator.category === folderCategoryOf(node) &&
+			(explorerCreator.subcategory || '') === (node.subcategory || '')
+		);
+	}
+
+	/** Re-reads the active note's folder from a fresh tree (after rename / move of its folder). */
+	function syncCurrentDocLocation(treeData: any[]) {
+		const slug = currentDoc?.slug;
+		if (!slug) return;
+		for (const g of treeData || []) {
+			for (const n of g.nodes || []) {
+				if (n.slug === slug) {
+					editorDoc = {
+						...currentDoc,
+						section: n.section || currentDoc.section,
+						category: n.category,
+						subcategory: n.subcategory
+					};
+					return;
+				}
+			}
+		}
+	}
 
 	let lastLoadedSlug = $state('');
 
@@ -492,20 +622,24 @@
 	function openExplorerCreateFolder(target?: any) {
 		closeContextMenu();
 		isFocusMode = false;
+		isMobileExplorerOpen = true;
 		const ctx = resolveActiveContext(target);
-		const isSubfolderTarget = Boolean(target?.isFolder && target?.category && !target?.subcategory);
+		// Any folder (at ANY depth) or note creates the new folder INSIDE its folder.
+		// No target (toolbar button) creates a new main folder.
+		const insideFolder = Boolean(target?.category && (target?.isFolder || target?.slug || target?.path));
 
 		explorerCreator = {
 			open: true,
 			type: 'folder',
 			section: ctx.section,
-			category: isSubfolderTarget ? target.category : '',
-			subcategory: '',
-			isRootFolder: !isSubfolderTarget,
+			category: insideFolder ? target.category : '',
+			subcategory: insideFolder ? normSubPath(target.subcategory) : '',
+			isRootFolder: !insideFolder,
 			name: '',
 			isSubmitting: false,
 			error: ''
 		};
+		if (insideFolder) expandFolderPath(target.category, target.subcategory);
 
 		setTimeout(() => {
 			const el = document.getElementById('explorer-creator-input') as HTMLInputElement | null;
@@ -527,18 +661,24 @@
 
 		try {
 			if (explorerCreator.type === 'folder') {
-				const payload = explorerCreator.isRootFolder
-					? {
-							type: 'folder',
-							section: explorerCreator.section,
-							category: cleanName
-						}
-					: {
-							type: 'folder',
-							section: explorerCreator.section,
-							category: explorerCreator.category,
-							subcategory: cleanName
-						};
+				const cleanPath = cleanName.replace(/\s*\/\s*/g, '/').replace(/^\/+|\/+$/g, '');
+				// "Mining/CS" creates the whole chain in one go; for a main folder the first part is the category
+				let folderCategory = explorerCreator.category;
+				let folderSubcategory: string | undefined;
+				if (explorerCreator.isRootFolder) {
+					const parts = cleanPath.split('/').filter(Boolean);
+					folderCategory = parts[0];
+					folderSubcategory = parts.slice(1).join('/') || undefined;
+				} else {
+					folderSubcategory = [explorerCreator.subcategory, cleanPath].filter(Boolean).join('/');
+				}
+
+				const payload = {
+					type: 'folder',
+					section: explorerCreator.section,
+					category: folderCategory,
+					subcategory: folderSubcategory
+				};
 
 				const res = await fetch('/api/docs', {
 					method: 'POST',
@@ -552,11 +692,7 @@
 					customTree = json.treeData;
 					updateTreeCache(json.treeData);
 				}
-				const targetCat = explorerCreator.isRootFolder ? cleanName : explorerCreator.category;
-				expandedCategories[targetCat] = true;
-				if (!explorerCreator.isRootFolder) {
-					expandedSubcategories[`${targetCat}::${cleanName}`] = true;
-				}
+				expandFolderPath(payload.category, folderSubcategory);
 				explorerCreator.open = false;
 			} else {
 				// Create File (Note) first, then immediately open in Note Writing Mode
@@ -581,7 +717,7 @@
 				if (json.document) {
 					updateDocCache(json.document);
 				}
-				expandedCategories[explorerCreator.category] = true;
+				expandFolderPath(explorerCreator.category, explorerCreator.subcategory);
 				explorerCreator.open = false;
 
 				if (json.document?.slug) {
@@ -608,7 +744,9 @@
 		if (!t) return;
 		const isFolder = Boolean(t.isFolder);
 		const currentName = isFolder
-			? t.subcategory || t.category || t.title
+			? t.subcategory
+				? String(t.subcategory).split('/').pop() || t.subcategory
+				: t.category || t.title
 			: t.title || 'Catatan';
 
 		renameDialog = {
@@ -660,27 +798,11 @@
 					updateTreeCache(json.treeData);
 				}
 				const targetCat = isSub ? renameDialog.target?.category : cleanName;
-				expandedCategories[targetCat] = true;
-				if (isSub) {
-					expandedSubcategories[`${targetCat}::${cleanName}`] = true;
-				}
+				const renamedSub: string | undefined = json.renamed?.subcategory;
+				expandFolderPath(targetCat, renamedSub);
 
-				if (currentDoc) {
-					if (!isSub && currentDoc.category?.toLowerCase() === renameDialog.target?.category?.toLowerCase()) {
-						if (editorDoc) {
-							editorDoc.category = cleanName;
-						} else if (data.doc) {
-							data.doc.category = cleanName;
-						}
-					}
-					if (isSub && currentDoc.subcategory?.toLowerCase() === renameDialog.target?.subcategory?.toLowerCase()) {
-						if (editorDoc) {
-							editorDoc.subcategory = cleanName;
-						} else if (data.doc) {
-							data.doc.subcategory = cleanName;
-						}
-					}
-				}
+				// Keep the open note's breadcrumb in sync (works for notes at any depth below the renamed folder)
+				if (json.treeData) syncCurrentDocLocation(json.treeData);
 
 				renameDialog.open = false;
 				showCopyToast('✓ Nama folder berhasil diubah');
@@ -766,13 +888,12 @@
 		} catch (_) {}
 	}
 
-	async function moveSubfolderOrder(group: any, subGroup: any, direction: 'up' | 'down') {
-		const sec = group.section || 'SAP';
-		const cat = group.title || group.category;
-		const subName = subGroup.title || subGroup.subcategory;
-		const subList = (group.subcategories || []).map((s: any) => s.title);
+	async function moveSubfolderOrder(siblings: any[], subGroup: any, direction: 'up' | 'down') {
+		const sec = subGroup.section || 'SAP';
+		const cat = subGroup.category;
+		const subList = (siblings || []).map((s: any) => s.subcategory);
 
-		const idx = subList.indexOf(subName);
+		const idx = subList.indexOf(subGroup.subcategory);
 		if (idx === -1) return;
 		if (direction === 'up' && idx === 0) return;
 		if (direction === 'down' && idx === subList.length - 1) return;
@@ -790,6 +911,7 @@
 					type: 'reorder-subfolders',
 					section: sec,
 					category: cat,
+					// Full paths among siblings, e.g. ["Mining/CS", "Mining/FI"]
 					subcategories: reordered
 				})
 			});
@@ -802,29 +924,136 @@
 		} catch (_) {}
 	}
 
-	function handleFolderDragStart(e: DragEvent, group: any) {
-		draggedFolder = { section: group.section || 'SAP', category: group.title };
-		if (e.dataTransfer) {
-			e.dataTransfer.effectAllowed = 'move';
-			e.dataTransfer.setData('text/plain', group.title);
+	function findSiblingFolders(section: string, category: string, subcategory?: string): any[] {
+		const group = (filteredTree as any[]).find(
+			(g: any) => g.title === category && (g.section || 'SAP') === (section || 'SAP')
+		);
+		if (!group) return [];
+		const parts = normSubPath(subcategory).split('/').filter(Boolean);
+		let list: any[] = group.folders || [];
+		for (let i = 0; i < parts.length - 1; i++) {
+			const path = parts.slice(0, i + 1).join('/');
+			const next = list.find((f: any) => f.subcategory === path);
+			if (!next) return [];
+			list = next.folders || [];
+		}
+		return list;
+	}
+
+	function dropTarget(node: any) {
+		return {
+			section: (node.section || 'SAP') as string,
+			category: folderCategoryOf(node) as string,
+			subcategory: node.subcategory ? String(node.subcategory) : undefined
+		};
+	}
+
+	function dropKey(t: { section: string; category: string; subcategory?: string }) {
+		return `${t.section}|${t.category}|${t.subcategory || ''}`;
+	}
+
+	function clearHoverExpandTimer() {
+		if (hoverExpandTimer) {
+			clearTimeout(hoverExpandTimer);
+			hoverExpandTimer = null;
 		}
 	}
 
-	function handleFolderDragOver(e: DragEvent, group: any) {
-		if (!draggedFolder || draggedFolder.section !== (group.section || 'SAP')) return;
-		if (draggedFolder.category === group.title) return;
-		e.preventDefault();
-		if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-		dragOverFolderCategory = group.title;
+	function handleFolderDragStart(e: DragEvent, node: any) {
+		e.stopPropagation();
+		draggedDoc = null;
+		draggedFolder = { ...dropTarget(node), title: node.title };
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = 'move';
+			e.dataTransfer.setData('text/plain', node.title);
+		}
 	}
 
-	async function handleFolderDrop(e: DragEvent, targetGroup: any) {
-		e.preventDefault();
-		dragOverFolderCategory = null;
-		if (!draggedFolder || draggedFolder.section !== (targetGroup.section || 'SAP')) return;
-		const sourceCat = draggedFolder.category;
-		const targetCat = targetGroup.title;
+	function handleDocDragStart(e: DragEvent, node: any) {
 		draggedFolder = null;
+		draggedDoc = node;
+		if (e.dataTransfer) {
+			e.dataTransfer.effectAllowed = 'move';
+			e.dataTransfer.setData('text/plain', node.title || '');
+		}
+	}
+
+	function handleDragEnd() {
+		draggedFolder = null;
+		draggedDoc = null;
+		activeDropKey = null;
+		clearHoverExpandTimer();
+	}
+
+	/** Any folder at any depth is a drop target, except itself / its own descendants / its current parent. */
+	function canDropOnFolder(node: any): boolean {
+		const t = dropTarget(node);
+		if (draggedDoc) {
+			return !(
+				(draggedDoc.section || 'SAP') === t.section &&
+				draggedDoc.category === t.category &&
+				normSubPath(draggedDoc.subcategory) === (t.subcategory || '')
+			);
+		}
+		if (!draggedFolder) return false;
+		const src = draggedFolder;
+		if (src.section !== t.section) return false;
+		const srcSub = src.subcategory || '';
+		const dstSub = t.subcategory || '';
+		if (src.category === t.category) {
+			if (!srcSub) return false;
+			if (dstSub && (dstSub === srcSub || dstSub.startsWith(`${srcSub}/`))) return false;
+			const parent = srcSub.split('/').slice(0, -1).join('/');
+			return dstSub !== parent;
+		}
+		return true;
+	}
+
+	function handleFolderDragOver(e: DragEvent, node: any) {
+		if (!draggedDoc && !draggedFolder) return;
+		if (!canDropOnFolder(node)) return;
+		e.preventDefault();
+		e.stopPropagation();
+		if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
+		activeDropKey = dropKey(dropTarget(node));
+
+		if (!isFolderOpen(node) && !hoverExpandTimer) {
+			hoverExpandTimer = setTimeout(() => {
+				setFolderOpen(node, true);
+				hoverExpandTimer = null;
+			}, 500);
+		}
+	}
+
+	function handleFolderDragLeave(node: any) {
+		if (activeDropKey === dropKey(dropTarget(node))) activeDropKey = null;
+		clearHoverExpandTimer();
+	}
+
+	async function handleFolderDrop(e: DragEvent, node: any) {
+		e.preventDefault();
+		e.stopPropagation();
+		const allowed = canDropOnFolder(node);
+		const doc = draggedDoc;
+		const folder = draggedFolder;
+		const target = dropTarget(node);
+		handleDragEnd();
+		if (!allowed) return;
+
+		if (doc) {
+			await moveDocToFolder(doc, target);
+		} else if (folder) {
+			if (!folder.subcategory && !target.subcategory) {
+				// Main folder dropped on another main folder: reorder (same as before)
+				await reorderRootFolders(folder.category, node);
+			} else {
+				await moveFolderInto(folder, target);
+			}
+		}
+	}
+
+	async function reorderRootFolders(sourceCat: string, targetGroup: any) {
+		const targetCat = targetGroup.title;
 		if (sourceCat === targetCat) return;
 
 		const sectionFolders = (currentTree || [])
@@ -856,6 +1085,73 @@
 				showCopyToast('✓ Urutan folder berhasil dipindahkan');
 			}
 		} catch (_) {}
+	}
+
+	async function moveDocToFolder(doc: any, t: { section: string; category: string; subcategory?: string }) {
+		try {
+			const res = await fetch('/api/docs', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					type: 'move-file',
+					id: doc.id || doc.slug || doc.path,
+					section: t.section,
+					category: t.category,
+					subcategory: t.subcategory
+				})
+			});
+			const json = await res.json();
+			if (!res.ok) throw new Error(json.error || 'Gagal memindahkan file');
+			if (json.treeData) {
+				customTree = json.treeData;
+				updateTreeCache(json.treeData);
+			}
+			if (json.document) updateDocCache(json.document);
+			expandFolderPath(t.category, t.subcategory);
+			if ((doc.slug || doc.path) === (currentDoc?.slug || data.slug)) {
+				editorDoc = {
+					...currentDoc,
+					section: t.section,
+					category: t.category,
+					subcategory: t.subcategory
+				};
+			}
+			const where = t.subcategory ? `${t.category} / ${t.subcategory.split('/').join(' / ')}` : t.category;
+			showCopyToast(`✓ "${doc.title}" dipindahkan ke ${where}`);
+		} catch (err: any) {
+			showCopyToast(err.message || 'Gagal memindahkan file');
+		}
+	}
+
+	async function moveFolderInto(
+		src: { section: string; category: string; subcategory?: string; title?: string },
+		t: { section: string; category: string; subcategory?: string }
+	) {
+		try {
+			const res = await fetch('/api/docs', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					type: 'move-folder',
+					section: src.section,
+					category: src.category,
+					subcategory: src.subcategory,
+					targetCategory: t.category,
+					targetSubcategory: t.subcategory
+				})
+			});
+			const json = await res.json();
+			if (!res.ok) throw new Error(json.error || 'Gagal memindahkan folder');
+			if (json.treeData) {
+				customTree = json.treeData;
+				updateTreeCache(json.treeData);
+				syncCurrentDocLocation(json.treeData);
+			}
+			expandFolderPath(t.category, t.subcategory);
+			showCopyToast(`✓ Folder "${src.title || src.subcategory || src.category}" berhasil dipindahkan`);
+		} catch (err: any) {
+			showCopyToast(err.message || 'Gagal memindahkan folder');
+		}
 	}
 
 	// =========================================================================
@@ -1673,8 +1969,11 @@
 		if (!target) return;
 		if (target.isFolder) {
 			if (target.subcategory) {
-				const parentGroup = currentTree.find((g: any) => g.title === target.category);
-				if (parentGroup) moveSubfolderOrder(parentGroup, target, 'up');
+				moveSubfolderOrder(
+					findSiblingFolders(target.section, target.category, target.subcategory),
+					target,
+					'up'
+				);
 			} else {
 				moveFolderOrder(target, 'up');
 			}
@@ -1686,8 +1985,11 @@
 		if (!target) return;
 		if (target.isFolder) {
 			if (target.subcategory) {
-				const parentGroup = currentTree.find((g: any) => g.title === target.category);
-				if (parentGroup) moveSubfolderOrder(parentGroup, target, 'down');
+				moveSubfolderOrder(
+					findSiblingFolders(target.section, target.category, target.subcategory),
+					target,
+					'down'
+				);
 			} else {
 				moveFolderOrder(target, 'down');
 			}
@@ -1782,6 +2084,216 @@
 	}
 </script>
 
+<!-- Inline create row (new note / folder) shown inside whichever folder is targeted -->
+{#snippet explorerCreatorRow()}
+	<form onsubmit={submitExplorerCreator} class="px-1 py-0.5">
+		<div class="flex items-center gap-1.5">
+			{#if explorerCreator.type === 'folder'}
+				<Folder class="h-3.5 w-3.5 shrink-0 text-primary" />
+			{:else}
+				<FileText class="h-3.5 w-3.5 shrink-0 text-primary" />
+			{/if}
+			<input
+				id="explorer-creator-input"
+				type="text"
+				bind:value={explorerCreator.name}
+				disabled={explorerCreator.isSubmitting}
+				placeholder={explorerCreator.type === 'folder'
+					? explorerCreator.isRootFolder
+						? `Nama folder utama di ${explorerCreator.section}...`
+						: 'Nama folder (boleh a/b/c)...'
+					: 'Nama catatan...'}
+				class="h-6 min-w-0 flex-1 rounded border border-primary/60 bg-background px-1.5 text-xs outline-none focus:ring-1 focus:ring-primary/50"
+				onblur={() => {
+					if (!explorerCreator.name.trim() && !explorerCreator.isSubmitting) {
+						explorerCreator.open = false;
+					}
+				}}
+			/>
+		</div>
+		{#if explorerCreator.error}
+			<p class="pl-5 pt-0.5 text-[10px] text-destructive">{explorerCreator.error}</p>
+		{:else}
+			<p class="pl-5 pt-0.5 text-[10px] text-muted-foreground/70">Enter untuk membuat • Esc batal</p>
+		{/if}
+	</form>
+{/snippet}
+
+<!-- Note row (draggable into any folder) -->
+{#snippet explorerFile(node: any)}
+	{@const isCurrent = node.path === data.slug || node.slug === data.slug}
+	<div
+		class="group/file flex items-center justify-between rounded-md pr-1 transition-colors {isCurrent
+			? 'bg-secondary font-semibold text-secondary-foreground'
+			: 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'} {draggedDoc?.slug === node.slug ? 'opacity-30' : ''}"
+		draggable="true"
+		ondragstart={(e) => handleDocDragStart(e, node)}
+		ondragend={handleDragEnd}
+		role="treeitem"
+		aria-selected={isCurrent}
+		tabindex="-1"
+	>
+		<a
+			href="/docs/{node.path}"
+			onclick={(e) => {
+				if (draggedDoc || draggedFolder) e.preventDefault();
+			}}
+			oncontextmenu={(e) => openContextMenu(e, node)}
+			class="flex items-center gap-2 flex-1 px-2 py-1 text-xs truncate min-w-0"
+		>
+			<FileText class="h-3 w-3 opacity-60 shrink-0" />
+			<span class="truncate">{node.title}</span>
+		</a>
+		<button
+			type="button"
+			title="Ubah nama file (F2)"
+			onclick={(e) => {
+				e.stopPropagation();
+				openRename(node);
+			}}
+			class="hidden group-hover/file:flex rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground shrink-0"
+		>
+			<PenLine class="h-3 w-3" />
+		</button>
+	</div>
+{/snippet}
+
+<!-- Recursive folder row: main folder, sub-folder, sub-sub-folder ... at unlimited depth -->
+{#snippet explorerFolder(node: any, siblings: any[], depth: number)}
+	{@const isRoot = !node.subcategory}
+	{@const expanded = isFolderOpen(node)}
+	{@const tgt = dropTarget(node)}
+	{@const isDropActive = activeDropKey === dropKey(tgt)}
+	<div
+		class="rounded-md transition-all {isDropActive ? 'ring-2 ring-primary/80 bg-primary/10' : ''}"
+		oncontextmenu={(e) => openContextMenu(e, folderCtx(node))}
+		ondragover={(e) => handleFolderDragOver(e, node)}
+		ondragleave={() => handleFolderDragLeave(node)}
+		ondrop={(e) => handleFolderDrop(e, node)}
+		role="group"
+	>
+		<div
+			class="group/row flex items-center rounded-md pr-1 transition-colors {isDropActive
+				? 'bg-primary/15 text-primary'
+				: 'hover:bg-accent/60'}"
+			draggable="true"
+			ondragstart={(e) => handleFolderDragStart(e, node)}
+			ondragend={handleDragEnd}
+			role="treeitem"
+			aria-selected="false"
+			aria-expanded={expanded}
+			tabindex="-1"
+		>
+			<button
+				type="button"
+				onclick={() => toggleFolderNode(node)}
+				class="flex min-w-0 flex-1 items-center gap-1.5 py-1 pl-2 text-left text-xs truncate {isRoot
+					? 'font-medium text-foreground'
+					: 'font-medium text-muted-foreground hover:text-foreground'}"
+				title={node.subcategory ? `${node.category} / ${String(node.subcategory).split('/').join(' / ')}` : node.title}
+			>
+				<ChevronDown
+					class="h-3 w-3 text-muted-foreground transition-transform duration-150 shrink-0 {expanded
+						? 'rotate-0'
+						: '-rotate-90'}"
+				/>
+				{#if expanded}
+					<FolderOpen class="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+				{:else}
+					<Folder class="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+				{/if}
+				<span class="truncate">{node.title}</span>
+			</button>
+
+			{#if isDropActive && (draggedDoc || draggedFolder)}
+				<span class="shrink-0 rounded bg-background/80 px-1 py-0.5 text-[9px] font-bold text-primary shadow-2xs">
+					Lepas di sini
+				</span>
+			{:else}
+				<div class="hidden group-hover/row:flex items-center gap-0.5 shrink-0">
+					<button
+						type="button"
+						title="Catatan baru di dalam folder ini"
+						onclick={(e) => {
+							e.stopPropagation();
+							openExplorerCreateFile(folderCtx(node));
+						}}
+						class="rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground"
+					>
+						<FilePlus class="h-3.5 w-3.5" />
+					</button>
+					<button
+						type="button"
+						title="Sub-folder baru di dalam folder ini"
+						onclick={(e) => {
+							e.stopPropagation();
+							openExplorerCreateFolder(folderCtx(node));
+						}}
+						class="rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground"
+					>
+						<FolderPlus class="h-3.5 w-3.5" />
+					</button>
+					<button
+						type="button"
+						title="Pindahkan urutan ke atas"
+						onclick={(e) => {
+							e.stopPropagation();
+							if (isRoot) moveFolderOrder(node, 'up');
+							else moveSubfolderOrder(siblings, node, 'up');
+						}}
+						class="rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground"
+					>
+						<ChevronUp class="h-3.5 w-3.5" />
+					</button>
+					<button
+						type="button"
+						title="Pindahkan urutan ke bawah"
+						onclick={(e) => {
+							e.stopPropagation();
+							if (isRoot) moveFolderOrder(node, 'down');
+							else moveSubfolderOrder(siblings, node, 'down');
+						}}
+						class="rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground"
+					>
+						<ChevronDown class="h-3.5 w-3.5" />
+					</button>
+					<button
+						type="button"
+						title="Ubah nama folder (Rename)"
+						onclick={(e) => {
+							e.stopPropagation();
+							openRename(folderCtx(node));
+						}}
+						class="rounded p-0.5 text-muted-foreground hover:bg-background hover:text-foreground"
+					>
+						<PenLine class="h-3.5 w-3.5" />
+					</button>
+				</div>
+				<span class="group-hover/row:hidden text-[10px] text-muted-foreground/60 font-mono pr-1 shrink-0">
+					{node.count ?? 0}
+				</span>
+			{/if}
+		</div>
+
+		{#if expanded}
+			<div class="space-y-0.5 pl-3 ml-2.5 border-l border-border/60 my-0.5">
+				{#if isCreatorAt(node)}
+					{@render explorerCreatorRow()}
+				{/if}
+				{#each node.folders || [] as sub (sub.key)}
+					{@render explorerFolder(sub, node.folders, depth + 1)}
+				{/each}
+				{#each node.files || [] as file (file.id ?? file.slug)}
+					{@render explorerFile(file)}
+				{/each}
+				{#if (node.files || []).length === 0 && (node.folders || []).length === 0 && !isCreatorAt(node)}
+					<div class="px-2 py-1 text-[11px] text-muted-foreground/60 italic">(Kosong)</div>
+				{/if}
+			</div>
+		{/if}
+	</div>
+{/snippet}
+
 <svelte:head>
 	<title>{currentDoc?.title || data.article.title} - Portal Dokumentasi</title>
 </svelte:head>
@@ -1829,62 +2341,31 @@
 						{/each}
 					</div>
 
-					<!-- Explorer Top Header: Section Title (Clean & Uniform) -->
+					<!-- Explorer Top Header: Section Title + quick create (like VS Code Explorer & Obsidian) -->
 					<div class="flex items-center justify-between pb-1">
 						<span class="text-xs font-semibold text-foreground">
 							Folder {activeSection === 'ALL' ? 'Semua Modul' : activeSection}
 						</span>
+						<div class="flex items-center gap-0.5">
+							<button
+								type="button"
+								onclick={() => openExplorerCreateFile(currentDoc)}
+								class="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+								title="Catatan baru di folder yang sedang dibuka (Alt+N)"
+							>
+								<FilePlus class="h-3.5 w-3.5" />
+							</button>
+							<button
+								type="button"
+								onclick={() => openExplorerCreateFolder(null)}
+								class="rounded p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+								title="Folder utama baru. Untuk sub-folder, arahkan mouse ke folder lalu klik ikon folder (+), atau klik kanan"
+							>
+								<FolderPlus class="h-3.5 w-3.5" />
+							</button>
+						</div>
 					</div>
 
-					<!-- Inline Create File / Folder Box (Shadcn Card) -->
-					{#if explorerCreator.open}
-						<Card class="p-2.5 shadow-xs">
-							<form onsubmit={submitExplorerCreator} class="space-y-2">
-								<div class="flex items-center justify-between text-[11px] font-medium text-muted-foreground">
-									<span class="truncate">
-										{explorerCreator.type === 'folder'
-											? explorerCreator.isRootFolder
-												? `Folder baru di ${explorerCreator.section}`
-												: `Sub-folder di ${explorerCreator.category}`
-											: `File baru di ${explorerCreator.subcategory || explorerCreator.category}`}
-									</span>
-									<Button
-										type="button"
-										variant="ghost"
-										size="icon"
-										onclick={() => (explorerCreator.open = false)}
-										class="h-5 w-5"
-									>
-										<X class="h-3 w-3" />
-									</Button>
-								</div>
-
-								<div class="flex items-center gap-1.5">
-									<Input
-										id="explorer-creator-input"
-										type="text"
-										bind:value={explorerCreator.name}
-										placeholder={explorerCreator.type === 'folder'
-											? 'Nama folder...'
-											: 'Nama file catatan...'}
-										class="h-7 text-xs flex-1"
-									/>
-									<Button
-										type="submit"
-										size="sm"
-										disabled={explorerCreator.isSubmitting || !explorerCreator.name.trim()}
-										class="h-7 px-2.5 text-xs"
-									>
-										Buat
-									</Button>
-								</div>
-
-								{#if explorerCreator.error}
-									<p class="text-[10px] text-destructive">{explorerCreator.error}</p>
-								{/if}
-							</form>
-						</Card>
-					{/if}
 
 					<!-- Quiet Filter Input -->
 					<div class="relative">
@@ -1911,268 +2392,20 @@
 						{/if}
 					</div>
 
-					<!-- Clean Folder & File Tree (Uniform Shadcn Styling & Lucide Icons) -->
-					<nav class="space-y-0.5 max-h-[calc(100vh-220px)] overflow-y-auto pr-1">
-						{#each filteredTree as group}
-							{@const expanded = isCategoryExpanded(group)}
-							<div
-								class="group/folder transition-all rounded-md {dragOverFolderCategory === group.title ? 'border-t-2 border-primary bg-primary/5' : ''}"
-								draggable="true"
-								ondragstart={(e) => handleFolderDragStart(e, group)}
-								ondragover={(e) => handleFolderDragOver(e, group)}
-								ondragleave={() => (dragOverFolderCategory = null)}
-								ondrop={(e) => handleFolderDrop(e, group)}
-								oncontextmenu={(e) =>
-									openContextMenu(e, {
-										isFolder: true,
-										nodeCount: group.nodes.length,
-										section: group.section,
-										category: group.title,
-										title: group.title
-									})}
-								role="group"
-							>
-								<div class="flex items-center justify-between rounded-md pr-1 hover:bg-accent/60 transition-colors">
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
-										onclick={() => toggleCategory(group.title, group)}
-										class="h-7 flex-1 justify-start gap-1.5 px-2 text-xs font-medium text-foreground truncate"
-									>
-										<ChevronDown
-											class="h-3.5 w-3.5 text-muted-foreground transition-transform duration-150 shrink-0 {expanded
-												? 'rotate-0'
-												: '-rotate-90'}"
-										/>
-										{#if expanded}
-											<FolderOpen class="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-										{:else}
-											<Folder class="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-										{/if}
-										<span class="truncate">{group.title}</span>
-									</Button>
+					<!-- Clean Folder & File Tree (unlimited nesting: SAP -> Mining -> CS -> ...) -->
+					{#if draggedDoc || draggedFolder}
+						<div class="mb-1.5 flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary animate-in fade-in">
+							<FolderInput class="h-3.5 w-3.5 shrink-0 animate-pulse" />
+							<span class="truncate">Lepaskan di folder tujuan...</span>
+						</div>
+					{/if}
 
-									<div class="flex items-center gap-0.5">
-										<!-- Reorder & Rename buttons on hover -->
-										<div class="hidden group-hover/folder:flex items-center gap-0.5 mr-0.5">
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon"
-												title="Pindahkan urutan folder ke atas"
-												onclick={(e) => {
-													e.stopPropagation();
-													moveFolderOrder(group, 'up');
-												}}
-												class="h-5 w-5 text-muted-foreground hover:text-foreground"
-											>
-												<ChevronUp class="h-3 w-3" />
-											</Button>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon"
-												title="Pindahkan urutan folder ke bawah"
-												onclick={(e) => {
-													e.stopPropagation();
-													moveFolderOrder(group, 'down');
-												}}
-												class="h-5 w-5 text-muted-foreground hover:text-foreground"
-											>
-												<ChevronDown class="h-3 w-3" />
-											</Button>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon"
-												title="Ubah nama folder (Rename)"
-												onclick={(e) => {
-													e.stopPropagation();
-													openRename({
-														isFolder: true,
-														section: group.section,
-														category: group.title,
-														title: group.title
-													});
-												}}
-												class="h-5 w-5 text-muted-foreground hover:text-foreground"
-											>
-												<PenLine class="h-3 w-3" />
-											</Button>
-										</div>
-
-										<span class="text-[10px] text-muted-foreground/60 font-mono pr-2 shrink-0">
-											{(group.directNodes ? group.directNodes.length : (group.nodes?.length ?? 0)) + (group.subcategories?.length ?? 0)}
-										</span>
-									</div>
-								</div>
-
-								{#if expanded}
-									<div class="space-y-0.5 pl-3 ml-2.5 border-l border-border/60 my-0.5">
-										<!-- Sub-Folders -->
-										{#each group.subcategories || [] as subGroup}
-											{@const subExpanded = isSubcategoryExpanded(group.title, subGroup)}
-											<div
-												oncontextmenu={(e) =>
-													openContextMenu(e, {
-														isFolder: true,
-														nodeCount: subGroup.nodes.length,
-														section: group.section,
-														category: group.title,
-														subcategory: subGroup.title,
-														title: `${group.title} / ${subGroup.title}`
-													})}
-												role="group"
-											>
-												<div class="group/sub flex items-center justify-between rounded-md pr-1 hover:bg-accent/50">
-													<Button
-														type="button"
-														variant="ghost"
-														size="sm"
-														onclick={() => toggleSubcategory(group.title, subGroup)}
-														class="h-7 flex-1 justify-start gap-1.5 px-2 text-xs font-medium text-muted-foreground hover:text-foreground truncate"
-													>
-														<ChevronDown
-															class="h-3 w-3 transition-transform duration-150 shrink-0 {subExpanded
-																? 'rotate-0'
-																: '-rotate-90'}"
-														/>
-														<Folder class="h-3 w-3 text-muted-foreground shrink-0" />
-														<span class="truncate">{subGroup.title}</span>
-													</Button>
-													<div class="flex items-center gap-0.5">
-														<div class="hidden group-hover/sub:flex items-center gap-0.5 mr-0.5">
-															<Button
-																type="button"
-																variant="ghost"
-																size="icon"
-																title="Pindahkan sub-folder ke atas"
-																onclick={(e) => {
-																	e.stopPropagation();
-																	moveSubfolderOrder(group, subGroup, 'up');
-																}}
-																class="h-5 w-5 text-muted-foreground hover:text-foreground"
-															>
-																<ChevronUp class="h-3 w-3" />
-															</Button>
-															<Button
-																type="button"
-																variant="ghost"
-																size="icon"
-																title="Pindahkan sub-folder ke bawah"
-																onclick={(e) => {
-																	e.stopPropagation();
-																	moveSubfolderOrder(group, subGroup, 'down');
-																}}
-																class="h-5 w-5 text-muted-foreground hover:text-foreground"
-															>
-																<ChevronDown class="h-3 w-3" />
-															</Button>
-															<Button
-																type="button"
-																variant="ghost"
-																size="icon"
-																title="Ubah nama sub-folder (Rename)"
-																onclick={(e) => {
-																	e.stopPropagation();
-																	openRename({
-																		isFolder: true,
-																		section: group.section,
-																		category: group.title,
-																		subcategory: subGroup.title,
-																		title: `${group.title} / ${subGroup.title}`
-																	});
-																}}
-																class="h-5 w-5 text-muted-foreground hover:text-foreground"
-															>
-																<PenLine class="h-3 w-3" />
-															</Button>
-														</div>
-														<span class="text-[10px] text-muted-foreground/60 font-mono pr-2 shrink-0">
-															{subGroup.nodes.length}
-														</span>
-													</div>
-												</div>
-
-												{#if subExpanded}
-													<div class="space-y-0.5 pl-3 ml-2 border-l border-border/50 py-0.5">
-														{#each subGroup.nodes as node}
-															{@const isCurrent = node.path === data.slug || node.slug === data.slug}
-															<div class="group/file flex items-center justify-between rounded-md pr-1 transition-colors {isCurrent
-																? 'bg-secondary font-semibold text-secondary-foreground'
-																: 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}">
-																<a
-																	href="/docs/{node.path}"
-																	oncontextmenu={(e) => openContextMenu(e, node)}
-																	class="flex items-center gap-2 flex-1 px-2 py-1 text-xs truncate min-w-0"
-																>
-																	<FileText class="h-3 w-3 opacity-60 shrink-0" />
-																	<span class="truncate">{node.title}</span>
-																</a>
-																<Button
-																	type="button"
-																	variant="ghost"
-																	size="icon"
-																	title="Ubah nama file (Rename)"
-																	onclick={(e) => {
-																		e.stopPropagation();
-																		openRename(node);
-																	}}
-																	class="hidden group-hover/file:flex h-5 w-5 text-muted-foreground hover:text-foreground shrink-0"
-																>
-																	<PenLine class="h-3 w-3" />
-																</Button>
-															</div>
-														{/each}
-														{#if subGroup.nodes.length === 0}
-															<div class="px-2 py-1 text-[11px] text-muted-foreground/60 italic">
-																(Kosong)
-															</div>
-														{/if}
-													</div>
-												{/if}
-											</div>
-										{/each}
-
-										<!-- Direct Files in Folder -->
-										{#each group.directNodes || group.nodes as node}
-											{@const isCurrent = node.path === data.slug || node.slug === data.slug}
-											<div class="group/file flex items-center justify-between rounded-md pr-1 transition-colors {isCurrent
-												? 'bg-secondary font-semibold text-secondary-foreground'
-												: 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'}">
-												<a
-													href="/docs/{node.path}"
-													oncontextmenu={(e) => openContextMenu(e, node)}
-													class="flex items-center gap-2 flex-1 px-2 py-1.5 text-xs truncate min-w-0"
-												>
-													<FileText class="h-3.5 w-3.5 opacity-60 shrink-0" />
-													<span class="truncate">{node.title}</span>
-												</a>
-												<Button
-													type="button"
-													variant="ghost"
-													size="icon"
-													title="Ubah nama file (Rename)"
-													onclick={(e) => {
-														e.stopPropagation();
-														openRename(node);
-													}}
-													class="hidden group-hover/file:flex h-5 w-5 text-muted-foreground hover:text-foreground shrink-0"
-												>
-													<PenLine class="h-3 w-3" />
-												</Button>
-											</div>
-										{/each}
-
-										{#if (group.directNodes || group.nodes).length === 0 && (group.subcategories || []).length === 0}
-											<div class="px-2 py-1 text-[11px] text-muted-foreground/60 italic">
-												(Kosong)
-											</div>
-										{/if}
-									</div>
-								{/if}
-							</div>
+					<nav class="space-y-0.5 max-h-[calc(100vh-240px)] overflow-y-auto pr-1">
+						{#if explorerCreator.open && explorerCreator.isRootFolder}
+							{@render explorerCreatorRow()}
+						{/if}
+						{#each filteredTree as group (`${group.section}::${group.title}`)}
+							{@render explorerFolder(group, filteredTree, 0)}
 						{/each}
 					</nav>
 				</div>
@@ -2210,12 +2443,12 @@
 					<span>{currentDoc?.section || data.article.section || 'SAP'}</span>
 					<span>/</span>
 					<span class="truncate">{currentDoc?.category || data.article.category}</span>
-					{#if currentDoc?.subcategory || data.article?.subcategory}
+					{#each normSubPath(currentDoc?.subcategory || data.article?.subcategory).split('/').filter(Boolean) as crumb, i (i)}
 						<span>/</span>
-						<span class="truncate text-foreground font-medium">
-							{currentDoc?.subcategory || data.article?.subcategory}
+						<span class="truncate {i === normSubPath(currentDoc?.subcategory || data.article?.subcategory).split('/').filter(Boolean).length - 1 ? 'text-foreground font-medium' : ''}">
+							{crumb}
 						</span>
-					{/if}
+					{/each}
 					{#if inlineStatusMsg}
 						<Badge variant="secondary" class="ml-2 text-[10px]">{inlineStatusMsg}</Badge>
 					{/if}
