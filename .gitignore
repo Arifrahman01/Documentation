@@ -55,9 +55,30 @@ desktop.ini
 # Coverage directory used by testing tools
 coverage/
 .nyc_output/
-static/uploads/*
 
-# Runtime / dynamic sync data
-data*
-src/lib/data/*
+# User Uploads (Gambar / Lampiran Catatan)
+static/uploads/*
+!static/uploads/.gitkeep
+static/img/uploads/*
+!static/img/uploads/.gitkeep
+
+# User Personal Notes (My Docs / Catatan Pribadi)
+data/user_docs/
+src/lib/data/user_docs/
+data/users/
+src/lib/data/users/
+*.user_docs.json
+
+# External Documents & Synchronization Results (Hasil Sinkronisasi Dokumen Eksternal)
+data/external-documents.json
+src/lib/data/external-documents.json
+data/sync-manifest.json
+src/lib/data/sync-manifest.json
+data/sync-status.json
+src/lib/data/sync-status.json
+data/sync*.json
+src/lib/data/sync*.json
+data/*.tmp
+data/*.temp
+
 
