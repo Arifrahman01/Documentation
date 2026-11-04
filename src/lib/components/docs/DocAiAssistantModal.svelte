@@ -46,6 +46,8 @@
 	let messages = $state<DocMessage[]>([]);
 	let inputQuery = $state('');
 	let isLoading = $state(false);
+	let isStreamingText = $state(false);
+	let activeAbortController: AbortController | null = null;
 	let copiedIdx = $state<number | null>(null);
 	let scrollContainer = $state<HTMLDivElement | null>(null);
 	let inputEl = $state<HTMLTextAreaElement | null>(null);
@@ -178,6 +180,15 @@
 		}
 	}
 
+	function stopDocAiStream() {
+		if (activeAbortController) {
+			activeAbortController.abort();
+			activeAbortController = null;
+		}
+		isLoading = false;
+		isStreamingText = false;
+	}
+
 	async function askDocumentAi(customPrompt?: string, actionLabel?: string) {
 		const query = (customPrompt || inputQuery).trim();
 		if (!query || isLoading) return;
@@ -203,6 +214,9 @@
 		const priorHistory = messages.slice(-8).map((m) => ({ role: m.role, content: m.content }));
 		messages = [...messages, { role: 'user', content: query, label: actionLabel }];
 		isLoading = true;
+		isStreamingText = false;
+		const controller = new AbortController();
+		activeAbortController = controller;
 
 		const fullDocText = [
 			doc?.content || doc?.description || '',
@@ -216,10 +230,15 @@
 		try {
 			const res = await fetch('/api/ai/chat', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'text/event-stream, application/json'
+				},
+				signal: controller.signal,
 				body: JSON.stringify({
 					query,
 					strictDocScope: true,
+					stream: true,
 					docMeta: {
 						title: doc?.title || 'Dokumen Aktif',
 						section: doc?.section || 'SAP',
@@ -232,41 +251,98 @@
 				})
 			});
 
-			const data = await res.json().catch(() => ({}));
+			const contentType = (res.headers.get('content-type') || '').toLowerCase();
 
-			if (res.status === 401 || data?.requiresLogin) {
-				auth.refresh();
+			if (!res.ok || !contentType.includes('text/event-stream') || !res.body) {
+				const data = await res.json().catch(() => ({}));
+
+				if (res.status === 401 || data?.requiresLogin) {
+					auth.refresh();
+					messages = [
+						...messages,
+						{
+							role: 'assistant',
+							content:
+								data?.reply ||
+								'🔒 **Akses AI Memerlukan Sesi Login**\n\nSesi login tidak ditemukan. Silakan **login terlebih dahulu di aplikasi Helpdesk** untuk menggunakan fitur AI Assistant Dokumen.',
+							label: 'Sesi Login Diperlukan'
+						}
+					];
+					return;
+				}
+
+				if (!res.ok) {
+					throw new Error(data?.error || `HTTP ${res.status}: ${res.statusText}`);
+				}
+
+				const reply =
+					data.reply || data.message || 'Maaf, tidak dapat menghasilkan analisis untuk dokumen ini.';
+
+				messages = [...messages, { role: 'assistant', content: reply, label: actionLabel }];
+				return;
+			}
+
+			// SSE Streaming Mode
+			messages = [...messages, { role: 'assistant', content: '', label: actionLabel }];
+			const assistantIdx = messages.length - 1;
+			const reader = res.body.getReader();
+			const decoder = new TextDecoder();
+			let sseBuffer = '';
+
+			while (true) {
+				const { value, done } = await reader.read();
+				if (done) break;
+				sseBuffer += decoder.decode(value, { stream: true });
+				const lines = sseBuffer.split(/\r?\n/);
+				sseBuffer = lines.pop() || '';
+
+				for (const line of lines) {
+					const trimmed = line.trim();
+					if (!trimmed.startsWith('data:')) continue;
+					const rawPayload = trimmed.slice(5).trim();
+					if (!rawPayload || rawPayload === '[DONE]') continue;
+
+					let evt: any;
+					try {
+						evt = JSON.parse(rawPayload);
+					} catch {
+						continue;
+					}
+
+					if (evt.type === 'delta' && evt.content) {
+						isStreamingText = true;
+						messages[assistantIdx].content += evt.content;
+						scrollContainer?.scrollTo({ top: scrollContainer.scrollHeight });
+					} else if (evt.type === 'done' && evt.reply && !messages[assistantIdx].content) {
+						messages[assistantIdx].content = evt.reply;
+					} else if (evt.type === 'error') {
+						throw new Error(evt.error || 'Gagal memproses analisis dokumen');
+					}
+				}
+			}
+
+			if (!messages[assistantIdx].content.trim()) {
+				messages[assistantIdx].content = 'Maaf, tidak dapat menghasilkan analisis untuk dokumen ini.';
+			}
+		} catch (err: any) {
+			if (err?.name === 'AbortError') return;
+			const errMsg = `Gagal menghubungi AI Assistant Dokumen: ${err.message || 'Server tidak merespons'}.`;
+			const lastMsg = messages[messages.length - 1];
+			if (lastMsg && lastMsg.role === 'assistant' && !lastMsg.content.trim()) {
+				lastMsg.content = errMsg;
+			} else {
 				messages = [
 					...messages,
 					{
 						role: 'assistant',
-						content:
-							data?.reply ||
-							'🔒 **Akses AI Memerlukan Sesi Login**\n\nSesi login tidak ditemukan. Silakan **login terlebih dahulu di aplikasi Helpdesk** untuk menggunakan fitur AI Assistant Dokumen.',
-						label: 'Sesi Login Diperlukan'
+						content: errMsg
 					}
 				];
-				return;
 			}
-
-			if (!res.ok) {
-				throw new Error(data?.error || `HTTP ${res.status}: ${res.statusText}`);
-			}
-
-			const reply =
-				data.reply || data.message || 'Maaf, tidak dapat menghasilkan analisis untuk dokumen ini.';
-
-			messages = [...messages, { role: 'assistant', content: reply, label: actionLabel }];
-		} catch (err: any) {
-			messages = [
-				...messages,
-				{
-					role: 'assistant',
-					content: `Gagal menghubungi AI Assistant Dokumen: ${err.message || 'Server tidak merespons'}.`
-				}
-			];
 		} finally {
+			activeAbortController = null;
 			isLoading = false;
+			isStreamingText = false;
 			setTimeout(() => inputEl?.focus(), 20);
 		}
 	}
@@ -492,10 +568,22 @@
 					{/if}
 				{/each}
 
-				{#if isLoading}
-					<div class="flex items-center gap-3 rounded-xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
-						<Loader2 class="h-4 w-4 animate-spin shrink-0" />
-						<span>Menganalisis isi dokumen <strong>"{doc?.title}"</strong>...</span>
+				{#if isLoading && !isStreamingText}
+					<div class="flex items-center justify-between gap-3 rounded-xl border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
+						<div class="flex items-center gap-3">
+							<Loader2 class="h-4 w-4 animate-spin shrink-0" />
+							<span>Menganalisis isi dokumen <strong>"{doc?.title}"</strong>...</span>
+						</div>
+						<Button variant="outline" size="sm" onclick={stopDocAiStream} class="h-7 px-2.5 text-[11px]">
+							Hentikan
+						</Button>
+					</div>
+				{:else if isLoading && isStreamingText}
+					<div class="flex justify-end">
+						<Button variant="outline" size="sm" onclick={stopDocAiStream} class="h-7 gap-1.5 px-2.5 text-[11px]">
+							<Loader2 class="h-3 w-3 animate-spin" />
+							<span>Hentikan Streaming</span>
+						</Button>
 					</div>
 				{/if}
 			</div>

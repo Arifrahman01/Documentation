@@ -156,11 +156,11 @@ if (!fs.existsSync(targetDir)) {
   process.exit(1);
 }
 
-// Size limits per format to prevent RAM spikes
-const MAX_PDF_DOCX_SIZE = 20 * 1024 * 1024; // 20 MB
-const MAX_EXCEL_PPTX_SIZE = 12 * 1024 * 1024; // 12 MB
-const PER_FILE_TIMEOUT_MS = 12000; // 12 seconds max per file
-const MAX_CONTENT_CHARS = 20000; // Optimal cap (~8-10 dense pages) for 6,000+ file scale
+// Size limits per format to prevent RAM spikes while supporting 30+ page enterprise documents
+const MAX_PDF_DOCX_SIZE = 30 * 1024 * 1024; // 30 MB
+const MAX_EXCEL_PPTX_SIZE = 18 * 1024 * 1024; // 18 MB
+const PER_FILE_TIMEOUT_MS = 25000; // 25 seconds max per file (supports heavy 30-50 page PDFs)
+const MAX_CONTENT_CHARS = 85000; // Optimal cap (~35-40 dense pages) for 6,000+ multi-page file scale
 
 function getMtimeSec(dateOrIso) {
   const ms = new Date(dateOrIso).getTime();
@@ -308,7 +308,7 @@ async function extractDocxText(filePath) {
 async function extractExcelText(filePath) {
   await sleep(10);
   const wb = XLSX.readFile(filePath, {
-    sheetRows: 100,
+    sheetRows: 250,
     dense: true,
     cellFormula: false,
     cellHTML: false,
@@ -318,14 +318,14 @@ async function extractExcelText(filePath) {
     bookProps: false
   });
   const parts = [];
-  const maxSheets = Math.min(wb.SheetNames.length, 10);
+  const maxSheets = Math.min(wb.SheetNames.length, 15);
   for (let s = 0; s < maxSheets; s++) {
     const sheetName = wb.SheetNames[s];
     const sheet = wb.Sheets[sheetName];
     if (!sheet) continue;
     const csv = XLSX.utils.sheet_to_csv(sheet, { blankrows: false });
     if (csv && csv.trim()) {
-      parts.push(`[Sheet: ${sheetName}]\n${csv.trim().substring(0, 5000)}`);
+      parts.push(`[Sheet: ${sheetName}]\n${csv.trim().substring(0, 12000)}`);
     }
   }
   return parts.join('\n\n');
@@ -345,7 +345,7 @@ async function extractPptxText(filePath) {
   });
 
   const parts = [];
-  const maxSlides = Math.min(slideFiles.length, 25);
+  const maxSlides = Math.min(slideFiles.length, 60);
   for (let i = 0; i < maxSlides; i++) {
     const sf = slideFiles[i];
     const xml = await zip.files[sf].async('string');
@@ -876,7 +876,9 @@ async function run() {
         triggerGc();
         await sleep(450);
       }
-      if (stats.newOrUpdated % checkpointInterval === 0) {
+      const effectiveCheckpoint =
+        documents.length > 2000 ? Math.max(checkpointInterval, 150) : checkpointInterval;
+      if (stats.newOrUpdated % effectiveCheckpoint === 0) {
         saveCheckpoint(documents, stats, false);
       }
 

@@ -56,6 +56,8 @@
 
 	let inputQuery = $state('');
 	let isLoading = $state(false);
+	let isStreamingText = $state(false);
+	let activeAbortController: AbortController | null = null;
 	let messagesContainer = $state<HTMLDivElement | null>(null);
 	let inputEl = $state<HTMLTextAreaElement | null>(null);
 	let copiedIndex = $state<number | null>(null);
@@ -90,6 +92,15 @@
 		inputEl.style.height = `${nextHeight}px`;
 	}
 
+	function stopStreaming() {
+		if (activeAbortController) {
+			activeAbortController.abort();
+			activeAbortController = null;
+		}
+		isLoading = false;
+		isStreamingText = false;
+	}
+
 	async function sendMessage(textToSend?: string) {
 		const query = (textToSend || inputQuery).trim();
 		if (!query || isLoading) return;
@@ -114,53 +125,124 @@
 		const priorHistory = messages.slice(-8).map((m) => ({ role: m.role, content: m.content }));
 		messages = [...messages, { role: 'user', content: query }];
 		isLoading = true;
+		isStreamingText = false;
+		const controller = new AbortController();
+		activeAbortController = controller;
 
 		try {
 			const res = await fetch('/api/ai/chat', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: {
+					'Content-Type': 'application/json',
+					Accept: 'text/event-stream, application/json'
+				},
+				signal: controller.signal,
 				body: JSON.stringify({
 					query: query,
 					documentContext: ui.currentContext.snippet || '',
 					currentRoute: ui.currentContext.title || '',
-					history: priorHistory
+					history: priorHistory,
+					stream: true
 				})
 			});
 
-			const data = await res.json().catch(() => ({}));
+			const contentType = (res.headers.get('content-type') || '').toLowerCase();
 
-			if (res.status === 401 || data?.requiresLogin) {
-				auth.refresh();
+			if (!res.ok || !contentType.includes('text/event-stream') || !res.body) {
+				const data = await res.json().catch(() => ({}));
+
+				if (res.status === 401 || data?.requiresLogin) {
+					auth.refresh();
+					messages = [
+						...messages,
+						{
+							role: 'assistant',
+							content:
+								data?.reply ||
+								'🔒 **Akses AI Memerlukan Sesi Login**\n\nSesi login tidak ditemukan. Silakan **login terlebih dahulu di aplikasi Helpdesk** untuk menggunakan fitur AI Copilot.'
+						}
+					];
+					return;
+				}
+
+				if (!res.ok) {
+					throw new Error(data?.error || `HTTP ${res.status}: ${res.statusText}`);
+				}
+
+				const reply =
+					data.reply || data.response || data.message || 'Maaf, tidak ada jawaban dari server AI.';
+				const sources: SourceItem[] = Array.isArray(data.sources) ? data.sources : [];
+
+				messages = [...messages, { role: 'assistant', content: reply, sources }];
+				return;
+			}
+
+			// SSE Streaming Mode: tampilkan token secara bertahap begitu tiba
+			messages = [...messages, { role: 'assistant', content: '', sources: [] }];
+			const assistantIdx = messages.length - 1;
+			const reader = res.body.getReader();
+			const decoder = new TextDecoder();
+			let sseBuffer = '';
+
+			while (true) {
+				const { value, done } = await reader.read();
+				if (done) break;
+				sseBuffer += decoder.decode(value, { stream: true });
+				const lines = sseBuffer.split(/\r?\n/);
+				sseBuffer = lines.pop() || '';
+
+				for (const line of lines) {
+					const trimmed = line.trim();
+					if (!trimmed.startsWith('data:')) continue;
+					const rawPayload = trimmed.slice(5).trim();
+					if (!rawPayload || rawPayload === '[DONE]') continue;
+
+					let evt: any;
+					try {
+						evt = JSON.parse(rawPayload);
+					} catch {
+						continue;
+					}
+
+					if (evt.type === 'delta' && evt.content) {
+						isStreamingText = true;
+						messages[assistantIdx].content += evt.content;
+						messagesContainer?.scrollTo({ top: messagesContainer.scrollHeight });
+					} else if (evt.type === 'done') {
+						if (evt.reply && !messages[assistantIdx].content) {
+							messages[assistantIdx].content = evt.reply;
+						}
+						if (Array.isArray(evt.sources)) {
+							messages[assistantIdx].sources = evt.sources;
+						}
+					} else if (evt.type === 'error') {
+						throw new Error(evt.error || 'Gagal memproses aliran respons AI');
+					}
+				}
+			}
+
+			if (!messages[assistantIdx].content.trim()) {
+				messages[assistantIdx].content = 'Maaf, tidak ada jawaban dari server AI.';
+			}
+		} catch (err: any) {
+			if (err?.name === 'AbortError') return;
+			const errMsg = `Terjadi kendala saat menghubungi AI Copilot: ${err.message || 'Server offline'}. Pastikan endpoint AI lokal aktif.`;
+			const lastMsg = messages[messages.length - 1];
+			if (lastMsg && lastMsg.role === 'assistant' && !lastMsg.content.trim()) {
+				lastMsg.content = errMsg;
+			} else {
 				messages = [
 					...messages,
 					{
 						role: 'assistant',
-						content:
-							data?.reply ||
-							'🔒 **Akses AI Memerlukan Sesi Login**\n\nSesi login tidak ditemukan. Silakan **login terlebih dahulu di aplikasi Helpdesk** untuk menggunakan fitur AI Copilot.'
+						content: errMsg
 					}
 				];
-				return;
 			}
-
-			if (!res.ok) {
-				throw new Error(data?.error || `HTTP ${res.status}: ${res.statusText}`);
-			}
-
-			const reply = data.reply || data.response || data.message || 'Maaf, tidak ada jawaban dari server AI.';
-			const sources: SourceItem[] = Array.isArray(data.sources) ? data.sources : [];
-
-			messages = [...messages, { role: 'assistant', content: reply, sources }];
-		} catch (err: any) {
-			messages = [
-				...messages,
-				{
-					role: 'assistant',
-					content: `Terjadi kendala saat menghubungi AI Copilot: ${err.message || 'Server offline'}. Pastikan endpoint AI lokal aktif.`
-				}
-			];
 		} finally {
+			activeAbortController = null;
 			isLoading = false;
+			isStreamingText = false;
 			setTimeout(() => inputEl?.focus(), 20);
 		}
 	}
@@ -473,15 +555,37 @@
 					</div>
 				{/if}
 
-				{#if isLoading}
-					<div class="flex items-center gap-3">
-						<div class="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-foreground">
-							<Bot class="h-4 w-4" />
+				{#if isLoading && !isStreamingText}
+					<div class="flex items-center justify-between gap-3">
+						<div class="flex items-center gap-3">
+							<div class="flex h-7 w-7 items-center justify-center rounded-full border border-border bg-muted text-foreground">
+								<Bot class="h-4 w-4" />
+							</div>
+							<div class="flex items-center gap-2 rounded-xl bg-muted/60 px-4 py-2.5 text-xs text-muted-foreground border border-border">
+								<Loader2 class="h-3.5 w-3.5 animate-spin" />
+								<span>Mencari di dokumen, note & database Helpdesk...</span>
+							</div>
 						</div>
-						<div class="flex items-center gap-2 rounded-xl bg-muted/60 px-4 py-2.5 text-xs text-muted-foreground border border-border">
-							<Loader2 class="h-3.5 w-3.5 animate-spin" />
-							<span>Mencari di dokumen, note & database Helpdesk...</span>
-						</div>
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={stopStreaming}
+							class="h-7 px-2.5 text-[11px]"
+						>
+							Hentikan
+						</Button>
+					</div>
+				{:else if isLoading && isStreamingText}
+					<div class="flex justify-end">
+						<Button
+							variant="outline"
+							size="sm"
+							onclick={stopStreaming}
+							class="h-7 gap-1.5 px-2.5 text-[11px]"
+						>
+							<Loader2 class="h-3 w-3 animate-spin" />
+							<span>Hentikan Streaming</span>
+						</Button>
 					</div>
 				{/if}
 			</div>

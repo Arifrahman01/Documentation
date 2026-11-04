@@ -1,0 +1,1310 @@
+{
+  "arif-rahman/dokumentasi-modul/aa": {
+    "summary": "Panduan Penggunaan SAP RESTful Application Programming Model (RAP) — Sebelum memulai pengembangan menggunakan RAP, pastikan dependensi berikut telah dikonfigurasi: — customer_id as CustomerID, — | Buffer Management | Diatur oleh RAP Runtime. | Dikelola secara manual oleh pengembang. | — Cakupan pembahasan: Panduan Penggunaan SAP RESTful Application Programming Model (RAP), 1. Prasyarat Lingkungan Pengembangan, 2. Alur Kerja Pengembangan (End-to-End Workflo",
+    "contentHash": "4fea99e1a12e3c6e",
+    "updatedAt": "2026-11-04T01:14:59.821Z",
+    "source": "structured"
+  },
+  "arif-rahman/catatan-harian/catatan-modul-helpdesk-sso": {
+    "summary": "Catatan Modul Helpdesk & SSO — Cakupan pembahasan: Catatan Integrasi Helpdesk",
+    "contentHash": "8ee47e57343aafcf",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "arif-rahman/catatan-harian/selamat-datang": {
+    "summary": "Ruang kerja dan dokumentasi pribadi untuk Arif Rahman — 1. Kategori & Folder Mandiri — Tempelkan screenshot langsung dari clipboard menggunakan shortcut keyboard Ctrl+V. — *Catatan ini otomatis disimpan secara aman di storage pribadi Anda.* — Cakupan pembahasan: Ruang Kerja & Catatan Pribadi: Arif Rahman, 🚀 Fitur yang Tersedia:, 📝 Contoh Checklist Tugas Harian:",
+    "contentHash": "a8b00119b43f485d",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sap/abap-integration": {
+    "summary": "Panduan integrasi backend SAP menggunakan Business Application Programming Interfaces (BAPI) dan Remote Function Call (RFC) untuk pertukaran data. — RFC (Remote Function Call): Protokol komunikasi biner standar SAP untuk menjalankan function module dari sistem lain (sistem SAP lain atau aplikasi no — *\" VALUE(iv_matnr) TYPE matnr — > Gunakan selalu WAIT = 'X' saat menjalankan BAPI_TRANSACTION_COMMIT agar thread eksternal menunggu proses update task selesai",
+    "contentHash": "41b5081efcdb4aa1",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sap/odata-services": {
+    "summary": "Pengembangan dan publikasi RESTful OData Services (V2 & V4) berbasis Core Data Services (CDS) Views dan SAP Gateway Service Builder. — SAP NetWeaver Gateway berfungsi sebagai perantara (*middleware/reverse proxy*) yang menerjemahkan model data internal SAP menjadi representasi format  — @AbapCatalog.sqlViewName: 'ZVI_CUST_ORD' — GET /sap/opu/odata/sap/ZSALES_SRV/ZC_SalesOrderOverview?$filter=CustomerNumber eq '100021' and TotalNetAmount gt 5000000&$top=20&",
+    "contentHash": "6cf8feaf452230ff",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sap/overview": {
+    "summary": "Panduan arsitektur sistem SAP ERP dan S/4HANA enterprise: fondasi in-memory database, modul inti bisnis, struktur tabel, dan landscape sistem. — SAP S/4HANA memanfaatkan basis data in-memory SAP HANA dengan model penyimpanan data berbasis kolom (*column-store*) dan kompresi tinggi. Hal ini meni — | CO | Controlling | Akuntansi manajemen internal, pusat biaya (*Cost Center*), kalkulasi produk, dan analisis profitabilitas. | — 3. Production (PRD): Lingkungan",
+    "contentHash": "1285cc61e93122b5",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/overview": {
+    "summary": "SAP Analytics Cloud (SAC) Enterprise Overview SAP Analytics Cloud (SAC) adalah platform SaaS ( Software as a Service ) terpadu yang menggabungkan Busines — | 1. Business Intelligence | 2. Enterprise Planning | — Zero Footprint UI: Laporan dan dashboard diakses langsung melalui browser modern tanpa perlu instalasi aplikasi desktop klien. — SAC berperan sebagai *Single Source of Truth* untuk tingkatan eksekutif (C-Level, Direksi, dan Manager Operasional), me",
+    "contentHash": "0d3752d13dc31eb8",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/finance-ap-ar-highlight": {
+    "summary": "Dokumentasi Story Finance Sheet 3: Monitoring kewajiban utang dagang (Accounts Payable) dan saldo piutang pelanggan (Accounts Receivable) berdasarkan klasifikasi mitra, afiliasi, d — > Tautan Story SAC Production: — Kode & Nama Pelanggan (*Customer Name*) — untuk memunculkan tampilan Total, Current, Overdue <= 30 Days dll digunakan AMDP. Source code dapat di cek melalui ZFI_CL_AR_001",
+    "contentHash": "907ab514d6458266",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/finance-cash-position": {
+    "summary": "Dokumentasi Story Finance Sheet 4: Posisi likuiditas kas harian & bulanan (Cash/Bank Position), running sum ending balance kas, arus kas masuk/keluar (Cash In & Out), distribusi ka — > Tautan Story SAC Production: — 2. Closing Rate: Kurs penutupan Bank Indonesia / Jisdor untuk revaluasi saldo valuta asing akhir bulan. — and a.ExchangeRateEffectiveDate <= $parameters.P_GDATU",
+    "contentHash": "9c5ed36d0dc7c0d9",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/finance-coal-price-benchmark": {
+    "summary": "Dokumentasi Story Finance Sheet 5: Komparasi harga realisasi penjualan batubara (Actual Price) terhadap benchmark pasar Harga Batubara Acuan (HBA) dan Indonesia Coal Index (ICI). — > Tautan Story SAC Production: — Sumbu X: Calendar Date (Field Data Type: Date) — | T-Code Rekonsiliasi SAP | Import Data | — Cakupan pembahasan: Coal Price & Actual Benchmark, 1. Ringkasan & Ruang Lingkup Sheet, 2. Arsitektur Data & Model SAC, 3. Spesifikasi Rinci Komponen (3 L",
+    "contentHash": "48abd18d7832f1c9",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/finance-financial-performance": {
+    "summary": "Dokumentasi Story Finance Sheet 1: Financial Performance Summary (Revenue, Gross Profit, Operating Profit, Net Profit, EBITDA), Monthly Performance chart, dan Income Statement vari — > Tautan Story SAC Production: — | Nomor & Nama Widget | [W4] Financial Performance Summary (Gross Profit - Previous) - Numeric Point | — when PostingDate between dats_add_months($parameters.P_FromPostingDate, -12, 'NULL') and dats_add_months($parameters.P_ToPostingDate, -12, ",
+    "contentHash": "99603becc7842985",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/finance-position-covenant": {
+    "summary": "Dokumentasi Story Finance Sheet 2: Analisis neraca (Balance Sheet - Asset, Liabilities & Equity), Rasio Perjanjian Kredit (Covenant Ratios: DER, DSCR, Current Ratio, Debt to EBITDA — > Tautan Story SAC Production: — Formula: $\\text{Amount} = |\\text{Amount in Company Code Currency}|$ — Amount = ABS(Amount in Company Code Currency)",
+    "contentHash": "ca4aa718492a13a6",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/marketing-inventory-stock": {
+    "summary": "Dokumentasi Story Marketing Sheet 2: Monitoring stok fisik batubara di stockpile DSP (Raw Coal vs Crushed Coal), kapasitas lokasi stockpile, serta posisi persediaan batubara dalam  — > Tautan Story SAC Production: — Formula Calculated Measure: — | Dimensi & Filter | Plant Name (Rows)<br/><br/>Filters<br/>Measures = % in Loading Tongkang, % Delivered Vessel, % Remaining Qty<br/><br/>Plant = JG0",
+    "contentHash": "e9d33e3475c9b548",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/marketing-price-quantity-benchmark": {
+    "summary": "Dokumentasi Story Marketing Sheet 1: Analisis komparasi volume penjualan batubara (Sales Quantity MT), nilai faktur (Invoice Value USD), harga kontrak rata-rata (Average Contract P — > Tautan Story SAC Production: — target_currency => cast('USD' as abap.cuky), — **Note Port of discharge di handle melalui program ZIF_SD001_SO_HEADERTEXT untuk mengkategorikan country nya ke table ZTA_SD_001",
+    "contentHash": "bfd47ac74f145f0a",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/op-mining-cost-asset-utilization": {
+    "summary": "Spesifikasi Sheet 4 Operation Mining: pengendalian biaya operasional penanganan batubara, indeks bahan bakar, dan utilisasi aset pelabuhan DSP. — Halaman ini berfungsi sebagai alat kendali manajemen untuk memonitor rasio efisiensi biaya operasional pelabuhan dan produktivitas aset infrastruktur: — AVG_SERVICE_TIME = SUMSERVICETIME / SUMRECORD — SUMRECORD = Sum(Record), Record = Formula on CDS cast(1 as abap.dec(17,2)",
+    "contentHash": "bc6c925ab7c03280",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/op-mining-equipment-status": {
+    "summary": "Spesifikasi Sheet 2 Operation Mining: metrik ketersediaan armada tambang, Physical Availability (PA), Mechanical Availability (MA), dan downtime breakdown. — Halaman ini memantau status operasional harian seluruh populasi alat berat tambang (*Heavy Mobile Equipment / HME*): — | Model & CDS View | JG_M_S4HLV_ZCOMXX002 (models) ZCPPXX002 (CDS) | — Calendar Month = I_CALENDARDATE - CalendarMonth",
+    "contentHash": "8b47a01436cc31c9",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/op-mining-operational-overview": {
+    "summary": "Spesifikasi detail Sheet 1 Operation Mining: metrik produksi MTD Overburden, Coal Mining, konsumsi solar, Fuel Ratio, dan Strip Ratio PT Jhonlin Baratama. — Halaman Operational Overview menyajikan pemantauan terpusat harian dan *Month-to-Date (MTD)* atas indikator volume penambangan utama: — MONTHNUMBER = AFKO - GSTRP = substring( afko.gstrp, 5, 2 ) — | Dimensi & Filter | Description |",
+    "contentHash": "1f304c8067b973e2",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/op-mining-production-logistics": {
+    "summary": "Spesifikasi Sheet 3 Operation Mining: kinerja logistik pengangkutan batubara (Hauling), pergerakan material, stok stockpile, dan pemuatan tongkang (Barging) PT DSP. — Halaman ini memantau rantai pasok transportasi dan penanganan batubara hilir dari pit tambang menuju pelabuhan muat: — Prev Load Duration = Formula on CDS, categorized Castoff_date between dats_add_months - start date (-12 month) and dats_add_months - end date (-12 mon — | Dimensi & Filter | ",
+    "contentHash": "1aa624ae1b199a32",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/operation-mining-overview": {
+    "summary": "Arsitektur data flow, live CDS view, model analitik, dan spesifikasi fungsional Story SAC Operation Mining PT Jhonlin Baratama (JB) dan PT Dua Samudera Perkasa (DSP). — > Karakteristik Koneksi: Live Data Connection dari SAP S/4HANA Enterprise Core menuju SAP Analytics Cloud (SAC) tenant Jhonlin Group (6c653), memastik — └── Material & Logistics Movement (MSEG, MATDOC) ──> CDS Query View (ZVCOMXX001) — P_Pit / P_Location: Lokasi tambang (Pit Sungup, Pit Sun",
+    "contentHash": "92c83e6c2ef91fb4",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/op-marine-activity-available-unit": {
+    "summary": "Spesifikasi Sheet 1 Operation Marine: status kesiapan armada kapal (Tugboat, Barge, SPOB, Tanker), status operasi, standby, perbaikan, dan timesheet pelayaran. — Sheet ini menyajikan visibilitas waktu-nyata (*real-time fleet readiness*) atas status seluruh unit kapal: — | Model & CDS View | JG_M_S4HLV_ ZCPPON001 (model) ZVCPPON001 (query) ZCPPON001 (CDS) | — WORKDURATION = work_duration = ZTA_CS_102 - woek_duration",
+    "contentHash": "6cf58ceb87df26a0",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/op-marine-cost-sales-date": {
+    "summary": "Spesifikasi Sheet 3 Operation Marine: pemantauan harian transaksi pengiriman kargo laut, estimasi realisasi harian pendapatan, dan konsumsi harian bunker kapal. — Halaman ini memungkinkan tim operasi dan manajemen memantau operasional armada kapal berdasarkan tanggal posting transaksi spesifik: — | Nomor & Nama Widget | [W3] Covenant Ratio - Table | — Sales (IDR) = abs(AmountInCompanyCodeCurrency) = I_GLAccountLineItem - AmountInCompanyCodeCurrency",
+    "contentHash": "c862592554927a48",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/op-marine-cost-sales-period": {
+    "summary": "Spesifikasi Sheet 2 Operation Marine: analisa kinerja keuangan komparatif bulanan, pendapatan freight, biaya bahan bakar bunker, biaya kepelabuhanan, dan margin laba kotor. — Sheet ini menyajikan evaluasi laba rugi bulanan atas seluruh rute pelayaran: — | Nomor & Nama Widget | [W2] Fuel/Tip Ratio - Numeric | — Sales (IDR) = abs(AmountInCompanyCodeCurrency) = I_GLAccountLineItem - AmountInCompanyCodeCurrency",
+    "contentHash": "c7633e1b67574bcc",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/op-marine-stevedoring-activity": {
+    "summary": "Spesifikasi Sheet 4 Operation Marine: kegiatan bongkar muat batubara PT JML, kesiapan Floating Crane (FC), throughput pemuatan kapal ekspor/domestik, dan shipper cargo. — Sheet ini khusus memantau operasional unit Floating Crane (FC) yang bertugas melakukan transfer pemindahan batubara dari tongkang ke kapal besar (*Mot — | Model & CDS View | JG_M_S4HLV_ ZCPPON006 (model) ZVCPPON006 (query) ZCPPON006 (CDS) | — Current Year Sales = Formula on CDS",
+    "contentHash": "4729cc634155ef79",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/operation-marine-overview": {
+    "summary": "Arsitektur data flow, live CDS view, model analitik, dan spesifikasi fungsional Story SAC Operation Marine armada kapal PT Jhonlin Marine Trans (JMT) dan PT Jhonlin Marine Lines (J — > Karakteristik Koneksi: Live Connection SAP S/4HANA CDS Views menuju SAP Analytics Cloud (SAC) tenant Jhonlin Group (6c653), menyajikan metrik posisi — ├── Sales Order & Freight Revenue (VBAK, VBAP) ──> CDS: ZCPPON006 / ZBSDXX001 — | 4 | [Stevedoring Activity (JML)](file:///d",
+    "contentHash": "fcbde82a23d3ab5c",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/supply-chain-closing-value-dead-stock": {
+    "summary": "Dokumentasi SAC Supply Chain Sheet 3: Valuasi akhir persediaan material gudang per unit usaha dan plant, perbandingan harga satuan antar vendor, dan analisis Dead Stock persediaan  — Sheet Closing Value All Unit & Dead Stock Movement berfokus pada pengendalian nilai aset persediaan material di seluruh gudang (*Warehouse Storage Loc — | Model & CDS View | JG_M_S4HLV_ ZCMMXX003_2 (models) ZVCMMXX003_2 (Query) ZCMMXX003_2(CDS) | — | Dimensi & Filter | Materia",
+    "contentHash": "757acbf57fe942f6",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/supply-chain-procurement-cycle": {
+    "summary": "Dokumentasi SAC Supply Chain Sheet 1: Monitoring lead time siklus pengadaan (PR Release to PO Received), rasio PO Release vs Outstanding, dan perbandingan volume serta nilai PR ter — Sheet Procurement Cycle dirancang untuk memberikan visibilitas end-to-end terhadap efisiensi rantai pengadaan barang dan jasa di seluruh unit usaha Jh — | Model & CDS View | JG_M_S4HLV_ZCMMXX002 (models) ZVBMMXX002_CV (Query) ZVBMMXX002_C (CDS) | — CDS yang digunakan untuk men",
+    "contentHash": "45a6e47ee777c811",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/supply-chain-supplier-performance": {
+    "summary": "Dokumentasi SAC Supply Chain Sheet 2: Evaluasi kinerja pemasok, On-Time In-Full (OTIF) delivery, lead time pengiriman vendor, analisis Pareto transaksi, dan peringkat PO per vendor — Sheet Supplier Performance didedikasikan untuk mengukur kualitas layanan, kepatuhan jadwal pengiriman, dan konsentrasi pengeluaran (*spend analysis*)  — /* PO belum selesai (Outstanding / Partial) */ — Material Description = MAKT - MAKTX",
+    "contentHash": "a693a565dbdcfab0",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/pnl-segment-dsp": {
+    "summary": "Laporan laba rugi segmen pelabuhan dan terminal batubara PT Dua Samudera Perkasa (DSP): jasa stockpile, crushing, conveyor, dan jetty loading. — > Tautan Story SAC Production: — | T-Code Rekonsiliasi SAP | FAGLL03H | — Laba Usaha Setelah Pajak = Formula on CDS — Cakupan pembahasan: PnL Segment - Dua Samudera Perkasa (DSP), Ringkasan Modul & Tujuan Bisnis, Detail Struktur Per Halaman, Halaman 1: Port Revenue & Terminal Operating Margin, Halaman 2: Port Infr",
+    "contentHash": "4c9aab1c8d07622a",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/pnl-segment-jb": {
+    "summary": "Laporan laba rugi operasional penambangan batubara PT Jhonlin Baratama (JB): cost per ton, struktur biaya operasional tambang, dan gross margin. — > Tautan Story SAC Production: — | T-Code Rekonsiliasi SAP | FAGLL03H | — Net Cashflow (RP/MT) = if (Penjualan (MT) (A5) = 0, 0, Overhead (A60) / Penjualan (MT) (A5)) — Cakupan pembahasan: PnL Segment - Jhonlin Baratama (JB), Ringkasan Modul & Tujuan Bisnis, Detail Struktur Per Halaman, Halaman 1: Mining Profita",
+    "contentHash": "34b2ad6a96e58e0b",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/pnl-segment-jg": {
+    "summary": "Laporan laba rugi konsolidasi holding Jhonlin Group (JG): kontribusi pendapatan dan laba bersih antar sub-holding dan unit usaha. — > Tautan Story SAC Production: — | Dimensi & Filter | Columns<br/>Story Calculation<br/>Formula - Calculated Formula<br/>Profit Center = IF(Currency_IDR = 1, Measure_IDR, Measure_USD) — Net PPn Direct = Net PPn = Formula on CDS",
+    "contentHash": "32bf4522fca26d67",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/pnl-segment-jml": {
+    "summary": "Laporan laba rugi segmen pelayaran dan logistik laut PT Jhonlin Marine Lines (JML): pendapatan uang tambang (freight), biaya bunker, dan net margin pelayaran. — > Tautan Story SAC Production: — | Nomor & Nama Widget | [W2] Income Statement (Fuel, Maintenance, Premi) | — Penyusutan Biaya Tidak Langsung = Formula on CDS — Cakupan pembahasan: PnL Segment - Jhonlin Marine Lines (JML), Ringkasan Modul & Tujuan Bisnis, Detail Struktur Per Halaman, Halaman 1: Shi",
+    "contentHash": "824cde918727b4eb",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/pnl-trip-jmt": {
+    "summary": "Laporan laba rugi per pelayaran kapal (voyage PnL) PT Jhonlin Marine Trans: pendapatan sewa kargo, efisiensi konsumsi BBM solar per trip, dan port charges. — > Tautan Story SAC Production: — CY Measure Value = Formula on CDS — Cakupan pembahasan: PnL by Trip - Jhonlin Marine Trans (JMT), Ringkasan Modul & Tujuan Bisnis, Detail Struktur Per Halaman, Halaman 1: Voyage Margin & Net Profit per Trip, Halaman 2: Trip Bunker Fuel Variance Analysis, Halaman 3: Por",
+    "contentHash": "dc7fabd14527a7bd",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/pnl-trip-stm": {
+    "summary": "Laporan profitabilitas per nomor pelayaran (voyage PnL) armada PT Samudera Tiga Mandiri (STM): pendapatan angkut kargo, efisiensi rute, dan margin bersih. — > Tautan Story SAC Production: — Untuk seluruh source code yang digunakan untuk mapper bisa langsung di cek melalui ZBFIXX04_5. Sedangkan untuk pembentuk kategorinya bisa di cek melal — Laba Usaha Setelah Pajak = Formula on CDS",
+    "contentHash": "ac3c9f67277b51c1",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/pm-mining-fleet": {
+    "summary": "Dashboard pemeliharaan alat berat penambangan armada gabungan: ketersediaan fisik (PA), rasio perawatan preventif vs korektif, dan MTBF/MTTR. — > Tautan Story SAC Production: — sum( case a.act_cat when 'BREAKDOWN' then a.act_dur end) as BreakdownySum — Maintenance Order Count = Formula on CDS — Cakupan pembahasan: PM Mining - Plant Maintenance Armada Gabungan (JB, DSP & JML), Ringkasan Modul & Tujuan Bisnis, Detail Struktur Per Halaman, Halaman 1: Heavy Eq",
+    "contentHash": "d45d4a3a7a33e5a7",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/pm-mining-jml-page1": {
+    "summary": "Monitoring detail pemeliharaan alat berat khusus unit kerja PT Jhonlin Marine Lines: inventaris unit individual, status komponen kritis, dan backlog perbaikan. — > Tautan Story SAC Production: — MA_LATEST = Mencari nilai terakhir (Operation - LAST) dari MA_ (Measure) dan dihitung berdasarkan Calendar Month (Aggregation Dimensions) — MTTR_ = Mencari nilai rata-rata (Operation - AVERAGE excl.0, NULL) dari MTTR (measure) dan di jumlah berdasarkan Equipment da",
+    "contentHash": "826460c84dea32e8",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "sac/pm-marine-fleet": {
+    "summary": "Dashboard pemeliharaan armada kapal laut: jadwal docking berkala, survei sertifikasi BKI, running hours mesin induk/genset, dan suku cadang galangan. — > Tautan Story SAC Production: — (cast(dats_days_between(:p_start_date, :p_end_date) as abap.fltp) + 1.0) * 24.0 as W — and _Base.ausvn <= :p_end_date — Cakupan pembahasan: PM Marine - Fleet Docking & Machinery Maintenance (JMT, STM & JML), Ringkasan Modul & Tujuan Bisnis, Detail Struktur Per Halaman, Halam",
+    "contentHash": "a5953b2377638afb",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "web/api-reference": {
+    "summary": "Dokumentasi REST API portal, endpoint AI Copilot terverifikasi, semantic search RAG tanpa halusinasi, dan CRUD dokumen. — | /api/docs | GET | Mengambil seluruh daftar dokumen, kategori, dan struktur tree | Terbuka | — | /api/ai/doc-assist | POST | Bantuan AI pembuatan & penyuntingan artikel dokumen | Internal | — 4. Kerahasiaan Model: Nama model AI tidak pernah dipublikasikan di antarmuka maupun response API.",
+    "contentHash": "1c748ba65c5236dc",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "web/architecture": {
+    "summary": "Arsitektur portal web modern berbasis SvelteKit 5 runes, Tailwind CSS v4, Shadcn UI, dan single Node.js runtime terpadu. — Sistem mengeliminasi fragmentasi server dengan menggabungkan penyajian antarmuka frontend (SSR & SPA) serta endpoint REST API ke dalam satu proses tun — $derived(expression): Nilai terkomputasi otomatis yang hanya dihitung ulang bila dependensi berubah. — Lucide Icons: Ikon SVG ringkas dan konsisten di seluruh antarmuka portal.",
+    "contentHash": "21907ad029b69886",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "web/data-binding": {
+    "summary": "Konsep data binding satu arah dan dua arah, sinkronisasi state aplikasi, dan reactive stores. — | One-Way Binding | Nilai mengalir dari sumber data state ke elemen tampilan DOM. | Menampilkan teks judul dokumen, timestamp, atau avatar profil. | — | Two-Way Binding | Perubahan pada input kontrol langsung memperbarui variabel state di memori secara simultan. | bind:value pada form input, text edi — Untuk mengelola state lintas halaman (misalnya tema gelap/te",
+    "contentHash": "a1c01a9467af684f",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "web/security": {
+    "summary": "Standar keamanan aplikasi web: perlindungan XSS, mitigasi CSRF, Content Security Policy (CSP), dan validasi sanitasi input. — Auto-escaping Svelte: Seluruh ekspresi kurung kurawal {data} di Svelte di-escape secara otomatis menjadi entitas HTML aman. — Konfigurasi cookie dengan atribut SameSite=Strict dan Secure=true. — Referrer-Policy: strict-origin-when-cross-origin",
+    "contentHash": "0af43cde09cd82d8",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "web/unit-testing": {
+    "summary": "Strategi pengujian menyeluruh: Unit test dengan Vitest, pengujian komponen antarmuka, dan pengujian integrasi endpoint API. — 1. Unit Testing: Menguji fungsi-fungsi utilitas logika murni (seperti parser slug, kalkulasi waktu baca, dan algoritma scoring RAG). — 2. Component Testing: Menguji rendering komponen antarmuka secara terisolasi menggunakan Testing Library. — 3. API Integration Testing: Memverifikasi seluruh response kode HTTP dan integritas payload",
+    "contentHash": "d144091e8a24d991",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_0420c4938f7b": {
+    "summary": "Cakupan pembahasan: Slide 1, Slide 2, Slide 3, Slide 4, Slide 5, Slide 6",
+    "contentHash": "b7dddad7c13525a8",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_a574ef4c8e0d": {
+    "summary": "Cakupan pembahasan: Slide 1, Slide 2, Slide 3, Slide 4, Slide 5, Slide 6",
+    "contentHash": "b7dddad7c13525a8",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_a4b7e49e6917": {
+    "summary": "Cakupan pembahasan: Slide 1, Slide 2, Slide 3, Slide 4, Slide 5, Slide 6",
+    "contentHash": "b7dddad7c13525a8",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_4ad36e139675": {
+    "summary": "Cakupan pembahasan: Slide 1, Slide 2, Slide 3, Slide 4, Slide 5, Slide 6",
+    "contentHash": "b7dddad7c13525a8",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_d52af35d8154": {
+    "summary": "Cakupan pembahasan: Slide 1, Slide 2, Slide 3, Slide 4, Slide 5, Slide 6",
+    "contentHash": "b7dddad7c13525a8",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_7851640df1ed": {
+    "summary": "Cakupan pembahasan: Slide 1, Slide 2, Slide 3, Slide 4, Slide 5, Slide 6",
+    "contentHash": "b7dddad7c13525a8",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_91143ad3aacf": {
+    "summary": "PT JHONLIN MARINE TRANS,,, — NO,NAMA BANK,REKENING,MATA UANG — 5,BPD KALSEL,0100007006148,IDR — 8,BANK SYARIAH INDONESIA,4848484895,USD — Cakupan pembahasan: Sheet: HOUSE BANK, Sheet: BANK KEY",
+    "contentHash": "96765ac2f99d2902",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_929185d882c5": {
+    "summary": "Tax Code = 2 digit ,,, — A0,PPN - Keluaran 0%,V0,PPN - Masukan 0% — 29,PPh 29 Badan,,Pajak atas kurang bayar yang tercantum dalam SPT tahunan,22%, — House Bank,Account ID,Account Number,GL Account ,,,House Bank,Account ID,Account Number,GL Account ,,,House Bank,Account ID,Account Number,GL Account  — Cakupan pembahasan: Sheet: VAT, Sheet: WHT, Sheet: House Bank",
+    "contentHash": "cabd6ac77202e3c0",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_c77e0fe256af": {
+    "summary": "Tax Code = 2 digit ,,, — A0,PPN - Keluaran 0%,V0,PPN - Masukan 0% — House Bank,Account ID,Account Number,GL Account ,,,House Bank,Account ID,Account Number,GL Account ,,,House Bank,Account ID,Account Number,GL Account  — ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,KAS08,IDR08,TB LILY 106, — Cakupan pembahasan: Sheet: VAT, Sheet: WHT, Sheet: House Bank",
+    "contentHash": "2ade1321c82da403",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_b9c768d19d7f": {
+    "summary": ",, — A2,PPN - Keluaran 12% (thn 2025), — V3,PPN - Masukkan 12% (thn 2025), — WHT Type,Deskripsi WHT Type,WHT Code,Deskripsi WHT Code,GL Account,Tarif Pajak — Cakupan pembahasan: Sheet: PPN, Sheet: PPH, Sheet: Prepaid",
+    "contentHash": "e871562baaccd797",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_9e76dc7a8e5d": {
+    "summary": "JG00,JB00,DS00,JL00,JT00,ST00,Asset Class,Deskripsi Asset Class,Komersil,Fiscal,From Number,To Number,Account Determination,Acquisition,Accumulated Depreciation,Expense Depreciatio — ,,X,,X,,4010000,Tanah-PI,-,-,4010000000,4019999999,4010000,1204010001,, — ,,,X,X,,507004A,Kapal cepat (speed boat)-ADUM,8,8,5070000000,5079999999,507004A,1205070041,1206070049,6201550085 — X,X,X,X,X,X,511000A,Inventaris Kantor-ADUM,4,4,5110000000,5119999999,511000A,1205110001,",
+    "contentHash": "c0e65d5e5a60e939",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_29b6b6d855d0": {
+    "summary": "Tax Code = 2 digit ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — Company Code: JG00,,,,,,Company Code: JB00,,,,,,Company Code: DS00,,,,,,Company Code: JT00,,,,,,Company Code: JM00,,,,,,Company Code: ST00 — WHT Type,Deskripsi,WHT Code,Deskripsi,Rate,GL Account — ,,,,,,,,,SPOB (pengangkut oil),10,16,,,,,,, — Cakupan pembahasan: Sheet: VAT, Sheet: WHT, Sheet: House Bank, Sheet: Bank Key, Sheet: Asset Class",
+    "contentHash": "1177641ba75f3f73",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_3e9e8a265db4": {
+    "summary": "Jurnal PPN — Clearing (Net off) antara DP dengan Invoice — Journal Accrual Engine: Accrue stock",
+    "contentHash": "a3076a6879c7d834",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_88fa63a42bfc": {
+    "summary": "BP Role:,,,,,,,,,,, — \"Customer, Vendor, FI, Credit Management\",,,,,,,,,,, — 12.05070.000,,,,,,,,,,SPOB (pengangkut oil),10,16,,,,,,,,,,5070002,Vessel,16,16,5070000000,5079999999,5070002,1205070003,,,,,,, — 23-js Internet termasuk Sambungannya-2%,Pajak Penghasilan 23,3I,6,2%,24-104-26,23-js Internet termasuk Sambungannya-4%,39,4%,3I,A6,,22-401-04,\"22-Penj",
+    "contentHash": "9555ed7ff0590abf",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_eb5969205d8f": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — disetujui oleh: M. Adam Amirullah JMT Stream Leader — Table 4–19 Settlement Construction in Progress (CIP) .................................................................................... 96",
+    "contentHash": "bcaa359fd8f64ae2",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_55ae2d8e921e": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — disetujui oleh: M. Adam Amirullah JMT Stream Leader — Table 4–18 Settlement Construction in Progress (CIP) .................................................................................. 92",
+    "contentHash": "b70fd351d08eba42",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_b88b9fd44032": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — 6 PP Production Planning Module — Dilarang mendistribusikan tanpa izin tertulis dari PT Jhonlin Group. Halaman 15 dari 85",
+    "contentHash": "0a2245c751fe007c",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_3cde36c30927": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.1 — Hak Cipta © 2024 PT Jhonlin Group — Enterprise Structure yang dibutuhkan oleh modul CO sebagai berikut.",
+    "contentHash": "e3630891d9d0ef4a",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_5296229e33cc": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.1 — Enterprise Structure yang dibutuhkan oleh modul CO sebagai berikut.",
+    "contentHash": "6a0103a959d82d47",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_098441a9583d": {
+    "summary": "Characteristice — COPA Report PT. Jhonlin Group,,,,,,COPA Report PT. Jhonlin Group,,, — Beban Pengembangan Karyawan,XXX,XXX,XXX,,,,, — Beban Clearence,XXX,XXX,XXX,,,,,, — Cakupan pembahasan: Sheet: CHARACTERISTIC, Sheet: JG, Sheet: JB, Sheet: DSP, Sheet: JMT, Sheet: JML",
+    "contentHash": "a37e5fa70982b5e6",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_5d77f7e7d636": {
+    "summary": ",,,,,,,,,,,,,,,,,,Cost Center Group Kapal,,,,,,,,,,,,,,,,, — ,,9843000010,DAA Labor Workshop,\" (875,000.00)\",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — ,,,,,,Cost Center OB,,,Cost Center Coal Getting,,,,Cost Center Reklamation,,,,,WBS Level 2,,Jembatan A,,,,,,CIP/GL Account, — ,3,Budget Fuel,Dibuatkan comitment item untuk semua company (cek budget pada saat pengadaan/PR),,,",
+    "contentHash": "5258e34f5ade51dc",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_00990d2937a0": {
+    "summary": "Company Code ,Name CC,Plant,Name Plant,Profit Center,Name PC,Segment — JG00,PT. Jhonlin Group,JG01,JG Head Office,JG01,JG Head Office,Trading — ,,,,,,,,,,,JB03A22,,,JB Sebamban - Div General Adum (Unit Alat/Kendaraan/Kapal) - Rental — J000,9845101073,S,SECC,13,PA-B. Deplesi,PA-Beban Deplesi,42,Full Amount, — Cakupan pembahasan: Sheet: PROFIT CENTER HIERARCHY, Sheet: COST CENTER HIERARCHY, Sheet: List Cost Center, Sheet: CC Running Code, Sheet: Secondary Co",
+    "contentHash": "a6d2d37939cc2e14",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_75777f199e36": {
+    "summary": "Introduction to Data Migration Templates,,, — Version SAP S/4HANA 2023 - Adjusted Scope - 29.07.2024 © Copyright SAP SE. All rights reserved.,,, — ,,,Name 1,,Text,35 ,,S_CSKS,NAME1 — \"Technical, DPA & Support\",1054,,,,,,,, — Cakupan pembahasan: Sheet: Introduction, Sheet: Field List, Sheet: Master Record, Sheet: CC Legend",
+    "contentHash": "2eb2bb3f24112a22",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_30d875ecc470": {
+    "summary": "Introduction to Data Migration Templates,,, — Version SAP S/4HANA 2023 - Standard Scope - 29.07.2024 © Copyright SAP SE. All rights reserved.,,, — ,,,Planning Template,,Text,10 ,,S_CEPC,PCA_TEMPLATE — ,,JL03,JML Sungai Dua,JL03,JML Sungai Dua,5000,Stevedorin — Cakupan pembahasan: Sheet: Introduction, Sheet: Field List, Sheet: Master Record, Sheet: Company Code Assignment, Sheet: Profit Center Hierarchy",
+    "contentHash": "ea8f88182216eb40",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_3c5939d34d41": {
+    "summary": "MASTER DATA - FUNDS CENTER, — Fund Center,\"Funds center menunjukkan struktur atas FM organization dalam bentuk area resposibility, department, unit atau project dimana budget akkti — ,JB04,01/01/2023,31/12/9999,J000,JB Tanjung,JB Tanjung,JB00,JB04,JB04,,FAT — ,JT02LIANA004,01.01.2023,31.12.9999,J000,LIANA004,BARGE LIANA IV,JT00,JT00,JT02,FAT,",
+    "contentHash": "75d744a392766dc7",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_a99d9a59fdce": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — Hak Cipta © 2024 PT Jhonlin Group — C - Conversion: use for migration",
+    "contentHash": "b4869d32008a0d6d",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_68f684ac50af": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — Hak Cipta © 2024 PT Jhonlin Group — 13 SAP Sistems Application and Product in Data Processing",
+    "contentHash": "446c4dadddf821ac",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_bc35e3de5e45": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — 4.22. Pengeluaran Barang Berdasarkan Reservasi 123 — Diagram 4-38 Penerimaan dan Pengeluaran Container di DSP 154",
+    "contentHash": "481bdd1385d8908a",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_eb8b125b9eb5": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.3 — 4.19. Penerimaan Barang Ex Project 116 — Hak Cipta © 2024 PT Jhonlin Group",
+    "contentHash": "5c3644692f153025",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_17496b27fcf3": {
+    "summary": "© 2024 NTT DATA Business Solutions — Plant in MM Module, plant representing the facility where the material stock is — Material Type is classification Type of Material. For PT. A and PT. B we purposed split Type of Material as Material — Master Data – Purchasing Info Record (PIR)",
+    "contentHash": "0b60b84b8b604a83",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_79ddda655b35": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — Dilarang mendistribusikan tanpa izin tertulis dari PT Jhonlin Group. Halaman 4 dari 148 — Tabel 4-7 Penjelasan Flowchart Maintenance Notification PT Jhonlin Marine Trans .................................... 99",
+    "contentHash": "c88eb58bb56e9f09",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_6f2a6263e981": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.01 — Hak Cipta © 2024 PT Jhonlin Group — Tabel 4-9 Penjelasan Flowchart Maintenance Notification PT Samudera Timur Mas ................... 117",
+    "contentHash": "a473ac0330c506ca",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_6dc28a7b80e7": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.02 — Hak Cipta © 2024 PT Jhonlin Group — Tabel 4-9 Penjelasan Flowchart Maintenance Notification PT Samudera Timur Mas ................... 117",
+    "contentHash": "7db7a153cba9825c",
+    "updatedAt": "2026-11-04T01:14:59.833Z",
+    "source": "structured"
+  },
+  "ext_5c91b1d32865": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.2 — 4.1. Proses Bisnis SAP Plant Maintenance 93 — Tabel 4-9 Penjelasan Flowchart Maintenance Notification PT Samudera Timur Mas .............. 114",
+    "contentHash": "b5471211ee66df4e",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_a840c6279a90": {
+    "summary": "Catalog STM JMT,,,,,,,,, — PM-ENGINE,Engine Catalog,ENGINE,Engine,EA01,Inspect,Activity,E,A,01 — ,,BG,Boiler Group,BG54,Grate Ash Conveyor Gearbox,Object,Component — SLC,SKID STEER LOADER CATERPILLAR — Cakupan pembahasan: Sheet: Catalog STM JMT, Sheet: Eq Object Type, Sheet: Calalog DSP PP, FP, Sheet: Catalog JB, JML, DSP MP, Sheet: Class",
+    "contentHash": "e6095387da5a9bb4",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_ee4f03a68e29": {
+    "summary": "Organizational Structure,,,,,, — Sungai Dua,Sungai Dua,Sungai Dua,Mobile Plant,MP,Mobile Plant Planner,MPP — ,Update Record Hour Operation Power Plant & WTP, — ,Air Compressor,ECK,\"Air Compressor 75KW Hitachi for Maintenance Power Plant 3,5MW Kodeco\" — Cakupan pembahasan: Sheet: Organizational Structure, Sheet: Work Center, Sheet: Funtional Location, Sheet: Equipment Category, Sheet: Reporting Power Plant, Sheet: Equipment User Status",
+    "contentHash": "af9f92db4a37f717",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_21fe26ac3c82": {
+    "summary": "FORM WORK REQUEST,,,,,,,,,,, — WORK REQUEST NUMBER,,,:,,,,,,,, — AC,ACCIDENT,,,SC,SCHEDULE,,,EM,EMERGENCY,, — *) Beri Tanda lingkaran pada kode yang akan dipilih,,,,,,,,,,, — Cakupan pembahasan: Sheet: Sheet1",
+    "contentHash": "7a009346430dcbb8",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_ce72401ef63d": {
+    "summary": ",,,,,,,,,,,,,,,,, — ,EQUIPMENT NUMBER,,,: ,,,,,,,RAISED DATE,,,: ,,, — ,Distribusi Form : 1. Merah/Original : Operation 2. Kuning : Port Control Room (PCR) 3. Biru : Plant ,,,,,,,,,,,,,,,,REVISI : 0 — Cakupan pembahasan: Sheet: halaman_1, Sheet: halaman_2",
+    "contentHash": "86004c777cdd7bf3",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_02fc0850795f": {
+    "summary": ",,,,,,,,,,,,, — ,,,PT. DUA SAMUDERA PERKASA,,,,,,,,NO UNIT,, — ,,,,,,,,,,,DSP/F/PRT/001. rev01,, — Cakupan pembahasan: Sheet: a4, Sheet: f4",
+    "contentHash": "7d44b39a288729ff",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_923bdcc297c7": {
+    "summary": ",,,,,,,, — ,,,,,,PT. DUA SAMUDERA PERKASA,, — , SUB - ASSET DESCRIPTION,,,,,,, — Distribusi Form : 1. Putih/Original : Plant 2. Merah : Requestor,,,,,,,Revisi : 0, — Cakupan pembahasan: Sheet: Alih Fungsi Equipment",
+    "contentHash": "f27b540fc35d025c",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_db9570194b0d": {
+    "summary": ",,,,,,,,,,, — ,,,,,,,,PT. DUA SAMUDERA PERKASA,,, — Serial Number,,,Model/EGI,,,,,,,, — Distribusi Form : 1. Putih/Original : Plant 2.Merah : Port 3. Biru : Port Control Room 4. Kuning : FA,,,,,,,,Revisi: 0,,, — Cakupan pembahasan: Sheet: Pemindahan Equipment",
+    "contentHash": "c52a8865b7ae73e6",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_7dfbc490b1f3": {
+    "summary": ",,,,,,,,,,,,,,, — ,,,,,PT DUA SAMUDERA PERKASA,,,,,,, NO FPB,,, — DIMINTA OLEH :,,,,,,DIPERIKSA OLEH :,,,,,DISETUJUI OLEH :,,,, — Distribusi Form : 1. Putih/Original : Logistic 2. Merah : Plant 3. Kuning : User,,,,,,,,,,,,,Revisi: 0,, — Cakupan pembahasan: Sheet: Form Permintaan Barang",
+    "contentHash": "946221251e871827",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_36a02e079bbd": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — ,,,,,,,,,PT. DUA SAMUDERA PERKASA,,,,,,,,,,,,,, PT. BARADINAMIKA MUDA SUKSES & MITRA BARA,,,,,,,, — ,,LOCATION/DEPT.,,,,,,,,,,,,,,,,,,,,LOCATION/DEPT.,,,,,,,,, — ,,,,,,,,,Revisi: 0,,,,,,,,,,,,,,,,,,,,,Revisi: 0, — Cakupan pembahasan: Sheet: Disposed Equipment",
+    "contentHash": "14d84d105fc928d1",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_175439a83b70": {
+    "summary": ",,,,,, — ,, PT DUA SAMUDERA PERKASA,, Defitment Date,, — ,Report by :,,Checked by :,Approved by :,, — Cakupan pembahasan: Sheet: Form Swap Component",
+    "contentHash": "7d465498cf4fa79f",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_8f0c0764168d": {
+    "summary": ",,,,,, — ,PT DUA SAMUDERA PERKASA,,,, No. Unit,: — ,,REPORTED BY :,CHECK BY :,,,APPROVE BY : — Cakupan pembahasan: Sheet: Form Backlog",
+    "contentHash": "85c8d0fad3a4d66a",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_a4930cd153bb": {
+    "summary": ",699.8,881.5,,,,,,,,,,,, — ,,,,,, POPULASI UNIT PERIODE ,,,,MEI 2024,,,, — 59,DT OB,DT118,HINO,ZS1EPRD-528,JHDZS1EPRNXX10036,E13C,,2020,29 Sep 2022,,,Port Petangis/Grogot,,DT OB — ,NO,Type Job,Unit Model,CN,BD (Day),BD (Hour),hari ke-,HM-bd,Number of BD,Start SMU,End SMU,Operating Hours,Stand by Hours,PA,MA,U (%),UA%, MTBF ,MTTR",
+    "contentHash": "767a5f752fd520b3",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b3f15fb09182": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,,, — PT. DUA SAMUDERA PERKASA,,,,,,,,MODEL UNIT ,CRUSHER,,,,,,,,,,,,,,, — BEARING ROLLER PRIMARY R/L,,,,saci/sari roller,,,,Bracket & baut bracket carry roller,,, — ALL FLAT RETURN IDLER BC 5B,,,,- GEAR / SPROKET BODY chute,, — Cakupan pembahasan: Sheet: P2H CRUSHER 1 & 2, Sheet: P2H CRUSHER 1 & 2 NEW, Sheet: P2H CRUSHER 3 & 4, Sheet: P2H CLWK 02 JETTY 3",
+    "contentHash": "348f4990c9bf24d5",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_533f9d803367": {
+    "summary": ",,,,,,,,,,,, — , PT. DUA SAMUDERA PERKASA,,,,,,,,MODEL UNIT ,CRUSHER,, — BC 04,,,,- PLATE COVER CHAIN RECLAIME,,,,,,,,,,, — Bearing Head Pully R/L,,,,- Bc 5,,,,BEARING HEAD — Cakupan pembahasan: Sheet: FORM P2H FCBK01 & FCBK02, Sheet: FORM P2H FCBK03 & FCBK04, Sheet: P2H CONV LOADING CLBA01, Sheet: P2H CONV LOADING CLWK02",
+    "contentHash": "a6350944fd0736ab",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_f1acfa5ed637": {
+    "summary": ",,,,,,,,,,,, — , PT. DUA SAMUDERA PERKASA,,,,,,,,MODEL UNIT ,CONVEYOR LOADING,, — ,,- CRUSHER BLADE 1B,,,,,,,,,,, — ,BEARING BEND PULLEY SECONDARY R/L,,,,- SKIRT RUBBER,,,,- DDH 5,,, — Cakupan pembahasan: Sheet: @FORM P2H BUNATI FIX, Sheet: FORM P2H FCBN02 & FCBN03 FIX, Sheet: FORM P2H FCBN04 & FCBN05 FI, Sheet: FORM P2HCLBN02 & CLBN03",
+    "contentHash": "6155cb07607a9838",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_08731ac45261": {
+    "summary": ",,,,,,,,,,,, — , PT. DUA SAMUDERA PERKASA,,,,MODEL UNIT ,,,,,,, — RECLAIME B,,,,- Belt Skirt Bc 5,,,,RECLAIME 4,,,,,,, — Distribusi Form: 1. Putih/Original : Plant( — Cakupan pembahasan: Sheet: P2H CRUSHER WRK, Sheet: P2H CONV LOADING WRK",
+    "contentHash": "2ae97d84fff0eaf7",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_2f100c57a4d1": {
+    "summary": ",,,,,,,,,,,,,,,,,, — , PT. DUA SAMUDERA PERKASA,,,,MODEL UNIT ,,,,,,,,,,,,, — 36, - Scoop sampler,,,,9.PRODUCT CONVEYOR,,,,,,,,,,,,, — ,Distribusi Form : 1. Putih/Original : Plant (Admin Crusher) 2. Merah : Operator,,,,,,,,,,,,,,,,, — Cakupan pembahasan: Sheet: F4 - Form P2H",
+    "contentHash": "82dece90eb72e72a",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_ade8ad12fcb1": {
+    "summary": ",699.8,881.5,,,,,,,,,,,, — ,,,,,, POPULASI UNIT PERIODE ,,,,MEI 2024,,,, — 59,DT OB,DT118,HINO,ZS1EPRD-528,JHDZS1EPRNXX10036,E13C,,2020,29 Sep 2022,,,Port Petangis/Grogot,,DT OB — 2,EXCAVATOR,CAT 330D2,EX042, 0.21 , 4.26 ,14, 13.79 , 2.00 ,\" 19,173 \",\" 19,225 \", 52.00 , 195.74 ,98.48%,96.95% — Cakupan pembahasan: Sheet: POP_PITOP, Sheet: Pivot, Sheet: DATA, Sheet: WK1, Sheet: WK2",
+    "contentHash": "b65b2495dac63c8f",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b47cbec38d1d": {
+    "summary": ",,\"TARGET, PROGRAM KERJA & PEMANTAUAN\",,,,,,,,,,,,,,No. :,,,DSP/F/MS/011,,, — TAHUN : 2017,,,,,,,,,,,,,,,,,,,,,, — ,,,,,S,OK,OK,OK,OK,OK,OK,OK,OK,OK,,,,,,,, — S =,Status (OK / NOK),,,,,,,,,,,,,,,,,,,,,,, — Cakupan pembahasan: Sheet: SPP-DSP-Perusahaan 2017, Sheet: SPP-DSP-Port 2017, Sheet: SPP-DSP-Power Plant 2024",
+    "contentHash": "82a1b4a49e85d280",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_0f7f7fe545fc": {
+    "summary": "Organizational Structure,,,,,, — Sungai Dua,Sungai Dua,Sungai Dua,Mobile Plant,MP,Mobile Plant Planner,MPP — 01,Sungai Dua,Crusher,FC002,GMT,FC300TPH,600,800,Production,H — FP Mandala-BIN Serongga,Jetty 01,Crusher & Con — Cakupan pembahasan: Sheet: Organizational Structure, Sheet: Work Center, Sheet: Funtional Location, Sheet: Equipment Category, Sheet: Reporting Fixed Plant, Sheet: Equipment User Status",
+    "contentHash": "cab9d55a36b2c55d",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_f113b7ef3b14": {
+    "summary": "Organizational Structure,,,,,, — Sungai Dua,Sungai Dua,Sungai Dua,Mobile Plant,MP,Mobile Plant Planner,MPP — 10,DSP,KDC**01,Kodeco,WP020,\"Sea Water Pump Ritz Pump Power Plant 3,5MW Kodeco 02\",Kodeco,\"Water Flow for Cooling Condesor Turbine (Note : Power Plant — ,Carbon for Carbon Filter WTP,Note : Special Item (Un-common Item)",
+    "contentHash": "e58c855249c6c1a2",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_fc341ab8a1be": {
+    "summary": ",,,,,,,,,,,,,,,,,,, — PT. JHONLIN BARATAMA,,,,No. Reg,JB/F/PLN/001,,,,,,,,,,,,,, — Ensure pakrking brake is \"\"ON\"\" — ,,5. Supply Chain Dept.,,,,,,,, — Cakupan pembahasan: Sheet: FORM EQUIP REGISTER, Sheet: COMMISSIONING EQUIP, Sheet: COMMISSIONING & INSPECT, Sheet: SWAP, Sheet: BACKLOG, Sheet: EQUIP REFUCNT",
+    "contentHash": "41b81d5f43de6784",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_6fe29cfd2d1c": {
+    "summary": "PT JOHNLIN BARATAMA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — PLANT MAINTENANCE DEPARTEMENT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — 05. BENT / Bengkok ,,,,,,,,,,13. DIRTY / Kotor,,,,,,,,,,21. OUT OF ADJUSMENT / Kurang Setel,,,,,,,,,,,,,29. WIRE DISCONNECT / Aliran putus ,,,,,,,,,,, — DETAIL ACTIVITY MECHANIC,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    "contentHash": "1fe21df1c6b56b23",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_861b87569596": {
+    "summary": ",,,,,,,Company Code,,,,,,,, — ,,,,,,,PT. Jhonlin Baratama,,,,,,,, — ,,,,,KEY PERFORMANCE INDICATOR,,,,,,,,,,,Periode,,,,,,,,,,,,,,,,,,,, — 05. BENT / Bengkok ,,,,,,,,,,13. DIRTY / Kotor,,,,,,,,,,21. OUT OF ADJUSMENT / K — Cakupan pembahasan: Sheet: Structure Data, Sheet: Equip Register, Sheet: Work Order Monitoring, Sheet: Equip Maintenance Cost, Sheet: PS MOnitoring, Sheet: Top Ten Problem",
+    "contentHash": "74bb3c941b7e2eb3",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_8441903e58ec": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,I,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — ,,,,BONGKAR PASANG BAN,,,,,,,,,,,,,,,,,,,No ,,,: JB/F/PLN-TY/001,,,,,I,,,,,BONGKAR PASANG BAN,,,,,,,,,,,,,,,,,,,No ,,,: JB/F/PLN-TY/001,,,, — ,,,,,,,,,,,,,, NO. PEKERJAAN / Wo No.,:,,,,,,,,,,,,,,,,I,,,,,,,,,,,,,,, NO. PEKERJAAN / Wo No.,:,,,,,,,,,,,,,,, — ,ACCESORIS,,,,MERK,,,,SIZE,,,,QTY,,ACCESORIS,,,,MERK,,,,,SIZE,,,,QTY,,,,ACCESORIS,,,,MERK,,,,SIZE,,,,QTY,,ACCESORIS,,,,MERK,,,,,SIZE,,,,QT",
+    "contentHash": "274ade1185a361a6",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_256826d1f6e5": {
+    "summary": "NEW REPAIR — ACCESSORIES OF THE COMPONENT INCLUDED — Quote for parts and labour include Technical Report. — Please, disposal/ unreusable part send back to PT. Jhonlin Baratama.",
+    "contentHash": "5c43c80af32b06f0",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_426dc9cf0389": {
+    "summary": "PROJECT ID : DATE : _________________ SHIFT :DS/NS — UNIT ID : S.M.U : HRS STAR JOB : — PM 250 PM 1000 PM 300 Opportune Repair — Inspectted By : Known By : Authorised By : (Supervisor)",
+    "contentHash": "2dde2af820d9c5fa",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_cf1270ba7b02": {
+    "summary": "PROJECT ID : DATE : _________________ SHIFT :DS/NS — UNIT ID : S.M.U : HRS STAR JOB : — PM 250 PM 1000 PM 300 Opportune Repair — Inspectted By : Known By : Authorised By : (Supervisor)",
+    "contentHash": "2dde2af820d9c5fa",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b6382d8233d3": {
+    "summary": ",,,,,,,,,,,,,, — ,,,INSPEKSI TYRE,,,,,,,,No ,,: JB/F/PLN-TY/002, — ,HM Eqpmt :,,,,KM Eqpmt :,,,HM Eqpmt :,,,,KM Eqpmt :,, — Cakupan pembahasan: Sheet: rev001-19Jan24, Sheet: 10 Tyre, Sheet: 6 Tyre",
+    "contentHash": "6ff9e4788fe24bda",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_4b04477ae4fc": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — ,,,TYRE SCRAP / DISPOSE,,,,,,,,,,,,,,,,,,,,,,,No ,,,,: JB/F/PLN-TY/003,,,,,, — ,,,,,,,,,,,,,,,,NO. PEKERJAAN / Job Number,:,,,,,,,,,,,,,,,,,,, — ,,,, TYRE SERVICEPERSON,,,,,,:,………………………..,,,,,,,,,,,,,,,, — Cakupan pembahasan: Sheet: rev001-19Jan24, Sheet: 000-19Okt22(unregist), Sheet: Vehicle setup",
+    "contentHash": "fa6b3ca606615677",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_1e22b335a88f": {
+    "summary": "WARRANTY CLAIM FORM — This Warranty Is Claim Relating To Supplier Inv. No’s / PO No’s",
+    "contentHash": "8d1b298438b1b44e",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_6e0cce211c3b": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,,, — ,,,,,,,,,,,,,,,,,,,,,,FAILURE ANALYSIS REPORT,, — UNIT SERIAL NO.,,,:,,,,,,,,LAST INSTALLED SMU,,,,:,,,,,,,,, — ,Date: ______________________________,,,,,,Date: ______________________________,,,,,,,Date: ______________________________,,,,,,,,,, — Cakupan pembahasan: Sheet: Sheet1",
+    "contentHash": "e1f67a48467827b1",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b0e7b6f18aa2": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — ,(..……..………………….),,,,,,,,,,(..…………………………..),,,,,,,(………..….……………...),,,,,,,(…………………………….),,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — Cakupan pembahasan: Sheet: blank",
+    "contentHash": "bcb690fee0a4c01f",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_7b85aac30231": {
+    "summary": ",,,,,,,,,,,,,,, — WORK REQUEST NUMBER,,:,,,,,,,,,,,,, — A19,MISSING / Hilang ,,,,,,,C10,CONTAMINATIVE AREA / Area Kontaminasi,,,,,,,,,E19,SITE MODIF / Modif Internal,,,, — EG01,ENGINE ASSEMBLY,,,,ES01,,INSTRUMENT CLUSTER,,,,,,UC01,BLADE ASSEMBLY,,,,,,CS01,TRANSFER OIL COOLER,, — Cakupan pembahasan: Sheet: form, Sheet: code checklist",
+    "contentHash": "c716d07aa1591fed",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_0864998de382": {
+    "summary": ",,,,,,,,,,,,,,,, — JOB CARD,,,,,,,,,,,,,,WO NUMBER,, — JOB DESCRIPTION CODE,,,:,,,,,,,ESTIMATED DURATION HOURS,,,:,,, — ,,,,,Date/Hours:,,,,Hours:,,Hours:,,Hours:,,Hours:, — Cakupan pembahasan: Sheet: Sheet1",
+    "contentHash": "fe4c405a4f5133e7",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_7064e9817299": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — PROJECT ID,,,,,,,:,,BATULICIN,,,,,,,,,,DATE ,,,,,,:,,,,,,,,,,HM,:,,,,,,HRS — Final drive LH / RH,,,,,,,:,,_________,,HRS,_____________,,,,HRS,,,* Parkirkan unit pada tempat rata dengan aman,,,,,,,,,,,,,,,,,,,,,,, — n,,,,,I. SERVICE & LUBRICATION ( PM CLINIC ),,,,,,,,,,,,,,,,,Check Point,,,Remarks,,,,,,,,,,,,,,,SN Inspector,,",
+    "contentHash": "745304f21bf6e24d",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_55dfde129170": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — \"Task Detail Service Komatsu D31PX-22 & D39PX-22 - Bulldozer — Final drive LH / RH,,,,,,,:,,_________,,HRS,_____________,,,,HRS,,,* Parkirkan unit pada tempat rata dengan aman,,,,,,,,,,,,,,,,,,,,,,, — n,,,,,I. SERVICE & LUBRICATION ( PM CLINIC ),,,,,,,,,,,,,,,,,Check Point,,,Remarks,,,,,,,,,,,,,,,SN Inspector,,",
+    "contentHash": "e6d8e63fb91e06c5",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_88eca2b28b1b": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — PROJECT ID,,,,,,:,,BATULICIN,,,,,,,,,,DATE ,,,,,,:,,,,,,,,,,HM,:,,,,,,HRS — Final drive LH / RH,,,,,,:,,_________,,HRS,_____________,,,,HRS,,,* Parkirkan unit pada tempat rata dengan aman,,,,,,,,,,,,,,,,,,,,,,, — n,,,,I. SERVICE & LUBRICATION ( PM CLINIC ),,,,,,,,,,,,,,,,,Check Point,,,Remarks,,,,,,,,,,,,,,,SN Inspector,,",
+    "contentHash": "f6a182a111a0be31",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_d1c9cfc5a75d": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — \"Task Detail Service Komatsu WA.200-5 - Wheel Loader — Final drive LH / RH,,,,,,,:,,_________,,HRS,_____________,,,,HRS,,,* Parkirkan unit pada tempat rata dengan aman,,,,,,,,,,,,,,,,,,,,,,, — n,,,,,I. SERVICE & LUBRICATION ( PM CLINIC ),,,,,,,,,,,,,,,,,Check Point,,,Remarks,,,,,,,,,,,,,,,SN Inspector,,",
+    "contentHash": "098c8ac3db5d707f",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_e6c06b903b4f": {
+    "summary": "Equipment Name: HI02,,,,,, — Main Diesel Engine Type & No.: 6UEC50LS2 x 1,,,,,, — 311106,NO.6 CYLINDER COVER OF M/E,26-Oct-23,26-Oct-24,,, — 311206,NO.6 CYLINDER LINER OF M/E,26-Mar-23,26-Mar-24,,, — Cakupan pembahasan: Sheet: Sheet1",
+    "contentHash": "476f84d988fbc9a9",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_994184751c8e": {
+    "summary": "09 January 2024 A — Oil in critical and contaminated condition. Symptom: Critical High Cu content. Causes: Probably from equipment parts wear — Equipment Number : - Prev Sample : - — www.oilclinic.com, Email: oilclinic2@pertamina.com",
+    "contentHash": "73d8cf1622281757",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_7afbaee47375": {
+    "summary": "Fleet Management,,, — ATF,Automatic Transmission Fluid,, — CHECK BERKALA SETIAP 2000 JAM,,,,,,,,, — ,1st Copy,: Mechanic / Technician,,,,,,,,, — Cakupan pembahasan: Sheet: Fleet Management, Sheet: Class, Sheet: Equipment Object Type, Sheet: Work Center, Sheet: Org Struc, Sheet: Catalog Profile",
+    "contentHash": "473786a152def48e",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_43673bf12e22": {
+    "summary": ",,,,,,Company,: JMT,, — ,,,,,,Dept.,: Maintenance Service,, — ,,,,,START,FINISH,START,,FINISH — Original,: Mechanic / Technician,,,,,,,,*Setiap aktifitas pekerjaan wajib diketahui pengawas tertinggi — Cakupan pembahasan: Sheet: Form Job Card Periodic (A4), Sheet: Form Job Card (F4)",
+    "contentHash": "cb1b29f1952435ce",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_8255b53706f4": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,Company,: JMT,, — ,,,,,,,,,,,,,,,,,,,,,Dept.,: Maintenance Service,, — 33, YANMAR 4TNV 106T-GGE ,DENDRA II AE STBD,4929.6,-70.4,1000,5000,6-Mar-24,4.00,JMT033,A00043,,8:00,10:00,10-Mar-24,2:00,5016,,, — ,,034/MS/V/2023,JHONI047,KODECO ,ENSR,PERBAIKAN POMPA CARGO PORT,02-Feb-24,12212517,JAINUDDIN AKBAR ,M",
+    "contentHash": "14b3958453c0552a",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_4ed5ef680c6d": {
+    "summary": ",Equipment Object Type,,,,,,,,, — ,Type,Description,JB,DSP,JMT,JML,STM,,\"System Description — WMY,WELDING MACHINE YANMAR,,,, — ,,BG,Boiler Group,BG77,Packing Gasket,Object,Sparepart — Cakupan pembahasan: Sheet: Eq Object Type, Sheet: Class, Sheet: Maintenance Activity Type, Sheet: Catalog STM JMT, Sheet: Calalog DSP PP, FP",
+    "contentHash": "26d941a944c97ca1",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b8d3f7cac4c0": {
+    "summary": ",,,,,,,,,,,,,,,,, — VESSEL:,,MV. HI - 02,,,,,,DATE:,,3/31/21,,,,,,, — ,MANUFACTURER & TYPE:,,,,,MITSUI MAN B&W 6S50MCC,,,,,,,,,, — ,,,YURNALIS YUNUS,,,,,,,,,,,,, — Cakupan pembahasan: Sheet: ME Performance FEB ( 2021 ), Sheet: ME PERFORMANCE OCT 2023",
+    "contentHash": "5baecf8a38bde47b",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_5d63eabfdb0f": {
+    "summary": "Vessel Name : HI 02 — PNEUMATIC SOLENOID VALVE FOR MAIN ENGINE — SUBJECT: PNEUMATIC SOLENOID VALVE FOR MAIN ENGINE — ACTION: RENEWED WITH SPARE ON BOARD. THE DEFECT PART MENTION ABOVE NO LONGER HAVE SPARE ON BOARD SO PLEASE SUPPLY THE PART WITH NO REQ: E-54/MV.HI02/V",
+    "contentHash": "ac553a588bc798a9",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b4d6f5b085a2": {
+    "summary": "PT. SAMUDERA TIMUR MAS — INSPECTIONS BY MASTER / CHIEF ENGINEER — Rincian Detail dari Kerusakan WIRE STELL HOISTING IS BROKEN — Signed & Name,CAPT. M.I. ANSARI",
+    "contentHash": "81a7433c8a8e6a03",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_dae9b505d154": {
+    "summary": "PT. SAMUDERA TIMUR MAS — PLANS FOR SHIPBOARD OPERATIONS — 1. About : Keterangan permintaan barang REQ.No.D-26HI 03/VII/2024 — SMS 513-2 Effective Date : 03/06/2024 Rev : 00 Page : 2from2",
+    "contentHash": "8fbf8c0259d9d0e8",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_8df24a33e741": {
+    "summary": "1 2 3 — 2 0 WIRE ROPE CLIPS FOR SIZE WIRE 36MM ( WIRE GRAB ) — Approved by: OM Autorized by: Director Chief Officer — SMS 163-1 Effective Date : 01/08/2022 Rev : 00 Page : 1from1",
+    "contentHash": "f7b0138d3ad1caab",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_07bfc370ce82": {
+    "summary": "PT. SAMUDERA TIMUR MAS — INSPECTIONS BY MASTER / CHIEF ENGINEER — SMS 572-5 Effective Date : 27/08/2022 Rev : 01 Page : 1from1 — Dilaporkan oleh Mualim I / KKM",
+    "contentHash": "df1d56b5b1bcee76",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_4b1274733dba": {
+    "summary": "SUPPLY MV. HI 02,,,,,,,,,,,,,,,,,,,,,, — Bulan,MDO/Mt,MFO/Mt,Cyl Oil/Ltr,,,,,,,,,,,,,,,,,,, — ,,,,,Month : JANUARI - 2024,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — ,,,,,Vessel : MV. HI 02,,,,,,,,,,,,,,,,,,,,,,,,,,, — Cakupan pembahasan: Sheet: SUMMARY, Sheet: JANUARI 2024, Sheet: FEBRUARI 2024, Sheet: MARET 2024, Sheet: APRIL 2024",
+    "contentHash": "71d4d2200964320a",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_8019c119a803": {
+    "summary": "PT.SAMUDERA TIMUR MAS — GPS Position 05°.45.30 S/ 122°.17.83 E — NIL Cargo onboard(Type / Quantity) — TG. PMC / 04 JUNE 2024 - 05.00 LT",
+    "contentHash": "a08c25eff7eeda43",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_f9ac2ebe80c3": {
+    "summary": "DEEP TANK ( P ) — SETTLING TANK",
+    "contentHash": "211cc6736d48b1c4",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_d78a911517a7": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,, — ,,,,,,,,,,,,,,,,,,,LAST MONTH,,\"128,515.4\",, — 2,14-Apr-99,05-Sep-19,24-Mar-23,Crown #2,07-Sep-19,06-Mar-24,10-Sep-19,24-Jul-21,24-Jul-21,12-Feb-19,17-Jun-22,17-Jun-22,JUNI. 2022,17-Jun-22, ,10-Oct — ,8-Sep-19,4-Feb-23,13-Oct-22,13-Oct-22,13-Oct-22,13-Oct-22,13-Oct-22,08-Oct-22,08-Oct-22,15-Oct-22,15-Oct-22,15-Oct-22,,,24-Oct-22,24-Oct-22,08-Oct-22",
+    "contentHash": "3c5dd952b0c88db7",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_daa0f3dfd045": {
+    "summary": "As of ; 31-May-24 — MV. HI 02 SHIP'S CERTIFICATE LIST — 17A P & I Insurance ( The American Club ) 68097/1 NEW YORK 25-Mar-2024 20-Feb-2025 — DOKUMEN LAINNYA : & OTHER DOCS (BUKU PELAUT)= PCS",
+    "contentHash": "61c56b0a0c007c0b",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_9ff99264ec5f": {
+    "summary": "PT, SAMUDERA TIMUR MAS — 1 02-May-24 Repair Cooling Pipe AE 02-May-24 08-May-24 Telah di perbaiki & normal kembali — 6 31-May-24 Repair Cooling Pipe AE 31-May-24 31-May-24 Telah di perbaiki & normal kembali — DAFTAR KEJADIAN / KERUSAKAN MEI 2024",
+    "contentHash": "216350eaed9943a6",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_7f60f19934ec": {
+    "summary": "Name of Vessel: MV. HI-02 For the Month of May 2024 — Continue Repair Cooling Pipe AE — MAINTENANCE REPORT - DECK DEPARTMENT",
+    "contentHash": "3f458ce90acedf1e",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_c59158665d63": {
+    "summary": "Name of Vessel : MV. HI 02 — 2. Loading - Un-Loading Equipment — 3 MF/HF radio telephone Every Day √ √ √ √ √ — No. MAINTENANCE PLAN YEAR REMARKS",
+    "contentHash": "5b19cc11e82ed58a",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_37d0b26474bf": {
+    "summary": "PT. SAMUDERA TIMUR MAS — INSPECTIONS BY MASTER / CHIEF ENGINEER — SMS 572-1 Effective Date : 01/08/2020 Rev : 00 Page : 2from3 — name Date: Master / Chief Engineer",
+    "contentHash": "191bb1b95fba2467",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_054fc3f28f42": {
+    "summary": "PT. SAMUDERA TIMUR MAS — IZIN MELAKUKAN PEKERJAAN / DAFTAR PERIKSA — 1. Repair Cooling Pipe AE 02.05.24 08.00 02.05.24 17.00 — 11 Continue Repair Cooling Pipe AE 31.05.24 08.00 31.05.24 17.00",
+    "contentHash": "dd7dcfc63496830c",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_2cc417f6274c": {
+    "summary": "PT. SAMUDERA TIMUR MAS — IZIN MELAKUKAN PEKERJAAN / DAFTAR PERIKSA — Combination Support 10/05/24 Tg. Pemancingan 11/05/24 NORMAL & GOOD CONDITION — 5 Repair Cooling Pipe AE 31/05/24 Tg. Pemancingan 31/05/24 NORMAL & GOOD CONDITION",
+    "contentHash": "6c2cc03afbc9ff65",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_10cfb2a9faad": {
+    "summary": "Project # — Jhonlin_SAP ERP S4 HANA Implementation — Plant untuk JMT adalah sebagai berikut: — PT NTT DATA Business Solutions",
+    "contentHash": "3f14bdea8db7062b",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_225527db8ea9": {
+    "summary": "Project # — Jhonlin_SAP ERP S4 HANA Implementation — Perlu dilakukan konfirmasi dengan modul HCM dikarenakan crew kapal bukan merupakan teknisi. — PT NTT DATA Business Solutions",
+    "contentHash": "55e81f01717187b2",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_7a5384d23c1c": {
+    "summary": "Project # — Jhonlin_SAP ERP S4 HANA Implementation — Siapa yang menginput HM unit apakah modul PP atau PM? Bagaimana integrasi modul PP dan PM mengenai timesheet terutama HM unit. — PT NTT DATA Business Solutions",
+    "contentHash": "72625def790b29aa",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_a49d0a3427b8": {
+    "summary": "Project # — Jhonlin_SAP ERP S4 HANA Implementation — Armada bus perlu dimasukkan ke dalam master data equipment JB. — PT NTT DATA Business Solutions",
+    "contentHash": "f93adcd3ba24fa5d",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_bfa82be9bae1": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — Hak Cipta © 2024 PT Jhonlin Group — Dilarang mendistribusikan tanpa izin tertulis dari PT Jhonlin Group. Halaman 16 dari 62",
+    "contentHash": "ada992917b5265d7",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b92ba3c4ce4a": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.01 — Hak Cipta © 2024 PT Jhonlin Group — Maintenance Plant yang di definisikan pada PT Jhonlin Marine Lines sebagai berikut:",
+    "contentHash": "404edf7132a112f4",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b1a74f87c3d5": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.02 — Tabel 2-2 SAP Maintenance Plant PT Jhonlin Marine Trans",
+    "contentHash": "e34eee5dff85e755",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_9e8d0f6bd49d": {
+    "summary": "-- 1 of 3 -- — Alamat : Jl. Kodeco KM. 1,5 Blok 0 No.0 RT:024 RW:000 Kel.Tungkaran Pangeran Kec.Batulicin Kota/Kab.Tanah — 11, 10 May 24 JHONI XXV SANDYA III 9.878,396 9.878,396 9.878,396 AI-TBS Jetty 4 156/AI-BTL/SKAB/V/2024 — TOTAL PORT SEI DUA - 119.420,061 33.483,254 26.723,892 37.045,296 26 216.672,503 1.022,698",
+    "contentHash": "a0b5cbc7ef6a131e",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_134f820619b7": {
+    "summary": "-- 1 of 5 -- — Nama : PT. PELABUHAN INDONESIA (PERSERO) — KERJASAMA PELAYANAN JASA PENUNDAAN KAPAL DI PELABUHAN — sesuai dengan Pasal 14 ayat (4) UU KUP",
+    "contentHash": "3c48de221d985e67",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_77a9fec85e0f": {
+    "summary": "-- 1 of 19 -- — Alamat : Jl. Buncit Raya Blok 000 No.010 RT:006 RW:003 Kel.KALIBATA Kec.PANCORAN Kota/Kab.JAKARTA — KAB. TANAH BUMBU, 04 Januari 2024 — sesuai dengan Pasal 14 ayat (4) UU KUP",
+    "contentHash": "c91fdc4bef151444",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b79d67a71c18": {
+    "summary": "-- 1 of 15 -- — Nama : PT. BUKIT SMELTER INDONESIA — sesuai dengan Pasal 14 ayat (4) UU KUP — PT. BARAMEGA CITRA MULIA PERSADA",
+    "contentHash": "e7f0ea048e3af020",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_0dd5876ca9c8": {
+    "summary": "-- 1 of 23 -- — Nama : PT. ANAGA ABYUDAYA ANANTA — Nama Vessel : MV. MBS BULELENG OR SUBS — that It does not re11!ve !)Arties from their <X111trattua1 oblglltlons. Al 11-.uon aMted In this terlft:a !me a-t canted oot ID the belt al Ollf b-'\"d",
+    "contentHash": "bf3460f18c7ae72e",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_351b3706e0f4": {
+    "summary": "-- 1 of 23 -- — Nama : PT DAIDAN ADITAMA YAKSA — Pelabuhan Muat : JETTY TERSUS JG, BATU AMPAR, KALIMANTAN — PT. BARAMEGA CITRA MULIA PERSADA",
+    "contentHash": "e441d197d12dad6b",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b050cb627589": {
+    "summary": "-- 1 of 9 -- — Nama : PT NADESICO NICKEL INDUSTRY — : 19. Nilai Penggantian Jasa/Nilai : 21. Jenis Jasa Kena — KEBAYORAN BARU, KOTA ADM. JAKARTA SELATAN,",
+    "contentHash": "6d4ce3495c68f110",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_cea2341a4238": {
+    "summary": "-- 1 of 19 -- — Nama : PT. PRIMA ALAM GEMILANG — 0,00 Total PPnBM (Pajak Penjualan Barang Mewah) — sesuai dengan Pasal 14 ayat (4) UU KUP",
+    "contentHash": "c54232ae17838645",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_34888c709d2b": {
+    "summary": "-- 1 of 21 -- — Nama : PT NADESICO NICKEL INDUSTRY — 5. Mean of means draft, m 12.13075 .4.93850 — PT. BARAMEGA CITRA MULIA PERSADA",
+    "contentHash": "f5a755fa9950a539",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_c8edaf2fbc3f": {
+    "summary": "-- 1 of 20 -- — Nama : PT NADESICO NICKEL INDUSTRY — 6. Mean of means draft corrected for Hoo/Sao. m 12.13037 5 4 916750 — PT. BARAMEGA CITRA MULIA PERSADA",
+    "contentHash": "0c37c518963209d7",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_e04893430f8a": {
+    "summary": "-- 1 of 19 -- — Nama : PT. BUKIT SMELTER INDONESIA — sesuai dengan Pasal 14 ayat (4) UU KUP — PT. BARAMEGA CITRA MULIA PERSADA",
+    "contentHash": "4372352ba97afd02",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_81d7047d2eff": {
+    "summary": "-- 1 of 15 -- — Nama : PT GUNBUSTER NICKEL INDUSTRY — PEMBERITAHUAN PEMASUKAN BARANG ASAL TEMPAT LAIN DALAM DAERAH PABEAN KE — Rangkap ke-1 / 2 / 3 : Kantor Pabean / Pengusaha TPB / Pengirim Barang",
+    "contentHash": "0ffc96b97bce6f21",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_5b5a15a020e8": {
+    "summary": "-- 1 of 27 -- — Nama : PT GUNBUSTER NICKEL INDUSTRY — No. LHV : 1520.16/TPU-MINERBA/VI/2024 — PT. BARAMEGA CITRA MULIA PERSADA",
+    "contentHash": "f06b70f9a6006dd2",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_fb385a8b29a0": {
+    "summary": ": 040/INV/STM-JG/TJM/VI/2024 — Address : Jhonlin Office Building Lt.2 : — 07.00 RESUMED DISCHARGING H2, H3, H4 AND H5 BY SHORE CRANE 1, 2, 3 AND 4 TO JETTY — 01.00 FULL AWAY TO TANJUNG PEMANCINGAN",
+    "contentHash": "30ad6647d82e5daf",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_22ea83ec288d": {
+    "summary": "Name : PT. JHONLIN MARINE TRANS : — Address : Jl. Hauling Pelabuhan Kodeco, Tungkaran Pangeran : — Please transfer in full ammount to : — Invoice No 169/INV/STM-JMT/TJP/VI/2024",
+    "contentHash": "c74b0aa4cbeb134c",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_d23f13d70a79": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No 1.2 — Diagram 2-5 SAP Organizational Structure JML 21 — aktivitas bisnis proses saat ini serta memperkenalkan best practice SAP kepada Key User dan",
+    "contentHash": "6a59dcc8330b7bda",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_4407ad4eabc6": {
+    "summary": "Storage Location,,,,,,,,, — JB00,PT Jhonlin Baratama ,JB01,JB Head Office,,,,,, — 5,OBRVBLAS,OB Blasting (Service/Jasa),Main,Khusus untuk material Blasting,,,,,, — DS07,CR04,PV Bunati - Crusher 4,,,,,,,,,, — Cakupan pembahasan: Sheet: (NEW) SLOC, Sheet: PrO (2), Sheet: ORG STRUC, Sheet: (NEW) BOM, Sheet: (NEW) Resource, Sheet: Resource",
+    "contentHash": "b779e9dd4a6f59d5",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_2a7dc6ef8dea": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.01 — Tabel 4-2 Maintain Material Master PT Dua Samudera Perkasa 66 — W - Workflow: Workflow is used fo",
+    "contentHash": "aac4979d69aa4fa1",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_74da1eed4da8": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.01 — Tabel 4-1 Maintain Material Master pada PT Jhonlin Baratama 63",
+    "contentHash": "e7dcd0202c81fab9",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_83580aedfb3e": {
+    "summary": "LIST REPORT => SAP — BUP PRODUCTION (CARGO DLL).",
+    "contentHash": "7312385f48dbc3d5",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_e89ecf81deeb": {
+    "summary": "PT. Dua Samudera Perkasa,,,,,,,,,,June 24,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — \"Tersus JG, Batu Ampar\",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — Est. BALANCE at RAW STOCKPILE,,,,,,,,,,,,,,,,,,,,,,,Est. BALANCE at CRUSH STOCKPILE,,,,,,,,,,,,,,,, — ,,,IN,OUT,BAL,IN,OUT,BAL,IN,OUT,BAL,,IN,OUT,BAL,,,,,,HAULING,RE-PP/BIO,LOADING,BALANCE,HAULING,RE-PP/BIO,LOADING,BALANCE,HAULING,RE-PP/BIO,LOADING,BAL",
+    "contentHash": "b768dadc3f2aeb51",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_5d4e70c9a4e3": {
+    "summary": "PT. DUA SAMUDERA PERKASA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,PT. DUA SAMUDERA PERKASA,,,,,,, — Port JG. Batu Ampar,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,Port JG. Batu Ampar,,,,,,, — ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,(P.T.+ O.R.) / TOTH,P.T./(P.T+MR),P.T/(P.T+(O.R),\"P,T/TTH\",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    "contentHash": "c7a643fff13b81c1",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_17538bc0f8b6": {
+    "summary": "RECORD SHIPMENT BUP BATU AMPAR,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — NO.,SHIP,CUSTOMER,,GT,SHIP FLAG,AGENT,SHIPPER,CONSIGNE,JETTY,PORT of DISCHARGE,PORT of LOADING,LOAD / UNLOAD,TYPE CARGO,LIQUID BULK,,,,,,,,,,,GENERAL  — ,0, 1 , - , - , 1 , - , - , - , - , - , - , - , - , - ,,PT. ANDALAN NUSA KARGO,,,,1 ,0 ,0 ,1 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,0 ,,,,,,,,,,,,,, — 0,PFAD,,2,\" 5,897",
+    "contentHash": "2a44312b9c43eaca",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_c18b4f80ad31": {
+    "summary": "PT. DUA SAMUDERA PERKASA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,PT. DUA SAMUDERA PERKASA,,,,,,, — Port JG. Batu Ampar,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,Port JG. Batu Ampar,,,,,,, — 01,FCBK01,RONI/DEDEN,,,, 12.0 ,\" 8,203 \",\" 8,203 \", - ,,,,,,,,,,,,,,,, 12.0 ,,,,,,,,,,,,,,,,,,,,,,,,, - ,\" P2h + greasing bearing feeder breaker, roll — MAIN EQUIPMENT / DUMP TRUCK (MACHINE HOURS),,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    "contentHash": "3280adb78c5a76d2",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_a7eeb9f1aa71": {
+    "summary": "PT. DUA SAMUDERA PERKASA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,PT. DUA SAMUDERA PERKASA,,,,,,, — Port JG. Batu Ampar,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,Port JG. Batu Ampar,,,,,,, — ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,(P.T.+ O.R.) / TOTH,P.T./(P.T+MR),P.T/(P.T+(O.R),\"P,T/TTH\",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,",
+    "contentHash": "c7a643fff13b81c1",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_3433ec6d551c": {
+    "summary": ",,PT. DUA SAMUDERA PERKASA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — ,,DREDGING,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — CSD JHONI 58,D,07 Jul 24,,Batu Ampar,Jetty Kontainer,,,, 373.55 , 381.80 , 8.25 , 5.83 ,\" 1,166 \",, 508.00 , 516.00 , 8.00 , 8.00 ,, 5.83 ,, 1.42 ,,,, — ,,Location,,Coordinat,,,HM,PROD.,RPM,Sh/M,Macy,MecU,NoPa,MoMo,NoMa,WetR,Rest,Sh/M,Sh/M,Sh/M,Rest,NoPa,MoMo,NoMa,WetR,Oths",
+    "contentHash": "df33f0b6968c2744",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_af2e34ce667e": {
+    "summary": "DATA STATUS VESSEL JANUARI 2024,,,,,,,,,,,,,,, — LOCATION,NO,PROJECT NUMBER,VESSEL,SHIPPER / SELLER,BUYER,,PORT OF DISCHARGE,ETA,COMMENCE,COMPLETED, QUANTITY (MT) ,,,SHIPPER ON BOARD,KETERANGAN — ,14, SIJG3916 , MV. KANG HUAN , JG/KUD , COLESTAR RESOURCES LIMITED , INDIKA ,CHINA,09-Feb-24,09-Feb-24,13-Feb-24,\" 46,350 \",\" 46,350 \", - , Subayu ,  — ,20, SIJG3983 , MV. JHONI XLIX , JG/BCMP , PT. GUNBUSTER",
+    "contentHash": "057e5f0010e48992",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_20394cab6bb5": {
+    "summary": ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,, — DATE,,SUNGAI DUA PORT (DSP),,,,,,,,,,,NUSA JAYA PORT (NJP),,,,,,,,,,,ANTARA PORT (DUBT),,,,,,,,,,,ANS PORT (ANS),,,,,,,,,,,BATAM PORT (DSP),,,,,,,,,,, — ,SUNGAI DUA,:,\" 1,267,285.00 \",\" 1,191,731.520 \",\"283,728.862\",,,,,,,,,,,,,,,,,,,,,,,, — ,MTD OB,:,\" 245,040.00 \",\" 228,406.36 \",\"16,63",
+    "contentHash": "a64954a10bd4b25d",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_1dfd7b617be6": {
+    "summary": ",,,,,,,,,,,,,,,, — ,,,,,,,,,,,,,PT. PANIM,,PT. GEOSERVICES, — 10,2-Feb-24,AI-TBS,SUNGAI DUA,JHONI XVII,LIANA XXII,\" 10,300.769 \", - ,\" 10,300.769 \",BCMP,JTA03,189/SKAB/PT.BCMP/II/2024,MV. ANNITA,AI-TBSSUNGAI DUA, — 25,3-Mar-24,AI-TBS,SUNGAI DUA,JHONI XXVII,LIANA LII,\" 9,580.322 \", - ,\" 9,580.322 \",BCMP,JTA05,348/SKAB/PT.BCMP/III/2024,MV. XIN HONG BAO SHI,AI-TBSSU",
+    "contentHash": "cccc4a1ed3c27aa8",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_3dca1ffd9dfb": {
+    "summary": ",,,,,,, — ,JARAK,,,,KETERANGAN MATERIAL,, — ,PC 3400,BLASTING,785 /777,43, 285.43 ,268.31,253.13,239.58,227.40,216.40,206.42,197.31,188.98,181.32,174.26,167.73,161.66,156.03,150.77,145.85,141.25 — EK120 003,Komatsu PC1250SP,10,\" 1,300.00 \", MUD ,11,1300.01,1400.01,,,Daewoo DX500LCA,1,\"PC 500, Doosan 500, hyundai 480, Sany 550\",BLASTING,1BLASTING",
+    "contentHash": "589034784964c2dd",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_ddcbff8c7ace": {
+    "summary": "Plant,MaterialNo,Version,Description,ValidFrom,ValidTo,Recipe Group,Group Counter,Alternative BOM,Rcv.Locati,Keterangan,Change Date — DS02,CO-CC,CR01,Sungai Dua - Crusher 01,01.01.2024,31.12.9999,CRSD0100,1,1,,, — CO-CC,DS06,,,,ZCCO,ZCCO-02,Z,Crushed Coal,EN,MT,,,,NORM,,,,,,ND,DSC,KP,DS06,,,,,,,,,10,,,,EX,,,,,,,,X,,,010,DSD010,X,,,,,,,,,,,,,,,,,,,,, — CO-LC,DS02,CLSD0303,1,Crushing loading 3 sungai dua,,01.01.2024,1,4,0030,,CRSDCRUS,PI01,CR Crusher Sungai ",
+    "contentHash": "f9b79897b65240d4",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_82d313c5ea7c": {
+    "summary": ",,,,,BASIC DATA,,,,,,,,,,,,,,PLANT DATA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,VALUATION DATA,,,,,,,,CLASS DATA,,CHARACTERISTIC DATA,,TAX CLASSIFICATION,,,GROUPING TERMS - SALES,,,PLANT D — ,,,,,Header Data,,,,,,Basic Data,,,Grouping Dimensions ,,Sales Header ,Reference Values (Retail),,MRP Data,,,,General Data,,,,,,,Purchasing,MRP Data,, — DS02,CRSDCRUS,0008,CR Crusher Sungai Dua,401,009,ZS01,PI01,008,201,D1,ZM,01,H,07:00:01,07:00:00,100,,1,01.01.2024,31.12.9999",
+    "contentHash": "e2bfa77bdfd0ffa5",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_53ef4d7ad19c": {
+    "summary": ",,,,,BASIC DATA,,,,,,,,,,,,,,PLANT DATA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,VALUATION DATA,,,,,,,,CLASS DATA,,CHARACTERISTIC DATA,,TAX CLASSIFICATION,,,GROUPING TERMS - SALES,,,PLANT D — ,,,,,Header Data,,,,,,Basic Data,,,Grouping Dimensions ,,Sales Header ,Reference Values (Retail),,MRP Data,,,,General Data,,,,,,,Purchasing,MRP Data,, — ZB02,JB Prod. External Rental,JGP001,L,ZJCF01,Fuel, — OB-NB,JB02,OBNBAA1A,1,OB Non-Blasting Sungai Dua – AI – Trembesi,,01.0",
+    "contentHash": "640632eae656f967",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_677c9fcaa621": {
+    "summary": ",,,,,BASIC DATA,,,,,,,,,,,,,,PLANT DATA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,VALUATION DATA,,,,,,,,CLASS DATA,,CHARACTERISTIC DATA,,TAX CLASSIFICATION,,,GROUPING TERMS - SALES,,,PLANT D — ,,,,,Header Data,,,,,,Basic Data,,,Grouping Dimensions ,,Sales Header ,Reference Values (Retail),,MRP Data,,,,General Data,,,,,,,Purchasing,MRP Data,, — ZB02,JB Prod. External Rental,JGP001,L,ZJCF01,Fuel — OB-NB,JB02,OBNBAA1A,1,OB Non-Blas Sungai Dua - AI - Trembesi,,1/1/24,1,",
+    "contentHash": "41f2259159eecb68",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_4436ea954938": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — Hak Cipta © 2024 PT Jhonlin Group — 5. WBS for Production Processing",
+    "contentHash": "4222d2f78d9eb86d",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_89ce519ab25e": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — 5 SD Sales and Distribution Module — Rancangan struktur organisasi merupakan dasar dalam proyek implementasi SAP",
+    "contentHash": "95fac79e8c4c4a0f",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_4a1bd6f62be0": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — 4 WM Warehouse Management Module — Organizational Strucure di SAP merepresentasikan struktur enterprise di dalam sistem SAP. Struktur",
+    "contentHash": "5f897bb2545935a1",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_46fb18245d5b": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — 4 WM Warehouse Management Module — Organizational Strucure di SAP merepresentasikan struktur enterprise di dalam sistem SAP. Struktur",
+    "contentHash": "5f897bb2545935a1",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b244890f5143": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — W - Workflow: Workflow is used for approval process. SAP delivers some — Selatan. Sebagai holding company yang memiliki anak usaha di berbagai bidang, PT Jhonlin Group",
+    "contentHash": "8f68f4586853b123",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_d19a5670008b": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.1 — I- Interface: Inbound and outbound from the sap system. Example I-Doc, — berperan penting dalam perekonomian daerah dan nasional. Bisnis unit yang dikelola oleh PT",
+    "contentHash": "e914e42b167bbb37",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_bde26a0fa426": {
+    "summary": "SAP S/4HANA Implementation — HUMAN CAPITAL MANAGEMENT (HCM) — Table 5. 6 Proses Permintaan Tenaga Kerja - Description Error! Bookmark not defined. — Tujuan utama proyek Implementasi Project Jhonlin SAP S/4 HANA RISE – Business Transformation Project ini adalah untuk membangun solusi ERP terintegras",
+    "contentHash": "ecd0acec3efb04a8",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_eac71639ebd3": {
+    "summary": "SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — Hak Cipta © 2024 PT Jhonlin Group — Table 2. 4 Personnel Subarea ............................................................................................................. 22 — Table 4. 38 Benefit Bantuan Melahirkan ..................................................",
+    "contentHash": "680253df53d29c40",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_5b82d6ccc652": {
+    "summary": "SAP S/4HANA Implementation — HUMAN CAPITAL MANAGEMENT (HCM) — Table 5. 2 Maintain Enterprise structure - Description 46 — Lane/User Role: describe who is executing a specific",
+    "contentHash": "9ec939cb9acb4ce6",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_3e5b5644c296": {
+    "summary": "SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — Hak Cipta © 2024 PT Jhonlin Group — Table 3. 10 Matrix Action Type ............................................................................................................... 35 — Table 3. 54 Absence Quota Type .........",
+    "contentHash": "d0117638b70ccce1",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_3e31c3857bc2": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — HUMAN CAPITAL MANAGEMENT (HCM) — Diagram 4-4 Penyusunan MPP – Flowchart 57",
+    "contentHash": "4919cd7f0d40e061",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_f50601af8487": {
+    "summary": "SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — Hak Cipta © 2024 PT Jhonlin Group — 4.2.2. Proses Perubahan Personnel Structure 56 — Diagram 4-5 Penggantian MPP – Flowchart 60",
+    "contentHash": "748b724e88899328",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_7b4bde18a7e9": {
+    "summary": "SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — Hak Cipta © 2024 PT Jhonlin Group — 5.2.8. Proses Mutasi Karyawan 178 — Dilarang mendistribusikan tanpa izin tertulis dari PT Jhonlin Group. Halaman 9 dari 260",
+    "contentHash": "7c47c6eb5fadbbcb",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_504e637ff3d9": {
+    "summary": "SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — Hak Cipta © 2024 PT Jhonlin Group — 5.2.7. Proses Rotasi Karyawan 175 — Dilarang mendistribusikan tanpa izin tertulis dari PT Jhonlin Group. Halaman 8 dari 260",
+    "contentHash": "c6dc9d2cf7410f48",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_5e3c270f5bf4": {
+    "summary": "SAP S/4HANA Implementation - Business Transformation Project Versi No.00 — Hak Cipta © 2024 PT Jhonlin Group — 5.3.1. Proses Pembuatan Hari Libur 201 — Table 4.29 TER C .............................................................................................................................. 90",
+    "contentHash": "b8b0a947c5c86634",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_b237b92f0331": {
+    "summary": ",, — ,Z236,Deskripsi Wagetype,JG,JB,DS,JL,JT,ST,JA,TE,KT,JM,PA,Ket,SCMS JBM (JM00),Otomotis/Tidak Otomatis,Base THR,Base TK,BPJS KS,IT8,IT14,IT 15,IT267,IT — JG,DS,PA,ST\",V,-,-,-,-,-,V,-,Regular,-,-,3,-,V — 2310,Insentif SAP,Diberikan sampai 3 bulan setelah Go Live,01,Expense Account,Dr,6101510007,B Tunj Variabel-A,5001510007,B Tunjangan Variabel-H",
+    "contentHash": "88c0492d7e92d317",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_a3e77432ac70": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.2 — Struktur organisasi di SAP merepresentasikan struktur perusahaan di dalam sistem SAP. Struktur",
+    "contentHash": "0c416fb2b82b3332",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_283cdc70ef77": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.2 — standard doesn't meet the requirement. Example: sap deliver the — Maintenance Planning Plant yang di definisikan pada PT Jhonlin Marine Trans",
+    "contentHash": "8fc85c0586ac4345",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_87c7be60b7c4": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.1 — Table 6–1 Business GAP Analysis ............................................................................................................. 123",
+    "contentHash": "8a9faaf661c94801",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_99d2a88dff6e": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.1 — 7 Proses di bisnis proses yang lain: subproses ini saling berhubungan, — PT Jhonlin Marine Lines, PT Jhonlin Marine Trans, dan PT Samudera Timur Mas mempunyai struktur",
+    "contentHash": "0f731295942180e6",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_1b5b5e2ae052": {
+    "summary": "SAP S/4HANA Implementation - Business Transformation Project Versi No.1.1 — Hak Cipta © 2024 PT Jhonlin Group — 4.3.4. Proses Pencatatan Data Attendance Karyawan 93 — 13 SAP Systems Application and Product in Data Processing",
+    "contentHash": "25f442ab99438311",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_2fafa7fa7c05": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.3 — 7. Workflow, Report, Interface, Convesions, Enhancement, and Form — F - Form: PO form, Customer Billing, Customer Statement dan",
+    "contentHash": "311a8f955bbaa39e",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_32185891d8e5": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.2 — Tabel 2-7 Maintenance Planning Plant PT Dua Samudera Perkasa ............................................. 22 — Dilarang mendistribusikan tanpa izin tertulis dari PT Jhonlin Group. Halaman 8 dari 167",
+    "contentHash": "2114cfaccb10fde6",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_1eaaaa797c89": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.1 — Hak Cipta © 2024 PT Jhonlin Group — W - Workflow: Workflow is used for approval process. SAP delivers s",
+    "contentHash": "963401ac791c9d51",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_aca7e25782b0": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No.1.4 — Hak Cipta © 2024 PT Jhonlin Group — PT Jhonlin Marine Trans merupakan bagian dari PT Jhonlin Group yang berfokus dalam kegiatan",
+    "contentHash": "75b6320b6c65d412",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_54771a2819e5": {
+    "summary": "CONFIDENTIAL — SAP S/4HANA Implementation - Business Transformation Project Versi No 1.2 — F - Form: PO form, Customer Billing, Customer Statement dan sebagainya. — 7. Invoice Correction - Credit Memo",
+    "contentHash": "44c1d9c56bccf8d4",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_fd737f7de340": {
+    "summary": "System Management Jhonlin Group — Jadwal/jatuh tempo FB/cuti sebelumnya* = — Alamat/telp selama FB/cuti/Ijin = Kandangan — diisi apabila tidak hadir karena FB/cuti",
+    "contentHash": "12aedb1373861096",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_e91241a30204": {
+    "summary": "Cartridge Filter Sedimen — Granular Activated Carbon (GAC) — Berfungsi untuk memperbaiki Warna (Color), rasa (Taste), dan bau (Odor). Cara kerja dari CTO adalah dengan menyerap zat - zat organik yang ada dalam a — Jika sudah jenuh dapat direndam dalam larutan PK / Cl2, dan dapat digunakan kembali.",
+    "contentHash": "25374dbb6c68909a",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_5f7108e006c5": {
+    "summary": ",,,,,,,, — No,Widget,Widget on Page,CDS File,Measure,Dimension,Source Data,T-code,Variant — and (a.CostCenter not like 'DS%H11055' and a.CostCenter not like 'DS%A11055' and a.CostCenter not like 'DS%H11063' — Cashflow After Capex (RP/MT) = if (Cargo (A3) = 0, 0, Cashflow After Capex (A40) / Cargo (A3)) — Cakupan pembahasan: Sheet: Cost Structure, Sheet: Cost Structure Table, Sheet: Cost Structure Table (RPMT)",
+    "contentHash": "579d583ca91bcb91",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_efe83d6e7a7d": {
+    "summary": "Sales Group Missing data Example — Top 10 Breakdown (unschedule) membaca WO Shedule (JB SUNGAI DUA) — ,3-Mar-26,,\"WO kontrak ikut terbaca di top 10 service time. actualnya, WO itu hanya digunakan untuk pembuatan PR (ss terlampir)\",PM MINING,1,PTJB,SOEL — ,4-Mar-26,,\"Page Equipment population page 2 (Total Unit harusnya Main engine, Auxilary Engine, gear box,cargo pump,barge)\",PM MARINE,2,PT STM & PT JM",
+    "contentHash": "a40a17dd10cc1dbb",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_1c31d9800b21": {
+    "summary": "name,email,role,allowed_folders,department,phone — Admin Helpdesk,admin@helpdesk.co.id,Admin,,ICT,8123456789 — Syahril Azhar,syahril.azhar@jhonlingroup.co.id,Functional,,ICT,87794794435 — Guest,guest01@jhonlingroup.co.id,Document,\"[\"\"EAS Go Rise SAP\"\"]\",ICT, — Cakupan pembahasan: Sheet: Sheet1",
+    "contentHash": "57da59bc22720d30",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_359a1faa12f2": {
+    "summary": "Form Sales Approval (FSA) — Urut No. FSA Deskripsi / Jenis Barang / Jasa Buyers Qty Satuan Harga Catatan Di",
+    "contentHash": "702874ec43d02235",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_23aba761d9f0": {
+    "summary": "Price Registration Date IP Action — 7/28/25, 3:24 PM Clientzone Rumahweb | v1.10.0-1 — https://new.clientzone.rumahweb.com/product/domain 1/1",
+    "contentHash": "0cd9584abef02fe2",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_66eec6deb5bb": {
+    "summary": "1 Nomor Induk Karyawan — Lain-lain : …........................................ — …................................................... Cuti yang diajukan : Hari — Cuti akan diberikan : Hari, s/d",
+    "contentHash": "5065a02122f089a5",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_d887b6d885d7": {
+    "summary": "Ship Number,Plant,Trip Period,Trip Number,Posting Date,Tipe Premi,SI Document,Starting Point,Ending Point,Indicator: Start Trip,Indicator: End Trip,Total Fuel Cons,Running ME 1,Run — MV HI 02,ST02,072025,04,07.07.2025,,,,,,,,,,,,,FERDY, — TB JHONI 101,ST02,072025,02,31.07.2025,,,,,,,,,,,,,FERDY, — Nomor Kapal,Trip Period,Trip Number,HM Date,Nomor Lambung Engine,Time,HM",
+    "contentHash": "ab0be6802f93ee48",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_e40883c39bf8": {
+    "summary": "Inventory Num,Posting Date(DDMMYYYY),ROB Qty — BARA 005,13.10.2025,10000 — Cakupan pembahasan: Sheet: Sheet1",
+    "contentHash": "2f6c1642405ee7ea",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_f965294d390d": {
+    "summary": "System Management Jhonlin Group — 8 Alasan Tidak Hadir Ijin potong cuti Ijin Dispensasi Cuti Tahunan Cuti Bersama Lain-lain : …........................................ — *) Catatan Cuti ( Diisi oleh Dept. HRD) — Cuti akan diberikan : Hari, s/d",
+    "contentHash": "696b24cff41b6212",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_9b693a02467b": {
+    "summary": "System Management Jhonlin Group — 4 Departemen / Section ICT / Software Enginer — Cuti akan diberikan : _______ Hari, 19-05-2026 s/d 20-05-2026 — Pemohon Atasan Langsung Dept.Head/Manager HRD",
+    "contentHash": "58f66cba548e6329",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_0d81297f963f": {
+    "summary": "Development 1 — The annotation is @odata.publish:true has responsibility to genereate all artifacts that are required for service — Go back to TCODE /IWFND/MAINT_SERVICE; — Chooses fields to be show on the table, then click \"OK\"",
+    "contentHash": "fd1482821c785c8a",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  },
+  "ext_e94ad27e4dba": {
+    "summary": "ROSTER DEPARTEMEN PT. JHONLIN GROUP — 40 22051280 ARIF RAHMAN 03/08/2022 26/10/2022 18/01/2023 12/04/2023 05/07/2023 27/09/2023 20/12/2023 13/03/2024 05/06/2024 28/08/2024 20/11/2024 12/02",
+    "contentHash": "e3cd6fb01161109c",
+    "updatedAt": "2026-11-04T01:14:59.834Z",
+    "source": "structured"
+  }
+}

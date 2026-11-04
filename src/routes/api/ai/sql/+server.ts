@@ -47,17 +47,28 @@ export const POST: RequestHandler = async (event) => {
 
 	try {
 		const body = await request.json();
-		const { sql, question } = body;
 
-		let targetSql = sql;
-		if (!targetSql && question) {
-			targetSql = generateSmartQueryForQuestion(question);
+		// Keamanan: Parameter `sql` telah dihapus sepenuhnya. Endpoint ini hanya menerima `question`
+		// dalam bahasa natural dan membangkitkan query dari template server yang tervalidasi.
+		if ('sql' in (body || {})) {
+			return json(
+				{
+					error: 'Parameter `sql` telah dihapus demi keamanan. Kirimkan hanya parameter `question`.'
+				},
+				{ status: 400 }
+			);
 		}
+
+		const question = body?.question;
+		const targetSql =
+			typeof question === 'string' && question.trim()
+				? generateSmartQueryForQuestion(question.slice(0, 500))
+				: null;
 
 		if (!targetSql) {
 			return json(
 				{
-					error: 'Parameter `sql` atau `question` diperlukan untuk query database'
+					error: 'Parameter `question` diperlukan untuk query database'
 				},
 				{ status: 400 }
 			);

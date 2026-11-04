@@ -1,6 +1,6 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { AI_CONFIG, callAiChat } from '$lib/server/ai';
+import { AI_CONFIG, callAiChatWithFallback, recordAiRequestMetric } from '$lib/server/ai';
 import { inferSection } from '$lib/server/docs';
 import { verifyAiSession } from '$lib/server/auth';
 
@@ -118,15 +118,23 @@ Tugas Anda adalah merapikan catatan mentah/kasar pengguna menjadi format Markdow
 			return json({ error: `Aksi '${action}' tidak dikenali` }, { status: 400 });
 		}
 
-		let aiRes: any;
-		try {
-			aiRes = await callAiChat(messages, AI_CONFIG.defaultModel, 2500, 0.1, AI_CONFIG.timeoutMs);
-		} catch (primaryErr: any) {
-			console.warn(
-				`Doc-assist model ${AI_CONFIG.defaultModel} error: ${primaryErr.message}. Mencoba fallback ${AI_CONFIG.fallbackModel}...`
-			);
-			aiRes = await callAiChat(messages, AI_CONFIG.fallbackModel, 2500, 0.1, AI_CONFIG.timeoutMs);
-		}
+		const startMs = performance.now();
+		const aiRes = await callAiChatWithFallback(
+			messages,
+			AI_CONFIG.defaultModel,
+			2500,
+			0.1,
+			AI_CONFIG.timeoutMs
+		);
+		recordAiRequestMetric({
+			endpoint: 'doc-assist',
+			model: aiRes.model,
+			cached: false,
+			durationMs: performance.now() - startMs,
+			usage: aiRes.usage,
+			completionChars: aiRes.message.length,
+			fallbackUsed: aiRes.fallbackUsed
+		});
 		const output = aiRes.message;
 
 		if (action === 'generate') {

@@ -1,12 +1,20 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
-import { AI_CONFIG, callAiChat, getCache, setCache, hashString } from '$lib/server/ai';
+import {
+	AI_CONFIG,
+	callAiChatWithFallback,
+	getCache,
+	setCache,
+	hashString,
+	recordAiRequestMetric
+} from '$lib/server/ai';
 import { verifyAiSession } from '$lib/server/auth';
 
 export const POST: RequestHandler = async (event) => {
 	const authCheck = verifyAiSession(event);
 	if (!authCheck.authorized) return authCheck.response;
 	const { request } = event;
+	const startMs = performance.now();
 
 	try {
 		const body = await request.json();
@@ -18,6 +26,13 @@ export const POST: RequestHandler = async (event) => {
 		const cacheKey = `summary_${hashString(`${title || ''}::${content}`)}`;
 		const cached = getCache(cacheKey);
 		if (cached) {
+			recordAiRequestMetric({
+				endpoint: 'summarize',
+				model: AI_CONFIG.defaultModel,
+				cached: true,
+				usage: cached.usage,
+				completionChars: (cached.message || '').length
+			});
 			return json({ ...cached, cached: true });
 		}
 
@@ -33,7 +48,16 @@ export const POST: RequestHandler = async (event) => {
 			}
 		];
 
-		const result = await callAiChat(messages, AI_CONFIG.defaultModel, 600);
+		const result = await callAiChatWithFallback(messages, AI_CONFIG.defaultModel, 600);
+		recordAiRequestMetric({
+			endpoint: 'summarize',
+			model: result.model,
+			cached: false,
+			durationMs: performance.now() - startMs,
+			usage: result.usage,
+			completionChars: result.message.length,
+			fallbackUsed: result.fallbackUsed
+		});
 		setCache(cacheKey, result);
 		return json({
 			message: result.message,
@@ -41,6 +65,7 @@ export const POST: RequestHandler = async (event) => {
 			usage: result.usage
 		});
 	} catch (err: any) {
+		recordAiRequestMetric({ endpoint: 'summarize', failed: true });
 		console.error('AI Summarize Error:', err?.message);
 		return json({ error: err?.message }, { status: 500 });
 	}

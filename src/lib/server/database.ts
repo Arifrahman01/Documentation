@@ -8,13 +8,22 @@ export interface DbConfig {
 	password?: string;
 }
 
+let warnedRootDbUser = false;
+
 function getDbConfig(): DbConfig {
+	const user = (process.env.DB_USERNAME || 'docs_ai_ro').trim();
+	if (user.toLowerCase() === 'root' && !warnedRootDbUser) {
+		warnedRootDbUser = true;
+		console.warn(
+			'[SECURITY] DB_USERNAME menggunakan "root". Gunakan user MySQL khusus read-only (misal: docs_ai_ro) yang hanya diberi hak SELECT pada tabel Helpdesk yang dibutuhkan.'
+		);
+	}
 	return {
 		host: process.env.DB_HOST || '127.0.0.1',
 		port: parseInt(process.env.DB_PORT || '3306', 10),
 		database: process.env.DB_DATABASE || 'helpdesk',
-		user: process.env.DB_USERNAME || 'root',
-		password: process.env.DB_PASSWORD || 'root'
+		user,
+		password: process.env.DB_PASSWORD ?? ''
 	};
 }
 
@@ -68,9 +77,21 @@ export async function checkDbHealth(): Promise<{
 	}
 }
 
+export const ALLOWED_HELPDESK_TABLES = new Set([
+	'tickets',
+	'modules',
+	'module_ticket',
+	'companies',
+	'company_ticket',
+	'categories',
+	'users',
+	'ticket_user'
+]);
+
 /**
- * Validasi ketat keamanan query SQL (Strict Read-Only).
- * Hanya mengizinkan SELECT dan menolak semua query destruktif (INSERT, UPDATE, DELETE, DROP, dll).
+ * Validasi ketat keamanan query SQL (Strict Read-Only + Positive Table Allowlist).
+ * Hanya mengizinkan SELECT pada tabel Helpdesk yang terdaftar di ALLOWED_HELPDESK_TABLES
+ * dan menolak semua query destruktif, fungsi sistem berbahaya, maupun akses tabel di luar daftar izin.
  */
 export function validateSafeQuery(sql: string): { valid: boolean; reason?: string; safeSql?: string } {
 	if (!sql || typeof sql !== 'string') {
@@ -87,15 +108,99 @@ export function validateSafeQuery(sql: string): { valid: boolean; reason?: strin
 		return { valid: false, reason: 'Multiple statements (titik koma) tidak diizinkan demi keamanan' };
 	}
 
-	// Wajib diawali dengan SELECT atau WITH (CTE SELECT) atau EXPLAIN
-	if (!/^(SELECT|WITH|EXPLAIN)\s+/i.test(cleaned)) {
+	// Tolak komentar SQL: bisa dipakai menyamarkan kata kunci (SEL/**/ECT) atau
+	// executable comment MySQL (/*!50000 ... */) untuk melewati validasi.
+	if (/\/\*|\*\/|--|#/.test(cleaned)) {
+		return { valid: false, reason: 'Komentar SQL tidak diizinkan demi keamanan' };
+	}
+
+	// Wajib diawali dengan SELECT atau WITH (CTE SELECT)
+	if (!/^(SELECT|WITH)\s+/i.test(cleaned)) {
 		return { valid: false, reason: 'Hanya query pembacaan data (SELECT) yang diizinkan' };
 	}
 
 	// Blacklist kata kunci berbahaya
-	const forbiddenPattern = /\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|REPLACE|CREATE|GRANT|REVOKE|SHUTDOWN|LOCK|UNLOCK|FLUSH|KILL|EXEC|EXECUTE|OUTFILE|DUMPFILE)\b/i;
+	const forbiddenPattern = /\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|REPLACE|CREATE|GRANT|REVOKE|SHUTDOWN|LOCK|UNLOCK|FLUSH|KILL|EXEC|EXECUTE|OUTFILE|DUMPFILE|INTO|HANDLER|PREPARE|DEALLOCATE|CALL)\b/i;
 	if (forbiddenPattern.test(cleaned)) {
 		return { valid: false, reason: 'Query mengandung kata kunci modifikasi/destruktif yang dilarang' };
+	}
+
+	// Blokir fungsi berbahaya: baca file server (LOAD_FILE), DoS (SLEEP/BENCHMARK),
+	// lock, serta pengintaian identitas/variabel server (@@datadir, CURRENT_USER, dst).
+	const dangerousFunctionPattern =
+		/\b(LOAD_FILE|SLEEP|BENCHMARK|GET_LOCK|RELEASE_LOCK|RELEASE_ALL_LOCKS|IS_FREE_LOCK|IS_USED_LOCK|MASTER_POS_WAIT|SOURCE_POS_WAIT|WAIT_FOR_EXECUTED_GTID_SET|CURRENT_USER|SESSION_USER|SYSTEM_USER|USER|DATABASE|SCHEMA|VERSION|CONNECTION_ID)\s*\(|@@|:=|\bFOR\s+UPDATE\b|\bSHARE\s+MODE\b|\bFOR\s+SHARE\b/i;
+	if (dangerousFunctionPattern.test(cleaned)) {
+		return { valid: false, reason: 'Query mengandung fungsi atau operator sistem yang dilarang' };
+	}
+
+	// Blokir akses ke schema sistem MySQL (mysql.user berisi hash password akun DB)
+	if (/`?\b(mysql|sys|information_schema|performance_schema)\b`?\s*\./i.test(cleaned)) {
+		return { valid: false, reason: 'Akses ke schema sistem database ditolak demi keamanan' };
+	}
+
+	// Blokir pembacaan kolom/tabel kredensial & sesi sensitif
+	const sensitiveSchemaPattern =
+		/\b(password|remember_token|two_factor_secret|two_factor_recovery_codes|personal_access_tokens|password_reset_tokens|password_resets|sessions|failed_jobs|migrations|information_schema|performance_schema|authentication_string)\b/i;
+	if (sensitiveSchemaPattern.test(cleaned)) {
+		return {
+			valid: false,
+			reason: 'Akses ke kolom atau tabel kredensial/sistem sensitif ditolak demi keamanan'
+		};
+	}
+
+	// Blokir SELECT * pada tabel users agar kolom password/remember_token tidak pernah ikut tertarik
+	if (/\bSELECT\s+\*[\s\S]*\b(FROM|JOIN)\s+`?users`?\b/i.test(cleaned)) {
+		return {
+			valid: false,
+			reason: 'SELECT * pada tabel users tidak diizinkan; sebutkan kolom non-sensitif secara eksplisit (misal: id, name, role)'
+		};
+	}
+
+	// Positive Table Allowlist: pastikan semua tabel setelah FROM / JOIN termasuk dalam ALLOWED_HELPDESK_TABLES
+	const withoutStrings = cleaned.replace(/'(?:''|[^'])*'/g, "''");
+	const cteAliases = new Set<string>();
+	const cteRegex = /\b(?:WITH|,)\s*`?([a-zA-Z0-9_]+)`?\s+AS\s*\(/gi;
+	let cteMatch: RegExpExecArray | null;
+	while ((cteMatch = cteRegex.exec(withoutStrings)) !== null) {
+		cteAliases.add(cteMatch[1].toLowerCase());
+	}
+
+	const allowedDbName = (process.env.DB_DATABASE || 'helpdesk').toLowerCase();
+	const tableRefRegex = /\b(?:FROM|JOIN)\s+`?([a-zA-Z0-9_]+)`?(?:\s*\.\s*`?([a-zA-Z0-9_]+)`?)?/gi;
+	let tableMatch: RegExpExecArray | null;
+	let foundTableRef = false;
+	while ((tableMatch = tableRefRegex.exec(withoutStrings)) !== null) {
+		foundTableRef = true;
+		const firstPart = tableMatch[1].toLowerCase();
+		const secondPart = tableMatch[2] ? tableMatch[2].toLowerCase() : null;
+		if (secondPart) {
+			if (firstPart !== allowedDbName) {
+				return {
+					valid: false,
+					reason: `Akses ke database/schema '${firstPart}' tidak diizinkan`
+				};
+			}
+			if (!ALLOWED_HELPDESK_TABLES.has(secondPart)) {
+				return {
+					valid: false,
+					reason: `Tabel '${secondPart}' tidak termasuk dalam daftar tabel Helpdesk yang diizinkan`
+				};
+			}
+		} else {
+			if (!ALLOWED_HELPDESK_TABLES.has(firstPart) && !cteAliases.has(firstPart)) {
+				return {
+					valid: false,
+					reason: `Tabel '${firstPart}' tidak termasuk dalam daftar tabel Helpdesk yang diizinkan`
+				};
+			}
+		}
+	}
+
+	if (!foundTableRef) {
+		return {
+			valid: false,
+			reason: 'Query harus mengacu pada tabel Helpdesk yang diizinkan'
+		};
 	}
 
 	// Pastikan memiliki LIMIT maksimal 50 agar tidak membebani memori
@@ -112,6 +217,8 @@ export function validateSafeQuery(sql: string): { valid: boolean; reason?: strin
 
 	return { valid: true, safeSql: finalSql };
 }
+
+const SAFE_QUERY_TIMEOUT_MS = 10000;
 
 /**
  * Eksekusi query aman dan kembalikan baris data
@@ -132,7 +239,8 @@ export async function executeSafeQuery(
 
 	try {
 		const p = getDbPool();
-		const [rows] = await p.query(validation.safeSql);
+		// Batas waktu eksekusi agar query berat tidak bisa memonopoli koneksi pool
+		const [rows] = await p.query({ sql: validation.safeSql, timeout: SAFE_QUERY_TIMEOUT_MS });
 		const rowArray = Array.isArray(rows) ? (rows as any[]) : [];
 		return {
 			success: true,
@@ -227,69 +335,56 @@ export function detectModuleInQuery(query: string): { code: string; name: string
 }
 
 /**
- * Deteksi pola pertanyaan pengguna seputar database atau tiket helpdesk
+ * Deteksi presisi apakah pertanyaan pengguna benar-benar menanyakan data realtime
+ * Database Helpdesk (tiket, antrean helpdesk, PIC tiket, status tiket).
+ *
+ * Kata umum seperti "open", "modul", "unit", "masalah", "laporan", atau "ringkasan"
+ * TIDAK lagi memicu query database jika tidak disertai konteks eksplisit tiket/helpdesk,
+ * sehingga pertanyaan biasa seputar dokumen tetap fokus dan hemat token.
  */
 export function isDatabaseQueryIntent(query: string): boolean {
 	if (!query || typeof query !== 'string') return false;
-	const lower = query.toLowerCase();
+	const lower = query.toLowerCase().trim();
+	if (!lower) return false;
 
-	const dbKeywords = [
-		'tiket',
-		'ticket',
-		'task',
-		'dashboard',
-		'helpdesk',
-		'open',
-		'closed',
-		'waiting',
-		'status tiket',
-		'in development',
-		'ready for testing',
-		'rejected by dev',
-		'escalated',
-		'severity',
-		'critical',
-		'programmer',
-		'developer',
-		'pic',
-		'jumlah tiket',
-		'berapa tiket',
-		'total tiket',
-		'statistik',
-		'rekap',
-		'ringkasan',
-		'database',
-		'tabel tiket',
-		'antrian tiket',
-		'antrean tiket',
-		'daftar tiket',
-		'list tiket',
-		'tiket terbaru',
-		'tiket terakhir',
-		'kendala',
-		'masalah',
-		'laporan',
-		'antrean',
-		'komplain',
-		'eskalasi',
-		'progress tiket',
-		'developer tiket',
-		'modul',
-		'module',
-		'company',
-		'perusahaan',
-		'unit'
-	];
-
-	if (dbKeywords.some((k) => lower.includes(k))) {
+	// 1. Kata kunci eksplisit yang pasti merujuk ke sistem tiket / database Helpdesk
+	const explicitTicketDbPattern =
+		/\b(tiket|tickets?|helpdesk|antrian\s+tiket|antrean\s+tiket|status\s+tiket|jumlah\s+tiket|berapa\s+tiket|total\s+tiket|daftar\s+tiket|list\s+tiket|tabel\s+tiket|tiket\s+terbaru|tiket\s+terakhir|progress\s+tiket|developer\s+tiket|pic\s+helpdesk|database\s+helpdesk|dev\s+queue|task\s+dev|unassigned)\b/i;
+	if (explicitTicketDbPattern.test(lower)) {
 		return true;
 	}
 
-	if (/(?:#|\btiket\s+|\bticket\s+|\bnomor\s+|\bno\.?\s*)(\d{2,10})\b/i.test(query)) {
+	// 2. Frasa status spesifik yang hanya ada pada workflow tiket Helpdesk
+	const specificTicketStatusPattern =
+		/\b(waiting\s+for\s+confirmation|escalated\s+to\s+dev|ready\s+for\s+testing|rejected\s+by\s+dev|in\s+development)\b/i;
+	if (specificTicketStatusPattern.test(lower)) {
 		return true;
 	}
 
-	if (detectModuleInQuery(query) !== null) {
+	// 3. Pola nomor tiket spesifik (misal: #3190, tiket 3190, nomor tiket 125, atau 8 digit 90000017)
+	if (/(?:#\d{2,10}\b|\b(?:tiket|ticket|nomor\s+tiket|no\.?\s*tiket)\s*#?\d{2,12}\b|\b9\d{7}\b)/i.test(query)) {
+		return true;
+	}
+
+	// 4. Jika pertanyaan jelas menanyakan dokumen, note, panduan, arsitektur, atau cara/tutorial
+	//    tanpa menyebut tiket/helpdesk, jangan picu query database
+	const isExplicitDocQuestion =
+		/\b(dokumen|document|note|notes|catatan|panduan|manual|tutorial|artikel|sinkron|sinkronisasi|story|stories|blueprint|fsd|bapi|rfc|odata|abap|t-?code|sveltekit)\b/i.test(
+			lower
+		);
+	if (isExplicitDocQuestion) {
+		return false;
+	}
+
+	// 5. Kombinasi istilah antrean/komplain/eskalasi/dashboard dengan atribut status/jumlah tiket
+	const hasHelpdeskContext = /\b(antrean|antrian|komplain|eskalasi|sla|pic\b|dashboard\s+utama)\b/i.test(
+		lower
+	);
+	const hasStatusOrMetric =
+		/\b(open|closed|waiting|cancelled|critical|high|severity|berapa|jumlah|total|rekap|statistik|status|daftar|list|belum\s+selesai)\b/i.test(
+			lower
+		);
+	if (hasHelpdeskContext && hasStatusOrMetric) {
 		return true;
 	}
 

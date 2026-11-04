@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
-import type { DocumentItem } from './docs';
+import type { DocumentItem } from './docs.ts';
 
 const DATA_USER_DIR = path.resolve(process.cwd(), 'src/lib/data/user_docs');
 const ROOT_USER_DIR = path.resolve(process.cwd(), 'data/user_docs');
@@ -114,6 +114,7 @@ export function getUserDocStorage(userName: string): UserDocFile {
 }
 
 let userNotesVersion = 1;
+let allUserNotesCache: { version: number; data: Array<DocumentItem & { ownerName?: string }> } | null = null;
 
 export function getUserNotesVersion(): number {
 	return userNotesVersion;
@@ -128,9 +129,13 @@ export function saveUserDocStorage(userName: string, data: UserDocFile) {
 		atomicWrite(rootPath, data);
 	} catch {}
 	userNotesVersion++;
+	allUserNotesCache = null;
 }
 
 export function loadAllUserNotes(): Array<DocumentItem & { ownerName?: string }> {
+	if (allUserNotesCache && allUserNotesCache.version === userNotesVersion) {
+		return allUserNotesCache.data;
+	}
 	const result: Array<DocumentItem & { ownerName?: string }> = [];
 	const seenIds = new Set<string>();
 	const dirs = [DATA_USER_DIR, ROOT_USER_DIR];
@@ -160,6 +165,7 @@ export function loadAllUserNotes(): Array<DocumentItem & { ownerName?: string }>
 		} catch {}
 	}
 
+	allUserNotesCache = { version: userNotesVersion, data: result };
 	return result;
 }
 

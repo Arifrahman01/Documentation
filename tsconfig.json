@@ -2,6 +2,8 @@
 	"extends": "$app/tsconfig",
 	"compilerOptions": {
 		"strict": true,
+		"allowImportingTsExtensions": true,
+		"noEmit": true,
 		"resolveJsonModule": true,
 		"allowSyntheticDefaultImports": true,
 		"esModuleInterop": true,

@@ -37,9 +37,20 @@ const AI_CONFIG = {
   host: process.env.AI_HOST || '127.0.0.1',
   port: parseInt(process.env.AI_PORT, 10) || 8045,
   apiKey: process.env.AI_API_KEY || '',
-  defaultModel: process.env.AI_MODEL || 'gemini-3.8-flash-medium',
-  fallbackModel: 'gemini-3.8-flash'
+  defaultModel: process.env.AI_MODEL || 'gemini-3.8-flash-low',
+  fallbackModel: process.env.AI_FALLBACK_MODEL || 'gemini-3.8-flash'
 };
+
+const ALLOWED_AI_MODELS = new Set([
+  AI_CONFIG.defaultModel,
+  AI_CONFIG.fallbackModel,
+  'gemini-3.8-flash-low',
+  'gemini-3.8-flash',
+  'gemini-3.8-flash-medium',
+  'gemini-2.5-flash',
+  'gemini-2.5-pro',
+  ...(process.env.AI_ALLOWED_MODELS || '').split(',').map(s => s.trim()).filter(Boolean)
+]);
 
 // In-Memory Response Cache for high performance (TTL: 2 hours)
 const aiResponseCache = new Map();
@@ -417,8 +428,8 @@ function getDbPool() {
         host: process.env.DB_HOST || '127.0.0.1',
         port: parseInt(process.env.DB_PORT || '3306', 10),
         database: process.env.DB_DATABASE || 'helpdesk',
-        user: process.env.DB_USERNAME || 'root',
-        password: process.env.DB_PASSWORD || 'root',
+        user: process.env.DB_USERNAME || 'docs_ai_ro',
+        password: process.env.DB_PASSWORD || '',
         connectionLimit: 4
       });
     } catch (_) {}
@@ -590,7 +601,10 @@ ${docCtx.substring(0, 12000)}
     }
 
     let result;
-    const chosenModel = model || AI_CONFIG.defaultModel;
+    if (model && !ALLOWED_AI_MODELS.has(String(model).trim())) {
+      return res.status(400).json({ error: 'Model AI tidak diizinkan oleh server' });
+    }
+    const chosenModel = (model && ALLOWED_AI_MODELS.has(String(model).trim())) ? String(model).trim() : AI_CONFIG.defaultModel;
 
     try {
       result = await callAiChat(fullMessages, chosenModel);
